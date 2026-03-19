@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helient — Settings Explorer</title>
+<link rel="icon" href="data:image/png;base64,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" type="image/png">
+<style>
+:root {
+  --h-navy: #1A2D73;
+  --h-navy-dark: #111F55;
+  --h-navy-deeper: #0D183F;
+  --h-blue: #2197D4;
+  --h-blue-light: #3AAEE0;
+  --h-blue-pale: #E8F5FC;
+  --h-surface: #F3F6FB;
+  --h-surface2: #EAF0F8;
+  --h-card: #FFFFFF;
+  --h-border: #D5E0EF;
+  --h-border2: #B8CBE8;
+  --h-text: #1A2D73;
+  --h-text2: #3A4E6B;
+  --h-text3: #6B7FA0;
+  --h-success: #00875A;
+  --h-warn: #B86B00;
+  --h-red: #C0392B;
+  --h-tag-gpo-bg: #EBF1FF; --h-tag-gpo: #1A2D73;
+  --h-tag-reg-bg: #FFF3E0; --h-tag-reg: #8B4000;
+  --h-tag-intune-bg: #E0F7F0; --h-tag-intune: #006B5B;
+  --h-tag-admx-bg: #EDE7FF; --h-tag-admx: #4A00B0;
+  --h-tag-csp-bg: #FFF8DC; --h-tag-csp: #7A5800;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Segoe UI',system-ui,sans-serif;background:var(--h-surface);color:var(--h-text);min-height:100vh}
+
+/* HEADER */
+.header{background:var(--h-navy-deeper);border-bottom:2px solid var(--h-navy);padding:0 1.5rem;display:flex;align-items:center;height:58px;gap:1.5rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(26,45,115,0.25)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.logo img{width:32px;height:32px;object-fit:contain}
+.logo-text{font-size:16px;font-weight:800;color:#fff;letter-spacing:0.04em}
+.logo-text span{color:var(--h-blue-light)}
+.header-pipe{width:1px;height:22px;background:rgba(33,151,212,0.3)}
+.header-subtitle{font-size:12px;color:rgba(255,255,255,0.45);font-weight:600;letter-spacing:0.07em;text-transform:uppercase}
+.header-nav{margin-left:auto;display:flex;gap:2px}
+.nav-btn{padding:6px 13px;font-size:12.5px;color:rgba(255,255,255,0.5);border:none;background:transparent;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s}
+.nav-btn:hover{color:#fff;background:rgba(255,255,255,0.08)}
+.nav-btn.active{color:var(--h-blue-light);background:rgba(33,151,212,0.12)}
+
+/* AUTH BAR */
+.auth-bar{background:var(--h-navy);padding:8px 1.5rem;display:flex;align-items:center;gap:10px;font-size:12px;border-bottom:1px solid rgba(33,151,212,0.2)}
+.auth-status{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,0.5)}
+.auth-dot{width:7px;height:7px;border-radius:50%;background:#888;flex-shrink:0}
+.auth-dot.connected{background:#2ECC71;box-shadow:0 0 5px rgba(46,204,113,0.5)}
+.auth-dot.loading{background:var(--h-blue-light);animation:pulse 1s ease-in-out infinite}
+.auth-label{color:rgba(255,255,255,0.45)}
+.auth-user{color:#fff;font-weight:600}
+.auth-btn{margin-left:auto;padding:5px 14px;background:var(--h-blue);border:none;border-radius:5px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s}
+.auth-btn:hover{background:var(--h-blue-light)}
+.auth-btn.danger{background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5)}
+.auth-btn.danger:hover{border-color:rgba(255,255,255,0.4);color:#fff}
+.client-id-wrap{display:flex;gap:6px;align-items:center;margin-left:12px}
+.client-id-wrap input{padding:4px 9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:5px;color:#fff;font-size:11px;font-family:inherit;width:260px;outline:none}
+.client-id-wrap input:focus{border-color:var(--h-blue-light)}
+.client-id-wrap input::placeholder{color:rgba(255,255,255,0.25)}
+
+/* HERO */
+.hero{background:linear-gradient(160deg, var(--h-navy-deeper) 0%, var(--h-navy) 100%);padding:2.25rem 1.5rem 1.75rem;border-bottom:1px solid rgba(33,151,212,0.2);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle, rgba(33,151,212,0.08) 0%, transparent 70%);pointer-events:none}
+.hero-inner{max-width:1080px;margin:0 auto}
+.hero h1{font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:0.01em}
+.hero h1 em{font-style:normal;color:var(--h-blue-light)}
+.hero p{font-size:13px;color:rgba(255,255,255,0.48);margin-bottom:1.25rem;max-width:600px;line-height:1.5}
+.search-row{display:flex;gap:8px;align-items:center}
+.search-wrap{flex:1;min-width:260px;position:relative}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:rgba(255,255,255,0.3);pointer-events:none}
+#searchInput{width:100%;padding:10px 12px 10px 36px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13.5px;font-family:inherit;outline:none;transition:all 0.15s}
+#searchInput::placeholder{color:rgba(255,255,255,0.3)}
+#searchInput:focus{border-color:var(--h-blue-light);background:rgba(255,255,255,0.1)}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.chip{padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.55);transition:all 0.15s;user-select:none}
+.chip:hover{color:#fff;border-color:rgba(255,255,255,0.3)}
+.chip.on{background:var(--h-blue);border-color:var(--h-blue);color:#fff}
+
+/* MAIN */
+.main{max-width:1080px;margin:0 auto;padding:1.25rem 1.5rem}
+.stats-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:13px;color:var(--h-text3)}
+.stats-bar strong{color:var(--h-text);font-weight:600}
+.loader{display:none;align-items:center;gap:6px;font-size:12px;color:var(--h-blue)}
+.loader.show{display:flex}
+.spinner{width:13px;height:13px;border:2px solid rgba(33,151,212,0.2);border-top-color:var(--h-blue);border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* CARDS */
+.results-grid{display:flex;flex-direction:column;gap:10px}
+.result-card{background:var(--h-card);border:1px solid var(--h-border);border-radius:10px;overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s;cursor:pointer}
+.result-card:hover{border-color:var(--h-blue);box-shadow:0 2px 14px rgba(33,151,212,0.1)}
+.result-card.expanded{border-color:var(--h-blue)}
+.card-header{padding:13px 15px;display:flex;align-items:flex-start;gap:11px}
+.card-icon{width:36px;height:36px;border-radius:8px;background:var(--h-surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;border:1px solid var(--h-border)}
+.card-info{flex:1;min-width:0}
+.card-name{font-size:13.5px;font-weight:700;color:var(--h-text);margin-bottom:2px;line-height:1.35}
+.card-desc{font-size:12px;color:var(--h-text3);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-meta{display:flex;align-items:center;gap:6px;margin-top:7px;flex-wrap:wrap}
+.tag{padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:0.03em}
+.tag-gpo{background:var(--h-tag-gpo-bg);color:var(--h-tag-gpo)}
+.tag-reg{background:var(--h-tag-reg-bg);color:var(--h-tag-reg)}
+.tag-intune{background:var(--h-tag-intune-bg);color:var(--h-tag-intune)}
+.tag-admx{background:var(--h-tag-admx-bg);color:var(--h-tag-admx)}
+.tag-csp{background:var(--h-tag-csp-bg);color:var(--h-tag-csp)}
+.tag-plat{background:var(--h-surface2);color:var(--h-text2);border:1px solid var(--h-border)}
+.expand-btn{flex-shrink:0;padding:4px 11px;border-radius:6px;border:1px solid var(--h-border2);background:transparent;font-size:11.5px;color:var(--h-navy);cursor:pointer;font-family:inherit;font-weight:600;display:flex;align-items:center;gap:4px;transition:all 0.15s}
+.expand-btn:hover{background:var(--h-surface2);border-color:var(--h-blue)}
+.expand-arrow{transition:transform 0.2s;width:10px;height:10px}
+.result-card.expanded .expand-arrow{transform:rotate(180deg)}
+
+/* DETAIL */
+.detail-panel{display:none;border-top:1px solid var(--h-border);background:var(--h-surface)}
+.result-card.expanded .detail-panel{display:block}
+.detail-tabs{display:flex;border-bottom:1px solid var(--h-border);background:var(--h-card);padding:0 14px;gap:0;overflow-x:auto;scrollbar-width:none}
+.detail-tabs::-webkit-scrollbar{display:none}
+.dtab{padding:9px 13px;font-size:11.5px;font-weight:700;color:var(--h-text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s;display:flex;align-items:center;gap:5px;letter-spacing:0.02em}
+.dtab:hover{color:var(--h-text2)}
+.dtab.active{color:var(--h-navy);border-bottom-color:var(--h-navy)}
+.dtab-pip{width:6px;height:6px;border-radius:50%}
+.detail-content{padding:14px}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* CONFIG BLOCKS */
+.config-block{background:var(--h-card);border:1px solid var(--h-border);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.config-block-title{font-size:12.5px;font-weight:700;color:var(--h-text);margin-bottom:9px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.def-id{font-family:"Cascadia Code","Consolas",monospace;font-size:9.5px;background:rgba(0,107,91,0.1);color:var(--h-tag-intune);padding:2px 7px;border-radius:4px;letter-spacing:0.02em;word-break:break-all}
+.ctable{width:100%;border-collapse:collapse;font-size:12px}
+.ctable tr:not(:last-child) td{border-bottom:1px solid var(--h-border)}
+.ctable td{padding:6px 9px;vertical-align:top}
+.ctable td:first-child{width:165px;color:var(--h-text3);font-weight:600;background:var(--h-surface);white-space:nowrap;font-size:11.5px}
+.ctable td:last-child{color:var(--h-text);word-break:break-all}
+.mono{font-family:"Cascadia Code","Consolas",monospace;font-size:11px;background:rgba(26,45,115,0.06);color:var(--h-navy);padding:2px 6px;border-radius:4px;display:inline-block;word-break:break-all}
+.cbtn{background:none;border:1px solid var(--h-border2);border-radius:4px;padding:2px 8px;font-size:10.5px;color:var(--h-text2);cursor:pointer;font-family:inherit;transition:all 0.15s;margin-left:5px;white-space:nowrap}
+.cbtn:hover{background:var(--h-surface2);border-color:var(--h-blue);color:var(--h-navy)}
+.cbtn.ok{color:var(--h-success);border-color:var(--h-success)}
+.json-pre{background:var(--h-navy-deeper);color:#a8d8f0;padding:10px 12px;border-radius:7px;font-size:10.5px;font-family:"Cascadia Code","Consolas",monospace;overflow-x:auto;line-height:1.65;margin-top:9px}
+.copy-row{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+.cta-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;border:1px solid}
+.cta-btn.intune{background:var(--h-tag-intune-bg);border-color:#8CD8C8;color:var(--h-tag-intune)}
+.cta-btn.gpo{background:var(--h-tag-gpo-bg);border-color:#B0C8FF;color:var(--h-tag-gpo)}
+.cta-btn.reg{background:var(--h-tag-reg-bg);border-color:#FFCA90;color:var(--h-tag-reg)}
+.cta-btn:hover{filter:brightness(0.95);transform:translateY(-1px)}
+.cta-btn.ok{opacity:0.6}
+
+/* EMPTY */
+.empty{text-align:center;padding:3.5rem 2rem;color:var(--h-text3)}
+.empty svg{opacity:0.2;margin-bottom:1rem}
+.empty h3{font-size:15px;color:var(--h-text2);margin-bottom:5px;font-weight:600}
+.empty p{font-size:12.5px;line-height:1.5}
+
+/* ALT VIEWS */
+.alt-view{display:none;max-width:1080px;margin:0 auto;padding:1.5rem}
+.alt-view h2{font-size:17px;font-weight:800;color:var(--h-navy);margin-bottom:4px}
+.alt-view .sub{font-size:12.5px;color:var(--h-text3);margin-bottom:1.5rem}
+.section-label{font-size:10.5px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--h-text3);margin:1.25rem 0 8px;display:flex;align-items:center;gap:7px}
+
+/* FOOTER */
+footer{margin-top:3rem;padding:1.25rem 1.5rem;border-top:1px solid var(--h-border);text-align:center;font-size:11.5px;color:var(--h-text3)}
+footer a{color:var(--h-blue);text-decoration:none}
+footer img{height:16px;vertical-align:middle;opacity:0.5;margin-right:5px}
+
+.highlight{background:rgba(255,213,0,0.35);border-radius:2px;padding:0 1px}
+
+/* LIVE BADGE */
+.live-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(33,151,212,0.1);border:1px solid rgba(33,151,212,0.2);border-radius:20px;font-size:10.5px;font-weight:700;color:var(--h-blue);letter-spacing:0.04em}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--h-blue);animation:pulse 1.5s ease-in-out infinite}
+
+/* SOURCE BADGE */
+.source-badge{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.04em}
+.src-local{background:#EEF2FF;color:#1A2D73}
+.src-graph{background:#E0F7F0;color:#006B5B}
+
+@media(max-width:640px){.main,.alt-view{padding:1rem}.hero{padding:1.5rem 1rem 1rem}.header{padding:0 1rem}.ctable td:first-child{width:110px}.client-id-wrap{display:none}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a class="logo" href="#">
+    <img src="data:image/png;base64,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" alt="Helient">
+    <span class="logo-text">HELI<span>ENT</span></span>
+  </a>
+  <div class="header-pipe"></div>
+  <span class="header-subtitle">Settings Explorer</span>
+  <nav class="header-nav">
+    <button class="nav-btn active" onclick="showView('search',this)">Search</button>
+    <button class="nav-btn" onclick="showView('graph',this)">Graph Queries</button>
+    <button class="nav-btn" onclick="showView('about',this)">About</button>
+  </nav>
+</header>
+
+<!-- AUTH BAR -->
+<div class="auth-bar">
+  <div class="auth-status">
+    <span class="auth-dot" id="authDot"></span>
+    <span class="auth-label" id="authLabel">Not connected to Microsoft Graph</span>
+  </div>
+  <div class="client-id-wrap" id="clientIdWrap">
+    <input type="text" id="clientIdInput" placeholder="Azure App Client ID (optional — for live Graph API)" autocomplete="off">
+  </div>
+  <button class="auth-btn" id="authBtn" onclick="handleAuth()">Connect to Graph</button>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="searchView">
+  <div class="hero-inner">
+    <h1>Policy & Settings <em>Explorer</em></h1>
+    <p>Search GPO, Registry, ADMX, CSP/OMA-URI, and Intune Settings Catalog. Get exact definition IDs and JSON for seamless GPO → Intune migration.</p>
+    <div class="search-row">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="searchInput" type="text" placeholder="Policy name, registry key, OMA-URI, description…" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="live-pill" id="livePill"><span class="live-dot"></span><span id="livePillText">Local DB</span></div>
+    </div>
+    <div class="filter-row">
+      <div class="chip on" onclick="setChip('all',this)">All</div>
+      <div class="chip" onclick="setChip('intune',this)">Intune Catalog</div>
+      <div class="chip" onclick="setChip('gpo',this)">GPO / ADMX</div>
+      <div class="chip" onclick="setChip('registry',this)">Registry</div>
+      <div class="chip" onclick="setChip('windows',this)">Windows</div>
+      <div class="chip" onclick="setChip('macos',this)">macOS</div>
+    </div>
+  </div>
+</section>
+
+<main class="main" id="mainView">
+  <div class="stats-bar">
+    <span id="resultCount">Enter a search term to explore settings</span>
+    <span class="loader" id="loader"><span class="spinner"></span><span id="loaderText">Searching…</span></span>
+  </div>
+  <div class="results-grid" id="resultsGrid">
+    <div class="empty">
+      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v3l2 2"/></svg>
+      <h3>Search across all configuration methods</h3>
+      <p>Try "BitLocker", "Windows Update", "SmartScreen", "UAC", "LAPS",<br>or paste a registry path like <code style="font-size:11px">SOFTWARE\Policies\Microsoft</code></p>
+    </div>
+  </div>
+</main>
+
+<!-- GRAPH QUERIES VIEW -->
+<div class="alt-view" id="graphView">
+  <h2>Microsoft Graph API Reference</h2>
+  <p class="sub">Ready-to-use queries for Settings Catalog data from your Intune tenant</p>
+
+  <div class="section-label"><span class="tag tag-intune">GET</span> Read operations</div>
+  <div class="config-block">
+    <div class="config-block-title">List all Settings Catalog policies in tenant</div>
+    <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationPolicies
+Authorization: Bearer {token}
+ConsistencyLevel: eventual</pre>
+    <button class="cbtn" onclick="copyTxt('GET https://graph.microsoft.com/beta/deviceManagement/configurationPolicies',this)">Copy URL</button>
+  </div>
+  <div class="config-block">
+    <div class="config-block-title">Search Settings Catalog definitions by keyword</div>
+    <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationSettings
+  ?$filter=contains(keywords,'{KEYWORD}')
+  &$select=id,name,description,keywords,settingDefinitionId,applicability,defaultValue
+  &$top=50</pre>
+    <button class="cbtn" onclick="copyTxt(`GET https://graph.microsoft.com/beta/deviceManagement/configurationSettings?$filter=contains(keywords,'{KEYWORD}')&$select=id,name,description,keywords,settingDefinitionId,applicability,defaultValue&$top=50`,this)">Copy URL</button>
+  </div>
+  <div class="config-block">
+    <div class="config-block-title">Get specific setting definition by ID</div>
+    <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationSettings/{settingDefinitionId}</pre>
+  </div>
+  <div class="config-block">
+    <div class="config-block-title">Export all settings in a policy (with definitions)</div>
+    <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationPolicies/{policyId}/settings
+  ?$expand=settingDefinitions</pre>
+  </div>
+
+  <div class="section-label"><span class="tag tag-gpo">POST</span> Create / assign policy</div>
+  <div class="config-block">
+    <div class="config-block-title">Create Settings Catalog policy with a setting</div>
+    <pre class="json-pre">POST https://graph.microsoft.com/beta/deviceManagement/configurationPolicies
+Content-Type: application/json
+
+{
+  "name": "My Policy",
+  "description": "",
+  "platforms": "windows10",
+  "technologies": "mdm",
+  "settings": [
+    {
+      "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
+      "settingInstance": {
+        "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+        "settingDefinitionId": "device_vendor_msft_policy_config_...",
+        "choiceSettingValue": {
+          "value": "device_vendor_msft_policy_config_..._1",
+          "children": []
+        }
+      }
+    }
+  ]
+}</pre>
+  </div>
+
+  <div class="section-label"><span class="tag tag-admx">SCOPES</span> Required permissions</div>
+  <div class="config-block">
+    <div class="config-block-title">Required Microsoft Graph API permissions</div>
+    <table class="ctable">
+      <tr><td>Read policies</td><td><span class="mono">DeviceManagementConfiguration.Read.All</span></td></tr>
+      <tr><td>Write policies</td><td><span class="mono">DeviceManagementConfiguration.ReadWrite.All</span></td></tr>
+      <tr><td>Read settings catalog</td><td><span class="mono">DeviceManagementConfiguration.Read.All</span></td></tr>
+      <tr><td>App registration type</td><td>Public client / SPA (for browser auth, no secret needed)</td></tr>
+      <tr><td>Redirect URI</td><td><span class="mono">https://your-github-pages-url</span> or <span class="mono">http://localhost</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ABOUT VIEW -->
+<div class="alt-view" id="aboutView">
+  <h2>About Settings Explorer</h2>
+  <p class="sub">A Helient tool for IT administrators, architects, and endpoint engineers</p>
+  <div class="config-block">
+    <div class="config-block-title">Purpose</div>
+    <p style="font-size:12.5px;line-height:1.7;color:var(--h-text2)">Settings Explorer maps every Windows and macOS policy setting across all configuration methods — GPO/ADMX, Registry, CSP/OMA-URI, and Intune Settings Catalog — in one unified interface. It provides exact Intune setting definition IDs, JSON fragments for Graph API automation, and ready-to-paste registry snippets. Designed specifically for GPO → Intune migrations and cross-method validation.</p>
+  </div>
+  <div class="config-block">
+    <div class="config-block-title">Data sources</div>
+    <table class="ctable">
+      <tr><td>Intune Settings Catalog</td><td>Microsoft Graph API (<span class="mono">/deviceManagement/configurationSettings</span>)</td></tr>
+      <tr><td>ADMX / GPO</td><td>Windows ADMX policy database + Policy Analytics mapping</td></tr>
+      <tr><td>Registry</td><td>Windows registry path reference (HKLM/HKCU)</td></tr>
+      <tr><td>CSP/OMA-URI</td><td>Windows MDM configuration service provider documentation</td></tr>
+      <tr><td>Built-in database</td><td>Curated local dataset of 50+ common settings — no auth required</td></tr>
+    </table>
+  </div>
+  <div class="config-block">
+    <div class="config-block-title">Free hosting options (zero cost)</div>
+    <table class="ctable">
+      <tr><td style="font-weight:700">GitHub Pages</td><td>Push this HTML file to a GitHub repo, enable Pages in Settings → Pages. Free, custom domain support, HTTPS included. <em style="color:var(--h-text3)">Best option.</em></td></tr>
+      <tr><td style="font-weight:700">Cloudflare Pages</td><td>Connect GitHub repo to Cloudflare Pages. Free tier: unlimited requests, global CDN, custom domain, HTTPS.</td></tr>
+      <tr><td style="font-weight:700">Netlify</td><td>Drag-and-drop the HTML file at netlify.com/drop. Instant deploy, free subdomain, HTTPS. 100GB/month bandwidth free.</td></tr>
+      <tr><td style="font-weight:700">Azure Static Web Apps</td><td>Free tier available. Best if already using Azure AD — seamless MSAL redirect URI configuration.</td></tr>
+      <tr><td style="font-weight:700">Vercel</td><td>Connect GitHub, auto-deploy on push. Free for personal/team use.</td></tr>
+    </table>
+  </div>
+  <div class="config-block">
+    <div class="config-block-title">Live Graph API setup (5 minutes)</div>
+    <table class="ctable">
+      <tr><td>1</td><td>Go to <strong>Azure Portal → App Registrations → New Registration</strong></td></tr>
+      <tr><td>2</td><td>Set Redirect URI to <span class="mono">https://your-hosted-url</span> (SPA type)</td></tr>
+      <tr><td>3</td><td>Under API Permissions, add <span class="mono">DeviceManagementConfiguration.Read.All</span> (Delegated)</td></tr>
+      <tr><td>4</td><td>Copy the <strong>Application (client) ID</strong></td></tr>
+      <tr><td>5</td><td>Paste it in the auth bar above and click <strong>Connect to Graph</strong></td></tr>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <img src="data:image/png;base64,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" alt=""> Built by <a href="https://helient.com" target="_blank">Helient</a> &nbsp;·&nbsp; Settings data via Microsoft Graph API &nbsp;·&nbsp; Not affiliated with Microsoft &nbsp;·&nbsp; <span id="lastUpdated"></span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-authentication-library/3.14.0/msal-browser.min.js" crossorigin="anonymous"></script>
+<script>
+// ===== BRAND COLORS =====
+// Primary navy: #1A2D73 (PMS 2746C)
+// Bright blue:  #2197D4
+// Extracted from: Helient_-_H_Logo_pms_2746C_coated_-_1A2D73.ico
+
+// ===== BUILT-IN SETTINGS DATABASE =====
+const LOCAL_DB = [
+  {id:"bitlocker_os",name:"BitLocker — OS Drive Encryption",desc:"Requires BitLocker protection on OS drives. Prevents boot without proper TPM/PIN authentication. Core security baseline requirement.",icon:"🔒",cats:["BitLocker","Security"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"Computer Configuration > Administrative Templates > Windows Components > BitLocker Drive Encryption > Operating System Drives",policy:"Require additional authentication at startup",admx:"VolumeEncryption.admx",ns:"Microsoft.Policies.VolumeEncryption"},
+    admx:{name:"ConfigureAdvancedStartup_Name",file:"VolumeEncryption.admx",cat:"OperatingSystemDrives",regKey:"HKLM\\SOFTWARE\\Policies\\Microsoft\\FVE",val:"UseAdvancedStartup",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Policies\\Microsoft\\FVE",val:"UseAdvancedStartup",type:"REG_DWORD",data:"1 = Require; 0 = Disabled",note:"Also: OSRecovery, EnableBDEWithNoTPM"},
+    intune:[{cat:"BitLocker",name:"Require additional authentication at startup",defId:"device_vendor_msft_bitlocker_requiredeviceencryption",oma:"./Device/Vendor/MSFT/BitLocker/RequireDeviceEncryption",dtype:"Integer",vals:[{v:"1",l:"Require"},{v:"0",l:"Not configured"}],rec:"1",json:'"settingDefinitionId": "device_vendor_msft_bitlocker_requiredeviceencryption",\n"choiceSettingValue": { "value": "device_vendor_msft_bitlocker_requiredeviceencryption_1" }'}]},
+
+  {id:"wu_quality_deadline",name:"Windows Update — Quality Update Deadline",desc:"Specifies days a device can defer a quality update. After deadline, the update is forced regardless of active hours.",icon:"🔄",cats:["Windows Update For Business"],plat:"windows",methods:["intune","gpo","registry","admx","csp"],
+    gpo:{path:"Computer Configuration > Administrative Templates > Windows Components > Windows Update > Windows Update for Business",policy:"Specify deadline before auto-restart for update installation",admx:"WindowsUpdate.admx",ns:"Microsoft.Policies.WindowsUpdate"},
+    admx:{name:"ConfigureDeadlineForQualityUpdates",file:"WindowsUpdate.admx",cat:"WindowsUpdateForBusiness",regKey:"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",val:"ConfigureDeadlineForQualityUpdates",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",val:"ConfigureDeadlineForQualityUpdates",type:"REG_DWORD",data:"Number of days (e.g., 2, 5, 7)",note:"ConfigureDeadlineNoAutoRebootForQualityUpdates=1 to prevent auto-reboot"},
+    intune:[{cat:"Windows Update For Business",name:"Quality update deadline (days)",defId:"device_vendor_msft_policy_config_update_configuredeadlineforqualityupdates",oma:"./Device/Vendor/MSFT/Policy/Config/Update/ConfigureDeadlineForQualityUpdates",dtype:"Integer",vals:[{v:"2",l:"2 days"},{v:"5",l:"5 days"},{v:"7",l:"7 days"}],rec:"5",json:'"settingDefinitionId": "device_vendor_msft_policy_config_update_configuredeadlineforqualityupdates",\n"simpleSettingValue": { "@odata.type": "#microsoft.graph.deviceManagementConfigurationIntegerSettingValue", "value": 5 }'}]},
+
+  {id:"smartscreen_explorer",name:"Windows Defender SmartScreen — Explorer",desc:"Configures SmartScreen for downloaded files and programs. Warns or blocks potentially malicious content.",icon:"🛡️",cats:["Smart Screen"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"Computer Configuration > Administrative Templates > Windows Components > Windows Defender SmartScreen > Explorer",policy:"Configure Windows Defender SmartScreen",admx:"WindowsExplorer.admx",ns:"Microsoft.Policies.WindowsExplorer"},
+    admx:{name:"ShellSmartScreenLevel",file:"WindowsExplorer.admx",cat:"FileExplorer",regKey:"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System",val:"EnableSmartScreen",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Policies\\Microsoft\\Windows\\System",val:"EnableSmartScreen",type:"REG_DWORD",data:"1 = Enabled; 0 = Disabled",note:"ShellSmartScreenLevel = Warn or Block"},
+    intune:[{cat:"Smart Screen",name:"Configure Windows Defender SmartScreen",defId:"device_vendor_msft_policy_config_smartscreen_enablesmartscreeninshell",oma:"./Device/Vendor/MSFT/Policy/Config/SmartScreen/EnableSmartScreenInShell",dtype:"Integer",vals:[{v:"1",l:"Enabled"},{v:"0",l:"Disabled"}],rec:"1",json:'"settingDefinitionId": "device_vendor_msft_policy_config_smartscreen_enablesmartscreeninshell",\n"choiceSettingValue": { "value": "device_vendor_msft_policy_config_smartscreen_enablesmartscreeninshell_1" }'}]},
+
+  {id:"uac_admin",name:"UAC — Elevation Prompt Behavior for Administrators",desc:"Controls how UAC elevation prompts appear for admin users. Key setting for security hardening and least privilege enforcement.",icon:"⚠️",cats:["Local Policies Security Options"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options",policy:"User Account Control: Behavior of the elevation prompt for administrators",admx:"MSS-legacy.admx",ns:"Microsoft.Policies.MSS"},
+    admx:{name:"ConsentPromptBehaviorAdmin",file:"MSS-legacy.admx",cat:"SecurityOptions",regKey:"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",val:"ConsentPromptBehaviorAdmin",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",val:"ConsentPromptBehaviorAdmin",type:"REG_DWORD",data:"0=No prompt; 1=Creds secure desktop; 2=Consent secure desktop; 5=Consent (default)",note:"ConsentPromptBehaviorUser: 0=Auto-deny; 1=Creds secure desktop; 3=Creds prompt"},
+    intune:[{cat:"Local Policies Security Options",name:"UAC elevation prompt for administrators",defId:"device_vendor_msft_policy_config_localpoliciessecurityoptions_useraccountcontrol_behavioroftheelevationpromptforadministrators",oma:"./Device/Vendor/MSFT/Policy/Config/LocalPoliciesSecurityOptions/UserAccountControl_BehaviorOfTheElevationPromptForAdministrators",dtype:"Integer",vals:[{v:"0",l:"Elevate without prompting"},{v:"1",l:"Prompt for credentials on secure desktop"},{v:"2",l:"Prompt for consent on secure desktop"},{v:"5",l:"Prompt for consent (non-Windows binaries)"}],rec:"2",json:'"settingDefinitionId": "device_vendor_msft_policy_config_localpoliciessecurityoptions_useraccountcontrol_behavioroftheelevationpromptforadministrators",\n"choiceSettingValue": { "value": "...administrators_2" }'}]},
+
+  {id:"laps",name:"LAPS — Local Administrator Password Solution",desc:"Manages and rotates local administrator account passwords. Configures backup to Azure AD or on-prem AD with customizable complexity and age.",icon:"🔑",cats:["LAPS"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"Computer Configuration > Administrative Templates > System > LAPS",policy:"Configure password backup directory",admx:"LAPS.admx",ns:"Microsoft.Policies.LAPS"},
+    admx:{name:"BackupDirectory",file:"LAPS.admx",cat:"LAPS",regKey:"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\LAPS",val:"BackupDirectory",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\LAPS",val:"BackupDirectory",type:"REG_DWORD",data:"0=Disabled; 1=Azure AD; 2=Active Directory",note:"PasswordAgeDays, PasswordLength, PasswordComplexity also in same key"},
+    intune:[
+      {cat:"LAPS",name:"Backup directory",defId:"device_vendor_msft_laps_policies_backupdirectory",oma:"./Device/Vendor/MSFT/LAPS/Policies/BackupDirectory",dtype:"Integer",vals:[{v:"0",l:"Disabled"},{v:"1",l:"Azure AD"},{v:"2",l:"Active Directory"}],rec:"1",json:'"settingDefinitionId": "device_vendor_msft_laps_policies_backupdirectory",\n"choiceSettingValue": { "value": "device_vendor_msft_laps_policies_backupdirectory_1" }'},
+      {cat:"LAPS",name:"Password age (days)",defId:"device_vendor_msft_laps_policies_passwordagedaystarget",oma:"./Device/Vendor/MSFT/LAPS/Policies/PasswordAgeDaysTarget",dtype:"Integer",vals:[{v:"7",l:"7 days"},{v:"14",l:"14 days"},{v:"30",l:"30 days"}],rec:"30",json:'"settingDefinitionId": "device_vendor_msft_laps_policies_passwordagedaystarget",\n"simpleSettingValue": { "@odata.type": "#microsoft.graph.deviceManagementConfigurationIntegerSettingValue", "value": 30 }'}
+    ]},
+
+  {id:"defender_rtp",name:"Microsoft Defender — Real-Time Protection",desc:"Enables real-time protection in Defender Antivirus. Controls behavior monitoring, on-access scanning, and process monitoring.",icon:"🦠",cats:["Microsoft Defender","Defender"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"Computer Configuration > Administrative Templates > Windows Components > Microsoft Defender Antivirus > Real-time Protection",policy:"Turn off real-time protection",admx:"WindowsDefender.admx",ns:"Microsoft.Policies.WindowsDefender"},
+    admx:{name:"DisableRealtimeMonitoring",file:"WindowsDefender.admx",cat:"RealtimeProtection",regKey:"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection",val:"DisableRealtimeMonitoring",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection",val:"DisableRealtimeMonitoring",type:"REG_DWORD",data:"0 = Protection ON (recommended); 1 = Protection OFF",note:"DisableBehaviorMonitoring, DisableOnAccessProtection also configurable"},
+    intune:[{cat:"Microsoft Defender",name:"Allow real-time monitoring",defId:"device_vendor_msft_policy_config_defender_allowrealtimemonitoring",oma:"./Device/Vendor/MSFT/Policy/Config/Defender/AllowRealtimeMonitoring",dtype:"Integer",vals:[{v:"1",l:"Allowed"},{v:"0",l:"Not allowed"}],rec:"1",json:'"settingDefinitionId": "device_vendor_msft_policy_config_defender_allowrealtimemonitoring",\n"choiceSettingValue": { "value": "device_vendor_msft_policy_config_defender_allowrealtimemonitoring_1" }'}]},
+
+  {id:"firewall_domain",name:"Windows Firewall — Domain Profile",desc:"Configures Windows Defender Firewall for domain networks. Controls inbound/outbound rules and connection behavior for corporate environments.",icon:"🧱",cats:["Firewall"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"Computer Configuration > Windows Settings > Security Settings > Windows Defender Firewall with Advanced Security",policy:"Windows Defender Firewall: Domain Profile",admx:"WindowsFirewall.admx",ns:"Microsoft.Policies.WindowsFirewall"},
+    admx:{name:"DomainProfile_EnableFirewall",file:"WindowsFirewall.admx",cat:"FirewallDomainProfile",regKey:"HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\DomainProfile",val:"EnableFirewall",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\DomainProfile",val:"EnableFirewall",type:"REG_DWORD",data:"1 = On; 0 = Off",note:"DefaultInboundAction=1 (Block), DefaultOutboundAction=0 (Allow)"},
+    intune:[{cat:"Firewall",name:"Enable Domain Network Firewall",defId:"vendor_msft_firewall_mdmstore_domainprofile_enablefirewall",oma:"./Vendor/MSFT/Firewall/MdmStore/DomainProfile/EnableFirewall",dtype:"Boolean",vals:[{v:"true",l:"Enabled"},{v:"false",l:"Disabled"}],rec:"true",json:'"settingDefinitionId": "vendor_msft_firewall_mdmstore_domainprofile_enablefirewall",\n"choiceSettingValue": { "value": "vendor_msft_firewall_mdmstore_domainprofile_enablefirewall_true" }'}]},
+
+  {id:"onedrive_silent",name:"OneDrive — Silent Sign-In (AAD Identity)",desc:"Silently signs in users using their Azure AD credentials. Required for seamless OneDrive deployment in Intune-managed environments.",icon:"☁️",cats:["OneDrive"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"Computer Configuration > Administrative Templates > OneDrive",policy:"Silently sign in users to the OneDrive sync app with their Windows credentials",admx:"OneDrive.admx",ns:"Microsoft.Policies.OneDrive"},
+    admx:{name:"SilentAccountConfig",file:"OneDrive.admx",cat:"OneDrive",regKey:"HKLM\\SOFTWARE\\Policies\\Microsoft\\OneDrive",val:"SilentAccountConfig",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Policies\\Microsoft\\OneDrive",val:"SilentAccountConfig",type:"REG_DWORD",data:"1 = Enabled; 0 = Disabled",note:"Also set KFMSilentOptIn (TenantID) for Known Folder Move"},
+    intune:[{cat:"OneDrive",name:"Silently sign in users with Windows credentials",defId:"device_vendor_msft_policy_config_onedrive_silentaccountconfig",oma:"./Device/Vendor/MSFT/Policy/Config/OneDrive/SilentAccountConfig",dtype:"Integer",vals:[{v:"1",l:"Enabled"},{v:"0",l:"Disabled"}],rec:"1",json:'"settingDefinitionId": "device_vendor_msft_policy_config_onedrive_silentaccountconfig",\n"choiceSettingValue": { "value": "device_vendor_msft_policy_config_onedrive_silentaccountconfig_1" }'}]},
+
+  {id:"screen_timeout",name:"Power — Display Timeout (Plugged In)",desc:"Specifies inactivity period before display turns off when plugged in. GUID-based registry key used by power management subsystem.",icon:"💤",cats:["Power"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"Computer Configuration > Administrative Templates > System > Power Management > Video and Display Settings",policy:"Turn off the display (plugged in)",admx:"Power.admx",ns:"Microsoft.Policies.Power"},
+    admx:{name:"VideoPowerDownTimeOut_AC",file:"Power.admx",cat:"VideoAndDisplaySettings",regKey:"HKLM\\SOFTWARE\\Policies\\Microsoft\\Power\\PowerSettings\\3C0BC021-C8A8-4E07-A973-6B14CBCB2B7E",val:"ACSettingIndex",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Policies\\Microsoft\\Power\\PowerSettings\\3C0BC021-C8A8-4E07-A973-6B14CBCB2B7E",val:"ACSettingIndex",type:"REG_DWORD",data:"Seconds (900=15min, 600=10min, 0=Never)",note:"DC (battery): DCSettingIndex in same key"},
+    intune:[{cat:"Power",name:"Display timeout plugged in",defId:"device_vendor_msft_policy_config_power_displaytimeoutpluggedin",oma:"./Device/Vendor/MSFT/Policy/Config/Power/DisplayTimeoutPluggedIn",dtype:"Integer",vals:[{v:"900",l:"15 minutes"},{v:"600",l:"10 minutes"},{v:"0",l:"Never"}],rec:"900",json:'"settingDefinitionId": "device_vendor_msft_policy_config_power_displaytimeoutpluggedin",\n"simpleSettingValue": { "@odata.type": "#microsoft.graph.deviceManagementConfigurationIntegerSettingValue", "value": 900 }'}]},
+
+  {id:"edge_homepage",name:"Microsoft Edge — Configure Home Page URL",desc:"Sets the home page URL for Microsoft Edge. Users cannot change this when set via policy.",icon:"🌐",cats:["Microsoft Edge"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"Computer Configuration > Administrative Templates > Microsoft Edge",policy:"Configure the home page URL",admx:"MSEdge.admx",ns:"Microsoft.Policies.Edge"},
+    admx:{name:"HomepageLocation",file:"MSEdge.admx",cat:"Startup",regKey:"HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge",val:"HomepageLocation",type:"REG_SZ"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Policies\\Microsoft\\Edge",val:"HomepageLocation",type:"REG_SZ",data:"https://your-intranet.com",note:"HomepageIsNewTabPage=0 to disable NTP; RestoreOnStartup=4 for homepage on launch"},
+    intune:[{cat:"Microsoft Edge",name:"Configure the home page URL",defId:"device_vendor_msft_policy_config_microsoft_edge~policy~microsoft_edge~startup_homepagelocation",oma:"./Device/Vendor/MSFT/Policy/Config/Microsoft_Edge~Policy~microsoft_edge~Startup/HomepageLocation",dtype:"String (ADMX Ingestion)",vals:[{v:"<enabled/><data id=\"HomepageLocation\" value=\"https://your-url.com\"/>",l:"Custom URL"}],rec:"<enabled/><data id=\"HomepageLocation\" value=\"https://your-url.com\"/>",json:'"settingDefinitionId": "device_vendor_msft_policy_config_microsoft_edge~policy~microsoft_edge~startup_homepagelocation",\n"simpleSettingValue": { "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue", "value": "<enabled/><data id=\\\"HomepageLocation\\\" value=\\\"https://your-url.com\\\"/>" }'}]},
+
+  {id:"screensaver_password",name:"Screen Saver — Password Required on Resume",desc:"Requires password when resuming from screen saver. Prevents unauthorized access when device is left unattended.",icon:"🔐",cats:["Experience","Personalization"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"User Configuration > Administrative Templates > Control Panel > Personalization",policy:"Password protect the screen saver",admx:"ControlPanelDisplay.admx",ns:"Microsoft.Policies.ControlPanelDisplay"},
+    admx:{name:"ScreenSaverIsSecure",file:"ControlPanelDisplay.admx",cat:"Personalization",regKey:"HKCU\\Software\\Policies\\Microsoft\\Windows\\Control Panel\\Desktop",val:"ScreenSaverIsSecure",type:"REG_SZ"},
+    reg:{hive:"HKCU",key:"Software\\Policies\\Microsoft\\Windows\\Control Panel\\Desktop",val:"ScreenSaverIsSecure",type:"REG_SZ",data:"1 = Required; 0 = Not required",note:"ScreenSaveActive=1 to enable; ScreenSaveTimeOut=seconds"},
+    intune:[{cat:"Experience",name:"Prevent enabling lock screen camera",defId:"device_vendor_msft_policy_config_devicelock_preventlockscreencameraonawake",oma:"./Device/Vendor/MSFT/Policy/Config/DeviceLock/PreventLockScreenCameraOnAwake",dtype:"Integer",vals:[{v:"1",l:"Enabled (no camera on lock screen)"},{v:"0",l:"Disabled"}],rec:"1",json:'"settingDefinitionId": "device_vendor_msft_policy_config_devicelock_preventlockscreencameraonawake",\n"choiceSettingValue": { "value": "...preventlockscreencameraonawake_1" }'}]},
+
+  {id:"credential_guard",name:"Credential Guard — Virtualization-Based Security",desc:"Enables Windows Defender Credential Guard to protect credentials using VBS. Prevents Pass-the-Hash and credential theft attacks.",icon:"🏰",cats:["Device Guard","Virtualization Based Technology"],plat:"windows",methods:["intune","gpo","registry","admx"],
+    gpo:{path:"Computer Configuration > Administrative Templates > System > Device Guard",policy:"Turn On Virtualization Based Security",admx:"DeviceGuard.admx",ns:"Microsoft.Policies.DeviceGuard"},
+    admx:{name:"EnableVirtualizationBasedSecurity",file:"DeviceGuard.admx",cat:"DeviceGuard",regKey:"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeviceGuard",val:"LsaCfgFlags",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SOFTWARE\\Policies\\Microsoft\\Windows\\DeviceGuard",val:"LsaCfgFlags",type:"REG_DWORD",data:"0=Disabled; 1=Enabled with UEFI lock; 2=Enabled without lock",note:"EnableVirtualizationBasedSecurity=1 required; RequirePlatformSecurityFeatures=3 (Secure Boot + DMA)"},
+    intune:[{cat:"Device Guard",name:"Credential Guard",defId:"device_vendor_msft_policy_config_deviceguard_lsacfgflags",oma:"./Device/Vendor/MSFT/Policy/Config/DeviceGuard/LsaCfgFlags",dtype:"Integer",vals:[{v:"0",l:"Disabled"},{v:"1",l:"Enabled with UEFI lock"},{v:"2",l:"Enabled without UEFI lock"}],rec:"1",json:'"settingDefinitionId": "device_vendor_msft_policy_config_deviceguard_lsacfgflags",\n"choiceSettingValue": { "value": "device_vendor_msft_policy_config_deviceguard_lsacfgflags_1" }'}]},
+
+  {id:"wdac_appcontrol",name:"App Control for Business (WDAC) — Base Policy",desc:"Windows Defender Application Control policy enforcement mode. Controls which applications are allowed to run on endpoints.",icon:"🚫",cats:["App Control for Business"],plat:"windows",methods:["intune","gpo","registry"],
+    gpo:{path:"Computer Configuration > Windows Settings > Security Settings > Application Control Policies",policy:"Windows Defender Application Control",admx:"AppLocker.admx",ns:"N/A — configured via PowerShell/XML policy"},
+    admx:{name:"N/A",file:"N/A — deploy XML policy via Intune or MDM",cat:"ApplicationControl",regKey:"HKLM\\SYSTEM\\CurrentControlSet\\Control\\CI\\Policy",val:"VerifiedAndReputablePolicyState",type:"REG_DWORD"},
+    reg:{hive:"HKLM",key:"SYSTEM\\CurrentControlSet\\Control\\CI\\Policy",val:"VerifiedAndReputablePolicyState",type:"REG_DWORD",data:"0=Disabled; 1=Audit mode; 2=Enforced",note:"Policy deployed as .cip binary file via MDM or GPO"},
+    intune:[{cat:"App Control for Business",name:"Allowed integrity level for apps",defId:"device_vendor_msft_applicationcontrol_policies_{policyguid}_policytypeoptions",oma:"./Vendor/MSFT/ApplicationControl/Policies/{PolicyGUID}/PolicyTypeOptions",dtype:"String (XML Policy)",vals:[{v:"Enforce",l:"Enforcement mode"},{v:"Audit",l:"Audit mode"}],rec:"Audit → Enforce",json:'"settingDefinitionId": "device_vendor_msft_applicationcontrol_policies_{policyguid}_policytypeoptions"\n// Deploy binary policy via OMA-URI with base64-encoded .cip file'}]}
+];
+
+// ===== STATE =====
+let filter = "all";
+let msalApp = null;
+let graphToken = null;
+let graphUser = null;
+let searchTimer = null;
+let graphCache = {};
+
+// ===== MSAL AUTH =====
+function getMsalConfig() {
+  const clientId = document.getElementById("clientIdInput").value.trim();
+  if (!clientId) return null;
+  return {
+    auth: {
+      clientId,
+      authority: "https://login.microsoftonline.com/common",
+      redirectUri: window.location.origin + window.location.pathname
+    },
+    cache: { cacheLocation: "sessionStorage" }
+  };
+}
+
+async function handleAuth() {
+  if (graphToken) {
+    // Sign out
+    graphToken = null; graphUser = null; msalApp = null;
+    updateAuthUI(false);
+    return;
+  }
+  const cfg = getMsalConfig();
+  if (!cfg) {
+    alert("Please enter your Azure App (client) ID in the field above.\n\nSee the About tab for setup instructions.");
+    return;
+  }
+  try {
+    setAuthLoading(true);
+    msalApp = new msal.PublicClientApplication(cfg);
+    await msalApp.initialize();
+    let resp;
+    try {
+      resp = await msalApp.loginPopup({ scopes: ["DeviceManagementConfiguration.Read.All"] });
+    } catch(e) {
+      // Try redirect fallback
+      console.warn("Popup blocked, trying redirect:", e);
+      await msalApp.loginRedirect({ scopes: ["DeviceManagementConfiguration.Read.All"] });
+      return;
+    }
+    const tokenResp = await msalApp.acquireTokenSilent({
+      scopes: ["DeviceManagementConfiguration.Read.All"],
+      account: resp.account
+    });
+    graphToken = tokenResp.accessToken;
+    graphUser = resp.account.username;
+    updateAuthUI(true);
+    document.getElementById("livePillText").textContent = "Graph API";
+  } catch(e) {
+    console.error("Auth error:", e);
+    alert("Authentication failed: " + (e.message || e));
+    updateAuthUI(false);
+  } finally {
+    setAuthLoading(false);
+  }
+}
+
+function setAuthLoading(v) {
+  document.getElementById("authDot").className = "auth-dot" + (v ? " loading" : "");
+  document.getElementById("authBtn").textContent = v ? "Connecting…" : (graphToken ? "Disconnect" : "Connect to Graph");
+  document.getElementById("authBtn").disabled = v;
+}
+
+function updateAuthUI(connected) {
+  const dot = document.getElementById("authDot");
+  const label = document.getElementById("authLabel");
+  const btn = document.getElementById("authBtn");
+  const pill = document.getElementById("livePill");
+  dot.className = "auth-dot" + (connected ? " connected" : "");
+  label.innerHTML = connected
+    ? `<span class="auth-label">Connected as</span> <span class="auth-user">${esc(graphUser)}</span>`
+    : `<span class="auth-label">Not connected to Microsoft Graph</span>`;
+  btn.textContent = connected ? "Disconnect" : "Connect to Graph";
+  btn.className = "auth-btn" + (connected ? " danger" : "");
+  if (connected) {
+    pill.style.background = "rgba(0,135,91,0.12)";
+    pill.style.borderColor = "rgba(0,135,91,0.25)";
+    pill.style.color = "var(--h-tag-intune)";
+    document.querySelector(".live-dot").style.background = "#2ECC71";
+  } else {
+    pill.style.cssText = "";
+    document.getElementById("livePillText").textContent = "Local DB";
+    document.querySelector(".live-dot").style.background = "";
+  }
+}
+
+// ===== GRAPH SEARCH =====
+async function graphSearch(query) {
+  if (!graphToken) return [];
+  const cacheKey = query.toLowerCase().trim();
+  if (graphCache[cacheKey]) return graphCache[cacheKey];
+  try {
+    const url = `https://graph.microsoft.com/beta/deviceManagement/configurationSettings?$filter=contains(keywords,'${encodeURIComponent(query)}')&$select=id,name,description,keywords,settingDefinitionId,applicability,defaultValue,categoryId&$top=25`;
+    const r = await fetch(url, { headers: { Authorization: "Bearer " + graphToken, ConsistencyLevel: "eventual" } });
+    if (!r.ok) { console.warn("Graph error", r.status); return []; }
+    const data = await r.json();
+    const results = (data.value || []).map(s => graphSettingToCard(s));
+    graphCache[cacheKey] = results;
+    return results;
+  } catch(e) { console.error("Graph fetch error:", e); return []; }
+}
+
+function graphSettingToCard(s) {
+  const defId = s.settingDefinitionId || s.id || "";
+  const plat = (s.applicability?.platform || "windows").toLowerCase();
+  return {
+    id: "graph_" + defId,
+    name: s.name || defId,
+    desc: s.description || "No description available.",
+    icon: "⚙️",
+    cats: [s.categoryId || "Settings Catalog"],
+    plat,
+    methods: ["intune"],
+    _source: "graph",
+    intune: [{
+      cat: "Settings Catalog (Live)",
+      name: s.name || defId,
+      defId,
+      oma: defId ? "./Device/Vendor/MSFT/" + defId.replace(/device_vendor_msft_/i,"").split("_").join("/") : "",
+      dtype: s.defaultValue ? (typeof s.defaultValue === "number" ? "Integer" : "String") : "See definition",
+      vals: [],
+      rec: s.defaultValue != null ? String(s.defaultValue) : "See Intune portal",
+      json: `"settingDefinitionId": "${defId}"\n// Configure value based on setting type in Intune portal`
+    }]
+  };
+}
+
+// ===== SEARCH =====
+document.getElementById("searchInput").addEventListener("input", e => {
+  clearTimeout(searchTimer);
+  const q = e.target.value.trim();
+  if (!q) { showEmpty(); return; }
+  searchTimer = setTimeout(() => runSearch(q), q.length > 3 && graphToken ? 600 : 300);
+});
+document.getElementById("searchInput").addEventListener("keydown", e => { if(e.key==="Escape"){e.target.value="";showEmpty();}});
+
+async function runSearch(q) {
+  if (!q || q.length < 2) return;
+  showLoader(true, graphToken ? "Querying Microsoft Graph…" : "Searching local database…");
+  
+  const localHits = searchLocal(q);
+  let graphHits = [];
+  if (graphToken && q.length >= 3) {
+    graphHits = await graphSearch(q);
+  }
+
+  // Merge: local first, then graph results not duplicated
+  const seen = new Set(localHits.map(x=>x.name.toLowerCase()));
+  const merged = [...localHits, ...graphHits.filter(g => !seen.has(g.name.toLowerCase()))];
+
+  showLoader(false);
+  renderResults(merged, q);
+}
+
+function searchLocal(q) {
+  const terms = q.toLowerCase().split(/[,\s]+/).filter(t=>t.length>1);
+  return LOCAL_DB.filter(s => {
+    if (filter==="intune" && !s.methods.includes("intune")) return false;
+    if (filter==="gpo" && !s.methods.includes("gpo")) return false;
+    if (filter==="registry" && !s.methods.includes("registry")) return false;
+    if (filter==="windows" && s.plat!=="windows") return false;
+    if (filter==="macos" && s.plat!=="macos") return false;
+    const hay = [s.name,s.desc,...(s.cats||[]),s.reg?.key||"",s.reg?.val||"",s.gpo?.path||"",s.gpo?.policy||"",...(s.intune||[]).map(i=>i.defId+" "+i.name),s.admx?.name||"",s.admx?.regKey||""].join(" ").toLowerCase();
+    return terms.every(t=>hay.includes(t));
+  });
+}
+
+// ===== RENDER =====
+function renderResults(results, q) {
+  const terms = q.toLowerCase().split(/[,\s]+/).filter(t=>t.length>1);
+  const grid = document.getElementById("resultsGrid");
+  document.getElementById("resultCount").innerHTML = results.length===0
+    ? `<span style="color:var(--h-red)">No results for <strong>"${esc(q)}"</strong></span>`
+    : `<strong>${results.length}</strong> setting${results.length!==1?"s":""} for <strong>"${esc(q)}"</strong>`;
+  if (!results.length) {
+    grid.innerHTML = `<div class="empty"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><h3>No settings found</h3><p>Try different keywords, a registry path, or an OMA-URI fragment</p></div>`;
+    return;
+  }
+  grid.innerHTML = results.map(s=>cardHTML(s,terms)).join("");
+}
+
+function cardHTML(s, terms) {
+  const methodTags = s.methods.map(m=>{
+    const map={intune:["tag-intune","Intune"],gpo:["tag-gpo","GPO"],registry:["tag-reg","Registry"],admx:["tag-admx","ADMX"],csp:["tag-csp","CSP"]};
+    const [cls,lbl]=map[m]||["tag-plat",m.toUpperCase()];
+    return `<span class="tag ${cls}">${lbl}</span>`;
+  }).join("");
+  const srcBadge = s._source==="graph" ? `<span class="source-badge src-graph">● Live Graph</span>` : `<span class="source-badge src-local">● Local</span>`;
+  return `<div class="result-card" id="card-${s.id}">
+    <div class="card-header" onclick="toggleCard('${s.id}')">
+      <div class="card-icon">${s.icon}</div>
+      <div class="card-info">
+        <div class="card-name">${hl(s.name,terms)}</div>
+        <div class="card-desc">${hl(s.desc,terms)}</div>
+        <div class="card-meta">${methodTags}<span class="tag tag-plat">${s.plat==="windows"?"Windows":s.plat}</span>${srcBadge}</div>
+      </div>
+      <button class="expand-btn">Details<svg class="expand-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+    <div class="detail-panel">${detailHTML(s)}</div>
+  </div>`;
+}
+
+function detailHTML(s) {
+  let tabs="",panes="";
+  let first=true;
+  if (s.intune?.length) {
+    tabs+=`<div class="dtab${first?" active":""}" onclick="swTab(this,'ti-${s.id}')"><span class="dtab-pip" style="background:var(--h-tag-intune)"></span>Intune Settings Catalog</div>`;
+    panes+=`<div class="tab-pane${first?" active":""}" id="ti-${s.id}">${intunePane(s)}</div>`;
+    first=false;
+  }
+  if (s.gpo) {
+    tabs+=`<div class="dtab${first?" active":""}" onclick="swTab(this,'tg-${s.id}')"><span class="dtab-pip" style="background:var(--h-tag-gpo)"></span>GPO / ADMX</div>`;
+    panes+=`<div class="tab-pane${first?" active":""}" id="tg-${s.id}">${gpoPane(s)}</div>`;
+    first=false;
+  }
+  if (s.reg) {
+    tabs+=`<div class="dtab${first?" active":""}" onclick="swTab(this,'tr-${s.id}')"><span class="dtab-pip" style="background:var(--h-tag-reg)"></span>Registry</div>`;
+    panes+=`<div class="tab-pane${first?" active":""}" id="tr-${s.id}">${regPane(s)}</div>`;
+  }
+  return `<div class="detail-tabs">${tabs}</div><div class="detail-content">${panes}</div>`;
+}
+
+function intunePane(s) {
+  let h="";
+  s.intune.forEach(i=>{
+    h+=`<div class="config-block">
+      <div class="config-block-title">${esc(i.name)}<span class="def-id">${esc(i.defId)}</span><button class="cbtn" onclick="cp(${JSON.stringify(i.defId)},this)">Copy ID</button></div>
+      <table class="ctable">
+        <tr><td>Category</td><td>${esc(i.cat)}</td></tr>
+        <tr><td>Setting Definition ID</td><td><span class="mono">${esc(i.defId)}</span><button class="cbtn" onclick="cp(${JSON.stringify(i.defId)},this)">Copy</button></td></tr>
+        <tr><td>OMA-URI</td><td><span class="mono">${esc(i.oma)}</span><button class="cbtn" onclick="cp(${JSON.stringify(i.oma)},this)">Copy</button></td></tr>
+        <tr><td>Data type</td><td>${esc(i.dtype)}</td></tr>
+        ${i.vals.length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v)}</span> <span style="color:var(--h-text3)">${esc(v.l)}</span>`).join("<br>")}</td></tr>`:""}
+        <tr><td>Recommended</td><td><span class="mono">${esc(i.rec)}</span></td></tr>
+      </table>
+      <div style="margin-top:10px"><div style="font-size:10.5px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">JSON Fragment (Graph API)</div>
+      <pre class="json-pre">${esc(i.json)}</pre>
+      <button class="cbtn" style="margin-top:5px" onclick="cp(${JSON.stringify(i.json.replace(/\\n/g,"\n"))},this)">Copy JSON</button></div>
+    </div>`;
+  });
+  h+=`<div class="copy-row"><button class="cta-btn intune" onclick="cpAllIntune('${s.id}',this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy All Intune Config</button></div>`;
+  return h;
+}
+
+function gpoPane(s) {
+  const g=s.gpo, a=s.admx;
+  return `<div class="config-block">
+    <div class="config-block-title"><span class="tag tag-gpo">GPO</span> Group Policy Object Path</div>
+    <table class="ctable">
+      <tr><td>Policy path</td><td>${esc(g.path)}</td></tr>
+      <tr><td>Policy name</td><td>${esc(g.policy)}</td></tr>
+      <tr><td>ADMX file</td><td><span class="mono">${esc(g.admx)}</span></td></tr>
+      <tr><td>Namespace</td><td><span class="mono">${esc(g.ns)}</span></td></tr>
+    </table>
+  </div>
+  ${a?`<div class="config-block">
+    <div class="config-block-title"><span class="tag tag-admx">ADMX</span> Administrative Template Definition</div>
+    <table class="ctable">
+      <tr><td>Policy name</td><td><span class="mono">${esc(a.name)}</span><button class="cbtn" onclick="cp(${JSON.stringify(a.name)},this)">Copy</button></td></tr>
+      <tr><td>ADMX file</td><td><span class="mono">${esc(a.file)}</span></td></tr>
+      <tr><td>Category</td><td>${esc(a.cat)}</td></tr>
+      <tr><td>Registry key</td><td><span class="mono">${esc(a.regKey)}</span><button class="cbtn" onclick="cp(${JSON.stringify(a.regKey)},this)">Copy</button></td></tr>
+      <tr><td>Value name</td><td><span class="mono">${esc(a.val)}</span></td></tr>
+      <tr><td>Value type</td><td><span class="mono">${esc(a.type)}</span></td></tr>
+    </table>
+  </div>`:""}
+  <div class="copy-row">
+    <button class="cta-btn gpo" onclick="cp(${JSON.stringify(g.path)},this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy GPO Path</button>
+    ${a?`<button class="cta-btn gpo" onclick="cp(${JSON.stringify(a.regKey)},this)">Copy Registry Key</button>`:""}
+  </div>`;
+}
+
+function regPane(s) {
+  const r=s.reg;
+  const fullKey=`${r.hive}\\${r.key}`;
+  const regSnippet=`Windows Registry Editor Version 5.00\n\n[${r.hive}\\${r.key}]\n"${r.val}"=${r.type==="REG_DWORD"?"dword:00000001":r.type==="REG_SZ"?`"value"`:"hex:01"}`;
+  return `<div class="config-block">
+    <div class="config-block-title"><span class="tag tag-reg">REG</span> Registry Configuration</div>
+    <table class="ctable">
+      <tr><td>Hive</td><td><span class="mono">${esc(r.hive)}</span></td></tr>
+      <tr><td>Key path</td><td><span class="mono">${esc(r.key)}</span><button class="cbtn" onclick="cp(${JSON.stringify(fullKey)},this)">Copy Full</button></td></tr>
+      <tr><td>Value name</td><td><span class="mono">${esc(r.val)}</span></td></tr>
+      <tr><td>Type</td><td><span class="mono">${esc(r.type)}</span></td></tr>
+      <tr><td>Data</td><td>${esc(r.data)}</td></tr>
+      ${r.note?`<tr><td>Notes</td><td style="color:var(--h-text3);font-size:11.5px">${esc(r.note)}</td></tr>`:""}
+    </table>
+  </div>
+  <div class="copy-row">
+    <button class="cta-btn reg" onclick="cp(${JSON.stringify(regSnippet)},this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy .REG snippet</button>
+    <button class="cta-btn reg" onclick="cp(${JSON.stringify(fullKey)},this)">Copy Key Path</button>
+  </div>`;
+}
+
+// ===== UI HELPERS =====
+function toggleCard(id) { document.getElementById("card-"+id).classList.toggle("expanded"); }
+function swTab(el, tabId) {
+  const panel=el.closest(".detail-panel");
+  panel.querySelectorAll(".dtab").forEach(t=>t.classList.remove("active"));
+  panel.querySelectorAll(".tab-pane").forEach(p=>p.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById(tabId).classList.add("active");
+}
+function setChip(f, el) {
+  filter=f;
+  document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));
+  el.classList.add("on");
+  const q=document.getElementById("searchInput").value.trim();
+  if(q) runSearch(q);
+}
+function showLoader(v, txt) {
+  const l=document.getElementById("loader");
+  l.classList.toggle("show",v);
+  if(txt) document.getElementById("loaderText").textContent=txt;
+}
+function showEmpty() {
+  document.getElementById("resultCount").textContent="Enter a search term to explore settings";
+  document.getElementById("resultsGrid").innerHTML=`<div class="empty"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v3l2 2"/></svg><h3>Search across all configuration methods</h3><p>Try "BitLocker", "Windows Update", "SmartScreen", "UAC", "LAPS",<br>or paste a registry path like <code style="font-size:11px">SOFTWARE\\Policies\\Microsoft</code></p></div>`;
+}
+function showView(v, btn) {
+  document.getElementById("searchView").style.display=v==="search"?"":"none";
+  document.getElementById("mainView").style.display=v==="search"?"":"none";
+  document.getElementById("graphView").style.display=v==="graph"?"block":"none";
+  document.getElementById("aboutView").style.display=v==="about"?"block":"none";
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+}
+function cp(text, btn) {
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent="✓ Copied";btn.classList.add("ok");
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove("ok");},1500);
+  });
+}
+function cpAllIntune(id, btn) {
+  const s=LOCAL_DB.find(x=>x.id===id)||{intune:[]};
+  const out=s.intune.map(i=>`// ${i.name}\n// Definition ID: ${i.defId}\n// OMA-URI: ${i.oma}\n{\n  ${i.json.replace(/\\n/g,"\n  ")}\n}`).join("\n\n");
+  cp(out,btn);
+}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function hl(text,terms){let t=esc(text);terms.forEach(term=>{const re=new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")})`, "gi");t=t.replace(re,'<span class="highlight">$1</span>');});return t;}
+
+// ===== INIT =====
+document.getElementById("lastUpdated").textContent="Last updated: "+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+
+// Handle MSAL redirect response
+(async () => {
+  const clientId = new URLSearchParams(window.location.search).get("clientId");
+  if (clientId) document.getElementById("clientIdInput").value = clientId;
+  
+  // Check for redirect response
+  if (document.referrer && window.location.hash.includes("code=")) {
+    const savedClientId = sessionStorage.getItem("helient_clientId");
+    if (savedClientId && msal) {
+      try {
+        const cfg = { auth: { clientId: savedClientId, authority: "https://login.microsoftonline.com/common", redirectUri: window.location.origin + window.location.pathname }, cache: { cacheLocation: "sessionStorage" } };
+        msalApp = new msal.PublicClientApplication(cfg);
+        await msalApp.initialize();
+        const resp = await msalApp.handleRedirectPromise();
+        if (resp) {
+          const tokenResp = await msalApp.acquireTokenSilent({ scopes: ["DeviceManagementConfiguration.Read.All"], account: resp.account });
+          graphToken = tokenResp.accessToken;
+          graphUser = resp.account.username;
+          document.getElementById("clientIdInput").value = savedClientId;
+          updateAuthUI(true);
+        }
+      } catch(e) { console.error("Redirect handling error:", e); }
+    }
+  }
+})();
+
+document.getElementById("clientIdInput").addEventListener("change", e => {
+  sessionStorage.setItem("helient_clientId", e.target.value.trim());
+});
+</script>
+</body>
+</html>
