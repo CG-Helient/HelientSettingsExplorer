@@ -178,6 +178,47 @@ footer img{height:16px;vertical-align:middle;opacity:0.5;margin-right:5px}
 .src-graph{background:#E0F7F0;color:#006B5B}
 
 @media(max-width:640px){.main,.alt-view{padding:1rem}.hero{padding:1.5rem 1rem 1rem}.header{padding:0 1rem}.ctable td:first-child{width:110px}.client-id-wrap{display:none}}
+
+/* ── SETTINGS MODAL ── */
+.settings-overlay{position:fixed;inset:0;background:rgba(10,20,50,0.6);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.settings-overlay.open{opacity:1;pointer-events:all}
+.settings-modal{background:#fff;border-radius:14px;width:100%;max-width:520px;border:1px solid var(--h-border);box-shadow:0 20px 60px rgba(26,45,115,0.18);transform:translateY(12px);transition:transform 0.2s;overflow:hidden}
+.settings-overlay.open .settings-modal{transform:translateY(0)}
+.settings-modal-header{background:var(--h-navy-deeper);padding:16px 20px;display:flex;align-items:center;gap:10px}
+.settings-modal-header img{width:24px;height:24px;object-fit:contain;opacity:0.9}
+.settings-modal-header h3{font-size:14px;font-weight:700;color:#fff;flex:1}
+.settings-modal-header .close-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:4px 10px;color:rgba(255,255,255,0.6);cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.15s}
+.settings-modal-header .close-btn:hover{background:rgba(255,255,255,0.15);color:#fff}
+.settings-body{padding:20px}
+.settings-field{margin-bottom:16px}
+.settings-label{font-size:11.5px;font-weight:700;color:var(--h-text2);margin-bottom:5px;display:flex;align-items:center;gap:6px;letter-spacing:0.03em;text-transform:uppercase}
+.settings-label .badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase}
+.badge-req{background:var(--h-tag-gpo-bg);color:var(--h-tag-gpo)}
+.badge-opt{background:var(--h-surface2);color:var(--h-text3);border:1px solid var(--h-border)}
+.settings-input{width:100%;padding:9px 12px;border:1.5px solid var(--h-border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--h-text);outline:none;transition:border-color 0.15s;background:#fff}
+.settings-input:focus{border-color:var(--h-blue)}
+.settings-input::placeholder{color:var(--h-text3)}
+.settings-hint{font-size:11px;color:var(--h-text3);margin-top:4px;line-height:1.5}
+.settings-hint a{color:var(--h-blue);text-decoration:none}
+.settings-hint a:hover{text-decoration:underline}
+.settings-divider{border:none;border-top:1px solid var(--h-border);margin:16px 0}
+.settings-footer{display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid var(--h-border);background:var(--h-surface)}
+.settings-save-btn{padding:8px 20px;background:var(--h-navy);border:none;border-radius:7px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;display:flex;align-items:center;gap:6px}
+.settings-save-btn:hover{background:var(--h-navy-dark)}
+.settings-save-btn.saved{background:var(--h-success)}
+.settings-clear-btn{padding:8px 14px;background:transparent;border:1px solid var(--h-border);border-radius:7px;color:var(--h-text3);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s}
+.settings-clear-btn:hover{border-color:var(--h-red);color:var(--h-red)}
+.settings-status{font-size:11.5px;margin-left:auto;display:flex;align-items:center;gap:5px}
+.settings-status.ok{color:var(--h-success)}
+.settings-status.err{color:var(--h-red)}
+
+/* Gear btn in header */
+.gear-btn{padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;cursor:pointer;color:rgba(255,255,255,0.55);transition:all 0.15s;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;font-family:inherit}
+.gear-btn:hover{background:rgba(255,255,255,0.12);color:#fff;border-color:rgba(33,151,212,0.4)}
+.gear-btn.configured{border-color:rgba(33,151,212,0.35);color:var(--h-blue-light)}
+
+/* Slim auth bar when configured */
+.auth-bar-configured .client-id-wrap{display:none}
 </style>
 </head>
 <body>
@@ -197,16 +238,59 @@ footer img{height:16px;vertical-align:middle;opacity:0.5;margin-right:5px}
 </header>
 
 <!-- AUTH BAR -->
-<div class="auth-bar">
+<div class="auth-bar" id="authBar">
   <div class="auth-status">
     <span class="auth-dot" id="authDot"></span>
-    <span class="auth-label" id="authLabel">Not connected to Microsoft Graph</span>
+    <span id="authLabel">Not connected to Microsoft Graph</span>
   </div>
-  <div class="client-id-wrap" id="clientIdWrap">
-    <input type="text" id="clientIdInput" placeholder="Azure App Client ID (optional — for live Graph API)" autocomplete="off">
+  <span id="msalStatus" style="font-size:11px;color:rgba(255,255,255,0.4);margin-left:8px"></span>
+  <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+    <button class="auth-btn" id="authBtn" onclick="handleAuth()">Connect to Graph</button>
+    <button class="gear-btn" id="gearBtn" onclick="openSettings()" title="Configure authentication settings">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
   </div>
-  <span id="msalStatus" style="font-size:11px;color:rgba(255,255,255,0.4);margin-left:6px"></span>
-  <button class="auth-btn" id="authBtn" onclick="handleAuth()">Connect to Graph</button>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="settings-overlay" id="settingsOverlay" onclick="overlayClick(event)">
+  <div class="settings-modal">
+    <div class="settings-modal-header">
+      <img src="data:image/png;base64,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" alt="Helient">
+      <h3>Authentication Settings</h3>
+      <button class="close-btn" onclick="closeSettings()">✕ Close</button>
+    </div>
+    <div class="settings-body">
+      <div class="settings-field">
+        <div class="settings-label">Application (Client) ID <span class="badge badge-req">Required</span></div>
+        <input class="settings-input" id="s_clientId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+        <div class="settings-hint">From your Azure App Registration → Overview. <a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps" target="_blank">Open Azure Portal ↗</a></div>
+      </div>
+      <div class="settings-field">
+        <div class="settings-label">Tenant ID <span class="badge badge-opt">Optional</span></div>
+        <input class="settings-input" id="s_tenantId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  (leave blank for multi-tenant)">
+        <div class="settings-hint">Your Azure AD tenant ID. Leave blank to allow any Microsoft account (common endpoint). Find it in Azure AD → Overview.</div>
+      </div>
+      <hr class="settings-divider">
+      <div class="settings-field" style="margin-bottom:0">
+        <div class="settings-label">Redirect URI for App Registration</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input class="settings-input" id="s_redirectUri" readonly style="background:var(--h-surface);font-size:12px;font-family:monospace;color:var(--h-text2);cursor:text" value="">
+          <button class="cbtn" style="flex-shrink:0;padding:6px 10px" onclick="copyRedirectUri(this)">Copy</button>
+        </div>
+        <div class="settings-hint">Add this exact URL as a <strong>Single-page application (SPA)</strong> redirect URI in your app registration. <a href="https://aka.ms/msaljs/browser-errors" target="_blank">MSAL docs ↗</a></div>
+      </div>
+    </div>
+    <div class="settings-footer">
+      <button class="settings-save-btn" id="saveBtn" onclick="saveSettings()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save & Connect
+      </button>
+      <button class="settings-clear-btn" onclick="clearSettings()">Clear Saved</button>
+      <span class="settings-status" id="settingsStatus"></span>
+    </div>
+  </div>
 </div>
 
 <!-- HERO -->
@@ -496,50 +580,73 @@ let searchTimer = null;
 let graphCache = {};
 
 // ===== MSAL AUTH =====
-function getMsalConfig() {
-  const clientId = document.getElementById("clientIdInput").value.trim();
-  if (!clientId) return null;
-  return {
+// Key: msalApp must be initialized ONCE and reused. handleRedirectPromise()
+// must be called on every page load to clear any in-progress interaction locks.
+
+const MSAL_SCOPES = ["DeviceManagementConfiguration.Read.All"];
+
+// getMsalConfig() defined in INIT block below
+
+// Called once on page load — MUST run before any interactive auth
+// This clears the "interaction_in_progress" lock left by a previous attempt
+async function initMsal() {
+  const MSAL = window.__MSAL || window.msal || window.msalBrowser;
+  if (!MSAL) return;
+  const savedClientId = localStorage.getItem("helient_clientId");
+  if (!savedClientId) return;
+
+  const cfg = {
     auth: {
-      clientId,
+      clientId: savedClientId,
       authority: "https://login.microsoftonline.com/common",
       redirectUri: window.location.origin + window.location.pathname
     },
-    cache: { cacheLocation: "sessionStorage" }
+    cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: true }
   };
-}
 
-async function handleAuth() {
-  if (graphToken) {
-    graphToken = null; graphUser = null; msalApp = null;
-    updateAuthUI(false);
-    return;
-  }
-  const cfg = getMsalConfig();
-  if (!cfg) {
-    alert("Please enter your Azure App (client) ID in the field above.\n\nSee the About tab for setup instructions.");
-    return;
-  }
-  const MSAL = window.__MSAL || window.msal || window.msalBrowser;
-  if (!MSAL || !MSAL.PublicClientApplication) {
-    alert("MSAL library has not loaded yet.\n\nPossible causes:\n\u2022 Ad blocker or firewall blocking the CDN\n\u2022 Page still loading\n\nFix: disable ad blockers, reload the page, then try again.\nFor production use, host on GitHub Pages or Netlify where CDNs load reliably.");
-    return;
-  }
   try {
-    setAuthLoading(true);
     msalApp = new MSAL.PublicClientApplication(cfg);
     await msalApp.initialize();
-    let resp;
-    try {
-      resp = await msalApp.loginPopup({ scopes: ["DeviceManagementConfiguration.Read.All"] });
-    } catch(e) {
-      // Try redirect fallback
-      console.warn("Popup blocked, trying redirect:", e);
-      await msalApp.loginRedirect({ scopes: ["DeviceManagementConfiguration.Read.All"] });
+
+    // This MUST be called on every page load to handle redirect responses
+    // and to clear any stale interaction_in_progress locks
+    const redirectResp = await msalApp.handleRedirectPromise();
+    if (redirectResp) {
+      // Came back from a redirect login — complete the flow
+      await completeAuth(redirectResp);
       return;
     }
+
+    // No redirect response — check if already have a cached account
+    const accounts = msalApp.getAllAccounts();
+    if (accounts.length > 0) {
+      try {
+        const tokenResp = await msalApp.acquireTokenSilent({
+          scopes: MSAL_SCOPES,
+          account: accounts[0]
+        });
+        graphToken = tokenResp.accessToken;
+        graphUser = accounts[0].username;
+        updateAuthUI(true);
+        document.getElementById("livePillText").textContent = "Graph API";
+      } catch(silentErr) {
+        // Silent token refresh failed — user will need to re-authenticate
+        console.log("Silent token failed, user must re-auth:", silentErr.message);
+      }
+    }
+  } catch(e) {
+    // Swallow errors in init — don't block the page
+    console.warn("MSAL init error:", e.message);
+    // Clear any stale MSAL session state that might cause future lockouts
+    clearMsalState();
+  }
+}
+
+async function completeAuth(resp) {
+  if (!resp || !resp.account) return;
+  try {
     const tokenResp = await msalApp.acquireTokenSilent({
-      scopes: ["DeviceManagementConfiguration.Read.All"],
+      scopes: MSAL_SCOPES,
       account: resp.account
     });
     graphToken = tokenResp.accessToken;
@@ -547,9 +654,103 @@ async function handleAuth() {
     updateAuthUI(true);
     document.getElementById("livePillText").textContent = "Graph API";
   } catch(e) {
-    console.error("Auth error:", e);
-    alert("Authentication failed: " + (e.message || e));
+    console.error("Token acquisition after redirect failed:", e);
+  }
+}
+
+function clearMsalState() {
+  // Remove all MSAL-related sessionStorage keys to reset lock state
+  const keysToRemove = [];
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const k = sessionStorage.key(i);
+    if (k && (k.includes("msal.") || k.includes("msal|") || k.startsWith("msal."))) {
+      keysToRemove.push(k);
+    }
+  }
+  keysToRemove.forEach(k => sessionStorage.removeItem(k));
+  console.log("Cleared", keysToRemove.length, "MSAL session keys");
+}
+
+async function handleAuth() {
+  // Disconnect flow
+  if (graphToken) {
+    graphToken = null;
+    graphUser = null;
+    if (msalApp) {
+      try { await msalApp.clearCache(); } catch(e) {}
+    }
+    msalApp = null;
+    clearMsalState();
     updateAuthUI(false);
+    return;
+  }
+
+  const cfg = getMsalConfig();
+  if (!cfg) {
+    alert("Please enter your Azure App (client) ID in the field above.\n\nSee the About tab for setup instructions.");
+    return;
+  }
+
+  const MSAL = window.__MSAL || window.msal || window.msalBrowser;
+  if (!MSAL || !MSAL.PublicClientApplication) {
+    alert("MSAL library has not loaded yet.\n\nPossible causes:\n\u2022 Ad blocker or firewall blocking the CDN\n\u2022 Page still loading\n\nFix: disable ad blockers, reload the page, then try again.");
+    return;
+  }
+
+  try {
+    setAuthLoading(true);
+
+    // If msalApp already exists from initMsal(), reuse it
+    // Otherwise create fresh — but ALWAYS call handleRedirectPromise first
+    if (!msalApp) {
+      msalApp = new MSAL.PublicClientApplication(cfg);
+      await msalApp.initialize();
+      // Clear any leftover lock from a previous failed attempt
+      await msalApp.handleRedirectPromise().catch(() => {});
+    } else {
+      // Clear lock on existing instance too
+      await msalApp.handleRedirectPromise().catch(() => {});
+    }
+
+    // Also clear raw sessionStorage locks just in case
+    for (let i = sessionStorage.length - 1; i >= 0; i--) {
+      const k = sessionStorage.key(i);
+      if (k && k.includes("interaction.status")) sessionStorage.removeItem(k);
+    }
+
+    // Try popup first (best UX), fall back to redirect
+    let resp;
+    try {
+      resp = await msalApp.loginPopup({ scopes: MSAL_SCOPES });
+    } catch(popupErr) {
+      if (popupErr.errorCode === "popup_window_error" || popupErr.errorCode === "empty_window_error") {
+        // Popup blocked — save client ID and use redirect
+        localStorage.setItem("helient_clientId", cfg.auth.clientId);
+        await msalApp.loginRedirect({ scopes: MSAL_SCOPES });
+        return; // Page will reload after redirect
+      }
+      throw popupErr; // Re-throw other errors
+    }
+
+    await completeAuth(resp);
+
+  } catch(e) {
+    console.error("Auth error:", e);
+    // Provide specific guidance for common errors
+    let msg = e.message || String(e);
+    if (msg.includes("interaction_in_progress")) {
+      msg = "A previous sign-in is still in progress.\n\nThe page will now reload to clear this state. Please try signing in again after reload.";
+      clearMsalState();
+      setTimeout(() => location.reload(), 2000);
+    } else if (msg.includes("redirect_uri_mismatch")) {
+      msg = "Redirect URI mismatch.\n\nIn your Azure App Registration, add this exact URI as a redirect URI (type: SPA):\n\n" + window.location.origin + window.location.pathname;
+    } else if (msg.includes("AADSTS50011")) {
+      msg = "Redirect URI not registered.\n\nAdd this URI to your Azure App Registration (SPA type):\n\n" + window.location.origin + window.location.pathname;
+    }
+    alert("Authentication failed: " + msg);
+    updateAuthUI(false);
+    msalApp = null;
+    clearMsalState();
   } finally {
     setAuthLoading(false);
   }
@@ -582,6 +783,7 @@ function updateAuthUI(connected) {
     document.getElementById("livePillText").textContent = "Local DB";
     document.querySelector(".live-dot").style.background = "";
   }
+  refreshGearBtn();
 }
 
 // ===== GRAPH SEARCH =====
@@ -840,40 +1042,152 @@ function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").
 function hl(text,terms){let t=esc(text);terms.forEach(term=>{const re=new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")})`, "gi");t=t.replace(re,'<span class="highlight">$1</span>');});return t;}
 
 // ===== INIT =====
-document.getElementById("lastUpdated").textContent="Last updated: "+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+document.getElementById("lastUpdated").textContent = "Last updated: " + new Date().toLocaleDateString("en-US", {month:"long", day:"numeric", year:"numeric"});
 
-// Handle MSAL redirect response
-(async () => {
-  const clientId = new URLSearchParams(window.location.search).get("clientId");
-  if (clientId) document.getElementById("clientIdInput").value = clientId;
-  
-  // Check for redirect response
-  if (document.referrer && window.location.hash.includes("code=")) {
-    const savedClientId = sessionStorage.getItem("helient_clientId");
-    const msalAvail = window.__MSAL || window.msal || window.msalBrowser;
-    if (savedClientId && msalAvail) {
-      try {
-        const cfg = { auth: { clientId: savedClientId, authority: "https://login.microsoftonline.com/common", redirectUri: window.location.origin + window.location.pathname }, cache: { cacheLocation: "sessionStorage" } };
-        const MSAL2 = window.__MSAL || window.msal || window.msalBrowser;
-        if (!MSAL2) return;
-        msalApp = new MSAL2.PublicClientApplication(cfg);
-        await msalApp.initialize();
-        const resp = await msalApp.handleRedirectPromise();
-        if (resp) {
-          const tokenResp = await msalApp.acquireTokenSilent({ scopes: ["DeviceManagementConfiguration.Read.All"], account: resp.account });
-          graphToken = tokenResp.accessToken;
-          graphUser = resp.account.username;
-          document.getElementById("clientIdInput").value = savedClientId;
-          updateAuthUI(true);
-        }
-      } catch(e) { console.error("Redirect handling error:", e); }
-    }
+// ── Persistent settings helpers ──────────────────────────────────────────
+const STORAGE_KEY = "helient_settings_v1";
+function loadStoredSettings() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch(e) { return {}; }
+}
+function saveStoredSettings(obj) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+}
+
+// ── getMsalConfig reads from localStorage ─────────────────────────────────
+function getMsalConfig() {
+  const stored = loadStoredSettings();
+  const clientId = stored.clientId || localStorage.getItem("helient_clientId") || "";
+  if (!clientId) return null;
+  const tenantId = stored.tenantId || "";
+  return {
+    auth: {
+      clientId,
+      authority: "https://login.microsoftonline.com/" + (tenantId || "common"),
+      redirectUri: window.location.origin + window.location.pathname
+    },
+    cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: true }
+  };
+}
+
+// ── Settings modal logic ──────────────────────────────────────────────────
+function openSettings() {
+  const stored = loadStoredSettings();
+  document.getElementById("s_clientId").value = stored.clientId || "";
+  document.getElementById("s_tenantId").value = stored.tenantId || "";
+  document.getElementById("s_redirectUri").value = window.location.origin + window.location.pathname;
+  document.getElementById("settingsStatus").textContent = "";
+  document.getElementById("settingsStatus").className = "settings-status";
+  document.getElementById("settingsOverlay").classList.add("open");
+}
+
+function closeSettings() {
+  document.getElementById("settingsOverlay").classList.remove("open");
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById("settingsOverlay")) closeSettings();
+}
+
+document.addEventListener("keydown", function(e) { if (e.key === "Escape") closeSettings(); });
+
+async function saveSettings() {
+  const clientId = document.getElementById("s_clientId").value.trim();
+  const tenantId = document.getElementById("s_tenantId").value.trim();
+  const btn = document.getElementById("saveBtn");
+  const status = document.getElementById("settingsStatus");
+  if (!clientId) {
+    status.textContent = "⚠ Application ID is required";
+    status.className = "settings-status err";
+    document.getElementById("s_clientId").focus();
+    return;
   }
-})();
+  const guidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!guidRe.test(clientId)) {
+    status.textContent = "⚠ Client ID must be a valid GUID";
+    status.className = "settings-status err";
+    return;
+  }
+  if (tenantId && !guidRe.test(tenantId)) {
+    status.textContent = "⚠ Tenant ID must be a valid GUID (or leave blank)";
+    status.className = "settings-status err";
+    return;
+  }
+  saveStoredSettings({ clientId, tenantId, savedAt: new Date().toISOString() });
+  localStorage.setItem("helient_clientId", clientId);
+  btn.textContent = "✓ Saved";
+  btn.classList.add("saved");
+  status.textContent = "Settings saved to this browser";
+  status.className = "settings-status ok";
+  setTimeout(async function() {
+    closeSettings();
+    btn.classList.remove("saved");
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save & Connect';
+    await handleAuth();
+  }, 800);
+}
 
-document.getElementById("clientIdInput").addEventListener("change", e => {
-  sessionStorage.setItem("helient_clientId", e.target.value.trim());
-});
+function clearSettings() {
+  if (!confirm("Clear all saved authentication settings?\n\nYou will need to re-enter your Client ID to connect.")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem("helient_clientId");
+  document.getElementById("s_clientId").value = "";
+  document.getElementById("s_tenantId").value = "";
+  const status = document.getElementById("settingsStatus");
+  status.textContent = "✓ Settings cleared";
+  status.className = "settings-status ok";
+  refreshGearBtn();
+  if (graphToken) {
+    graphToken = null; graphUser = null; msalApp = null;
+    clearMsalState();
+    updateAuthUI(false);
+  }
+}
+
+function copyRedirectUri(btn) {
+  const val = window.location.origin + window.location.pathname;
+  navigator.clipboard.writeText(val).then(function() {
+    const orig = btn.textContent;
+    btn.textContent = "✓";
+    setTimeout(function() { btn.textContent = orig; }, 1500);
+  });
+}
+
+function refreshGearBtn() {
+  const stored = loadStoredSettings();
+  const gear = document.getElementById("gearBtn");
+  if (!gear) return;
+  if (stored.clientId) {
+    gear.classList.add("configured");
+    gear.title = "Settings — Client ID configured (" + stored.clientId.slice(0,8) + "…)";
+  } else {
+    gear.classList.remove("configured");
+    gear.title = "Configure authentication settings";
+  }
+}
+
+// ── Startup ───────────────────────────────────────────────────────────────
+refreshGearBtn();
+
+const urlCid = new URLSearchParams(window.location.search).get("clientId");
+if (urlCid) {
+  const s = loadStoredSettings();
+  s.clientId = urlCid;
+  saveStoredSettings(s);
+  localStorage.setItem("helient_clientId", urlCid);
+  refreshGearBtn();
+}
+
+function waitForMsalAndInit(attempts) {
+  const MSAL = window.__MSAL || window.msal || window.msalBrowser;
+  if (MSAL && MSAL.PublicClientApplication) {
+    initMsal();
+  } else if (attempts > 0) {
+    setTimeout(function() { waitForMsalAndInit(attempts - 1); }, 300);
+  }
+}
+waitForMsalAndInit(20);
+
+
 </script>
 </body>
 </html>
