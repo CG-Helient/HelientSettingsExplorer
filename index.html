@@ -786,73 +786,288 @@ function updateAuthUI(connected) {
   refreshGearBtn();
 }
 
-// ===== GRAPH SEARCH =====
+// ===== SEARCH ENGINE =====
+// Multi-source: Local DB → Graph (3 strategies) → ADMX/GPO Reference → CSP/Policy DB
+
+// ── Graph: multiple strategies because contains(keywords) is too limited ──
 async function graphSearch(query) {
   if (!graphToken) return [];
-  const cacheKey = query.toLowerCase().trim();
+  const cacheKey = "g:" + query.toLowerCase().trim();
   if (graphCache[cacheKey]) return graphCache[cacheKey];
+
+  const results = [];
+  const seenIds = new Set();
+
+  const addResults = (items) => {
+    for (const s of (items || [])) {
+      const id = s.settingDefinitionId || s.id;
+      if (id && !seenIds.has(id)) { seenIds.add(id); results.push(graphSettingToCard(s)); }
+    }
+  };
+
+  const headers = { Authorization: "Bearer " + graphToken, ConsistencyLevel: "eventual" };
+
+  // Strategy 1: name contains (most reliable for UI/friendly name search)
   try {
-    const url = `https://graph.microsoft.com/beta/deviceManagement/configurationSettings?$filter=contains(keywords,'${encodeURIComponent(query)}')&$select=id,name,description,keywords,settingDefinitionId,applicability,defaultValue,categoryId&$top=25`;
-    const r = await fetch(url, { headers: { Authorization: "Bearer " + graphToken, ConsistencyLevel: "eventual" } });
-    if (!r.ok) { console.warn("Graph error", r.status); return []; }
-    const data = await r.json();
-    const results = (data.value || []).map(s => graphSettingToCard(s));
-    graphCache[cacheKey] = results;
-    return results;
-  } catch(e) { console.error("Graph fetch error:", e); return []; }
+    const r = await fetch(
+      `https://graph.microsoft.com/beta/deviceManagement/configurationSettings?` +
+      `$filter=contains(name,'${encodeURIComponent(query)}')` +
+      `&$select=id,name,description,keywords,settingDefinitionId,applicability,defaultValue,categoryId,infoUrls,occurrence,settingUsage,uxBehavior,visibility,version&$top=50`,
+      { headers }
+    );
+    if (r.ok) { const d = await r.json(); addResults(d.value); }
+  } catch(e) { console.warn("Graph strategy 1 failed:", e.message); }
+
+  // Strategy 2: keywords contains (Microsoft's own tag system)
+  try {
+    const r = await fetch(
+      `https://graph.microsoft.com/beta/deviceManagement/configurationSettings?` +
+      `$filter=contains(keywords,'${encodeURIComponent(query)}')` +
+      `&$select=id,name,description,keywords,settingDefinitionId,applicability,defaultValue,categoryId,infoUrls,occurrence,settingUsage,uxBehavior,visibility,version&$top=50`,
+      { headers }
+    );
+    if (r.ok) { const d = await r.json(); addResults(d.value); }
+  } catch(e) { console.warn("Graph strategy 2 failed:", e.message); }
+
+  // Strategy 3: description contains (catches settings where name is cryptic)
+  try {
+    const r = await fetch(
+      `https://graph.microsoft.com/beta/deviceManagement/configurationSettings?` +
+      `$filter=contains(description,'${encodeURIComponent(query)}')` +
+      `&$select=id,name,description,keywords,settingDefinitionId,applicability,defaultValue,categoryId,infoUrls,occurrence,settingUsage,uxBehavior,visibility,version&$top=25`,
+      { headers }
+    );
+    if (r.ok) { const d = await r.json(); addResults(d.value); }
+  } catch(e) { console.warn("Graph strategy 3 failed:", e.message); }
+
+  // Strategy 4: if query looks like a registry path or OMA-URI fragment,
+  // try searching by settingDefinitionId contains
+  const lq = query.toLowerCase().replace(/\\/g, '_').replace(/\s+/g,'_');
+  if (query.includes('\\') || query.includes('/') || query.startsWith('device_') || query.length > 20) {
+    try {
+      const r = await fetch(
+        `https://graph.microsoft.com/beta/deviceManagement/configurationSettings?` +
+        `$filter=contains(id,'${encodeURIComponent(lq)}')` +
+        `&$select=id,name,description,keywords,settingDefinitionId,applicability,defaultValue,categoryId,infoUrls&$top=25`,
+        { headers }
+      );
+      if (r.ok) { const d = await r.json(); addResults(d.value); }
+    } catch(e) { console.warn("Graph strategy 4 failed:", e.message); }
+  }
+
+  graphCache[cacheKey] = results;
+  return results;
 }
 
+// ── Fetch full setting detail from Graph (called on card expand) ──────────
+async function graphFetchDetail(defId) {
+  if (!graphToken || !defId) return null;
+  const cacheKey = "detail:" + defId;
+  if (graphCache[cacheKey]) return graphCache[cacheKey];
+  try {
+    const r = await fetch(
+      `https://graph.microsoft.com/beta/deviceManagement/configurationSettings/${encodeURIComponent(defId)}`,
+      { headers: { Authorization: "Bearer " + graphToken } }
+    );
+    if (!r.ok) return null;
+    const d = await r.json();
+    graphCache[cacheKey] = d;
+    return d;
+  } catch(e) { return null; }
+}
+
+// ── ADMX/Policy Analytics: search tenant's imported ADMX settings ─────────
+async function admxSearch(query) {
+  if (!graphToken) return [];
+  const cacheKey = "admx:" + query.toLowerCase();
+  if (graphCache[cacheKey]) return graphCache[cacheKey];
+  try {
+    const r = await fetch(
+      `https://graph.microsoft.com/beta/deviceManagement/groupPolicyDefinitions?` +
+      `$filter=contains(displayName,'${encodeURIComponent(query)}') or contains(classType,'${encodeURIComponent(query)}')` +
+      `&$select=id,displayName,categoryPath,classType,definitionFile,explainText,groupPolicyCategoryId,minOsVersion,policyType,supportedOn&$top=25`,
+      { headers: { Authorization: "Bearer " + graphToken, ConsistencyLevel: "eventual" } }
+    );
+    if (!r.ok) return [];
+    const d = await r.json();
+    const results = (d.value || []).map(g => admxToCard(g));
+    graphCache[cacheKey] = results;
+    return results;
+  } catch(e) { console.warn("ADMX search failed:", e.message); return []; }
+}
+
+// ── Policy Analytics: existing GPO settings migrated to Intune ────────────
+async function policyAnalyticsSearch(query) {
+  if (!graphToken) return [];
+  const cacheKey = "pa:" + query.toLowerCase();
+  if (graphCache[cacheKey]) return graphCache[cacheKey];
+  try {
+    // Get group policy migration reports
+    const r = await fetch(
+      `https://graph.microsoft.com/beta/deviceManagement/groupPolicyMigrationReports?` +
+      `$filter=contains(displayName,'${encodeURIComponent(query)}')&$top=20`,
+      { headers: { Authorization: "Bearer " + graphToken } }
+    );
+    if (!r.ok) return [];
+    const d = await r.json();
+    graphCache[cacheKey] = d.value || [];
+    return d.value || [];
+  } catch(e) { return []; }
+}
+
+// ── Convert Graph configurationSetting to card ────────────────────────────
 function graphSettingToCard(s) {
   const defId = s.settingDefinitionId || s.id || "";
-  const plat = (s.applicability?.platform || "windows").toLowerCase();
+  const plat = (s.applicability?.platform || "windows10").toLowerCase().replace("windows10","windows");
+
+  // Build a clean OMA-URI from the definition ID
+  // Format: device_vendor_msft_policy_config_defender_allowrealtimemonitoring
+  // → ./Device/Vendor/MSFT/Policy/Config/Defender/AllowRealtimeMonitoring
+  let oma = "";
+  if (defId) {
+    const parts = defId
+      .replace(/^device_vendor_msft_/i, "")
+      .replace(/^user_vendor_msft_/i, "")
+      .split("_")
+      .map(p => p.charAt(0).toUpperCase() + p.slice(1));
+    const prefix = defId.toLowerCase().startsWith("user_") ? "./User" : "./Device";
+    oma = prefix + "/Vendor/MSFT/" + parts.join("/");
+  }
+
+  // Extract allowed values from options if present
+  const vals = [];
+  if (s.options) {
+    s.options.forEach(o => vals.push({ v: String(o.itemId || o.value || ""), l: o.displayName || o.name || "" }));
+  }
+
+  // Determine data type
+  let dtype = "String";
+  if (s.valueDefinition) {
+    const vd = s.valueDefinition;
+    if (vd["@odata.type"]) {
+      if (vd["@odata.type"].includes("Integer")) dtype = "Integer";
+      else if (vd["@odata.type"].includes("Boolean")) dtype = "Boolean";
+      else if (vd["@odata.type"].includes("String")) dtype = "String";
+      else if (vd["@odata.type"].includes("Choice")) dtype = "Choice";
+    }
+  } else if (vals.length > 0) {
+    dtype = "Choice";
+  }
+
+  // Build JSON fragment
+  let jsonFrag = `"settingDefinitionId": "${defId}"`;
+  if (dtype === "Choice" && vals.length > 0) {
+    jsonFrag += `,\n"choiceSettingValue": {\n  "value": "${vals[0].v}",\n  "children": []\n}`;
+  } else if (dtype === "Integer") {
+    jsonFrag += `,\n"simpleSettingValue": {\n  "@odata.type": "#microsoft.graph.deviceManagementConfigurationIntegerSettingValue",\n  "value": 1\n}`;
+  } else if (dtype === "Boolean") {
+    jsonFrag += `,\n"choiceSettingValue": {\n  "value": "${defId}_true",\n  "children": []\n}`;
+  } else {
+    jsonFrag += `,\n"simpleSettingValue": {\n  "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",\n  "value": ""\n}`;
+  }
+
+  const infoUrl = s.infoUrls && s.infoUrls[0] ? s.infoUrls[0] : "";
+
   return {
     id: "graph_" + defId,
     name: s.name || defId,
-    desc: s.description || "No description available.",
+    desc: s.description || "No description available from Graph API.",
     icon: "⚙️",
     cats: [s.categoryId || "Settings Catalog"],
     plat,
     methods: ["intune"],
     _source: "graph",
+    _defId: defId,
+    _infoUrl: infoUrl,
+    _supportedOn: s.version || "",
     intune: [{
-      cat: "Settings Catalog (Live)",
+      cat: "Settings Catalog (Live · Microsoft Graph)",
       name: s.name || defId,
       defId,
-      oma: defId ? "./Device/Vendor/MSFT/" + defId.replace(/device_vendor_msft_/i,"").split("_").join("/") : "",
-      dtype: s.defaultValue ? (typeof s.defaultValue === "number" ? "Integer" : "String") : "See definition",
-      vals: [],
-      rec: s.defaultValue != null ? String(s.defaultValue) : "See Intune portal",
-      json: `"settingDefinitionId": "${defId}"\n// Configure value based on setting type in Intune portal`
+      oma,
+      dtype,
+      vals,
+      rec: s.defaultValue != null ? String(s.defaultValue) : (vals[0] ? vals[0].v : "See Intune portal"),
+      json: jsonFrag
     }]
   };
 }
 
-// ===== SEARCH =====
-document.getElementById("searchInput").addEventListener("input", e => {
-  clearTimeout(searchTimer);
-  const q = e.target.value.trim();
-  if (!q) { showEmpty(); return; }
-  searchTimer = setTimeout(() => runSearch(q), q.length > 3 && graphToken ? 600 : 300);
-});
-document.getElementById("searchInput").addEventListener("keydown", e => { if(e.key==="Escape"){e.target.value="";showEmpty();}});
+// ── Convert ADMX/GPO definition to card ───────────────────────────────────
+function admxToCard(g) {
+  const id = g.id || "";
+  const catPath = g.categoryPath || "";
+  return {
+    id: "admx_" + id,
+    name: g.displayName || id,
+    desc: g.explainText || g.supportedOn || "No description available.",
+    icon: "📋",
+    cats: [catPath || "Group Policy"],
+    plat: "windows",
+    methods: ["gpo", "admx"],
+    _source: "admx",
+    gpo: {
+      path: catPath,
+      policy: g.displayName || "",
+      admx: g.definitionFile?.fileName || "",
+      ns: g.definitionFile?.admlFiles ? g.definitionFile.admlFiles[0] : ""
+    },
+    admx: {
+      name: g.displayName || "",
+      file: g.definitionFile?.fileName || "See ADMX",
+      cat: catPath,
+      regKey: "See policy definition",
+      val: g.displayName || "",
+      type: g.classType === "user" ? "User policy" : "Computer policy"
+    }
+  };
+}
 
+// ── Main search orchestrator ───────────────────────────────────────────────
 async function runSearch(q) {
   if (!q || q.length < 2) return;
-  showLoader(true, graphToken ? "Querying Microsoft Graph…" : "Searching local database…");
-  
+
+  const isGraphConnected = !!graphToken;
+  showLoader(true, isGraphConnected ? "Searching all sources…" : "Searching local database…");
+
+  // Always search local first (instant)
   const localHits = searchLocal(q);
-  let graphHits = [];
-  if (graphToken && q.length >= 3) {
-    graphHits = await graphSearch(q);
+  const seen = new Set(localHits.map(x => x.name.toLowerCase()));
+
+  // Show local results immediately while Graph loads
+  if (localHits.length > 0) {
+    renderResults(localHits, q, true); // true = partial/loading state
   }
 
-  // Merge: local first, then graph results not duplicated
-  const seen = new Set(localHits.map(x=>x.name.toLowerCase()));
-  const merged = [...localHits, ...graphHits.filter(g => !seen.has(g.name.toLowerCase()))];
+  if (!isGraphConnected) {
+    showLoader(false);
+    renderResults(localHits, q, false);
+    return;
+  }
+
+  // Run Graph searches in parallel
+  showLoader(true, "Querying Microsoft Graph (Settings Catalog, ADMX, GPO)…");
+
+  const [graphHits, admxHits] = await Promise.all([
+    graphSearch(q),
+    admxSearch(q)
+  ]);
 
   showLoader(false);
-  renderResults(merged, q);
+
+  // Merge all sources, deduplicate by name
+  const allResults = [...localHits];
+
+  for (const r of [...graphHits, ...admxHits]) {
+    if (!seen.has(r.name.toLowerCase())) {
+      seen.add(r.name.toLowerCase());
+      allResults.push(r);
+    }
+  }
+
+  renderResults(allResults, q, false);
 }
+
 
 function searchLocal(q) {
   const terms = q.toLowerCase().split(/[,\s]+/).filter(t=>t.length>1);
@@ -868,17 +1083,46 @@ function searchLocal(q) {
 }
 
 // ===== RENDER =====
-function renderResults(results, q) {
-  const terms = q.toLowerCase().split(/[,\s]+/).filter(t=>t.length>1);
+function renderResults(results, q, isPartial) {
+  const terms = q.toLowerCase().split(/[,\s]+/).filter(t => t.length > 1);
   const grid = document.getElementById("resultsGrid");
-  document.getElementById("resultCount").innerHTML = results.length===0
+
+  // Source breakdown counts
+  const nLocal  = results.filter(r => !r._source).length;
+  const nGraph  = results.filter(r => r._source === "graph").length;
+  const nAdmx   = results.filter(r => r._source === "admx").length;
+
+  const sourcePills = [
+    nLocal  ? `<span class="source-badge src-local">${nLocal} local</span>` : "",
+    nGraph  ? `<span class="source-badge src-graph">${nGraph} Graph</span>` : "",
+    nAdmx   ? `<span class="source-badge src-graph" style="background:#EDE7FF;color:#4A00B0">${nAdmx} ADMX/GPO</span>` : ""
+  ].filter(Boolean).join(" ");
+
+  const loadingNote = isPartial
+    ? ` <span style="font-size:11px;color:var(--h-blue)">· searching Graph…</span>`
+    : "";
+
+  document.getElementById("resultCount").innerHTML = results.length === 0
     ? `<span style="color:var(--h-red)">No results for <strong>"${esc(q)}"</strong></span>`
-    : `<strong>${results.length}</strong> setting${results.length!==1?"s":""} for <strong>"${esc(q)}"</strong>`;
-  if (!results.length) {
-    grid.innerHTML = `<div class="empty"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><h3>No settings found</h3><p>Try different keywords, a registry path, or an OMA-URI fragment</p></div>`;
+    : `<strong>${results.length}</strong> setting${results.length !== 1 ? "s" : ""} for <strong>"${esc(q)}"</strong> ${sourcePills}${loadingNote}`;
+
+  if (!results.length && !isPartial) {
+    grid.innerHTML = `<div class="empty">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <h3>No settings found</h3>
+      <p>Try different keywords — for example, the UI label from the Intune portal,<br>
+      a registry value name, or an ADMX policy name like <code style="font-size:11px">AllowRealtimeMonitoring</code></p>
+      ${graphToken ? "" : '<p style="margin-top:8px;color:var(--h-blue)">Connect to Graph API via <strong>⚙ Settings</strong> to search 10,000+ live settings</p>'}
+    </div>`;
     return;
   }
-  grid.innerHTML = results.map(s=>cardHTML(s,terms)).join("");
+
+  if (!isPartial) {
+    grid.innerHTML = results.map(s => cardHTML(s, terms)).join("");
+  } else {
+    // Partial: render what we have, don't flash the grid
+    grid.innerHTML = results.map(s => cardHTML(s, terms)).join("");
+  }
 }
 
 function cardHTML(s, terms) {
@@ -887,14 +1131,18 @@ function cardHTML(s, terms) {
     const [cls,lbl]=map[m]||["tag-plat",m.toUpperCase()];
     return `<span class="tag ${cls}">${lbl}</span>`;
   }).join("");
-  const srcBadge = s._source==="graph" ? `<span class="source-badge src-graph">● Live Graph</span>` : `<span class="source-badge src-local">● Local</span>`;
+  const srcLabels = { graph: "● Live Graph", admx: "● ADMX/GPO", local: "● Local" };
+  const srcClasses = { graph: "src-graph", admx: "src-graph", local: "src-local" };
+  const srcKey = s._source || "local";
+  const srcBadge = `<span class="source-badge ${srcClasses[srcKey] || 'src-local'}" ${srcKey==="admx"?"style=\"background:#EDE7FF;color:#4A00B0\"":""}>${srcLabels[srcKey] || "● Local"}</span>`;
+  const infoLink = s._infoUrl ? `<a href="${s._infoUrl}" target="_blank" style="font-size:10px;color:var(--h-blue);text-decoration:none;margin-left:4px" title="Microsoft docs">docs ↗</a>` : "";
   return `<div class="result-card" id="card-${s.id}">
     <div class="card-header" onclick="toggleCard('${s.id}')">
       <div class="card-icon">${s.icon}</div>
       <div class="card-info">
         <div class="card-name">${hl(s.name,terms)}</div>
         <div class="card-desc">${hl(s.desc,terms)}</div>
-        <div class="card-meta">${methodTags}<span class="tag tag-plat">${s.plat==="windows"?"Windows":s.plat}</span>${srcBadge}</div>
+        <div class="card-meta">${methodTags}<span class="tag tag-plat">${s.plat==="windows"?"Windows":s.plat}</span>${srcBadge}${infoLink}</div>
       </div>
       <button class="expand-btn">Details<svg class="expand-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
@@ -1010,9 +1258,10 @@ function setChip(f, el) {
   if(q) runSearch(q);
 }
 function showLoader(v, txt) {
-  const l=document.getElementById("loader");
-  l.classList.toggle("show",v);
-  if(txt) document.getElementById("loaderText").textContent=txt;
+  const l = document.getElementById("loader");
+  l.classList.toggle("show", v);
+  if (txt) document.getElementById("loaderText").textContent = txt;
+  if (!v) document.getElementById("loaderText").textContent = "Searching…";
 }
 function showEmpty() {
   document.getElementById("resultCount").textContent="Enter a search term to explore settings";
