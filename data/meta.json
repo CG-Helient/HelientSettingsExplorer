@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-03-20T19:45:20.494464+00:00",
-  "total_entries": 302,
-  "chunk_count": 2,
+  "last_updated": "2026-03-20T19:52:32.174163+00:00",
+  "total_entries": 10619,
+  "chunk_count": 54,
   "chunks": [
     {
       "file": "data/chunks/chunk_000.json",
@@ -11,13 +11,273 @@
     {
       "file": "data/chunks/chunk_001.json",
       "start": 200,
-      "count": 102
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_002.json",
+      "start": 400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_003.json",
+      "start": 600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_004.json",
+      "start": 800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_005.json",
+      "start": 1000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_006.json",
+      "start": 1200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_007.json",
+      "start": 1400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_008.json",
+      "start": 1600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_009.json",
+      "start": 1800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_010.json",
+      "start": 2000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_011.json",
+      "start": 2200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_012.json",
+      "start": 2400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_013.json",
+      "start": 2600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_014.json",
+      "start": 2800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_015.json",
+      "start": 3000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_016.json",
+      "start": 3200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_017.json",
+      "start": 3400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_018.json",
+      "start": 3600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_019.json",
+      "start": 3800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_020.json",
+      "start": 4000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_021.json",
+      "start": 4200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_022.json",
+      "start": 4400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_023.json",
+      "start": 4600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_024.json",
+      "start": 4800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_025.json",
+      "start": 5000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_026.json",
+      "start": 5200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_027.json",
+      "start": 5400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_028.json",
+      "start": 5600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_029.json",
+      "start": 5800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_030.json",
+      "start": 6000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_031.json",
+      "start": 6200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_032.json",
+      "start": 6400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_033.json",
+      "start": 6600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_034.json",
+      "start": 6800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_035.json",
+      "start": 7000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_036.json",
+      "start": 7200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_037.json",
+      "start": 7400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_038.json",
+      "start": 7600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_039.json",
+      "start": 7800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_040.json",
+      "start": 8000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_041.json",
+      "start": 8200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_042.json",
+      "start": 8400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_043.json",
+      "start": 8600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_044.json",
+      "start": 8800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_045.json",
+      "start": 9000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_046.json",
+      "start": 9200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_047.json",
+      "start": 9400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_048.json",
+      "start": 9600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_049.json",
+      "start": 9800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_050.json",
+      "start": 10000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_051.json",
+      "start": 10200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_052.json",
+      "start": 10400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_053.json",
+      "start": 10600,
+      "count": 19
     }
   ],
   "sources": {
     "graph": {
       "ok": true,
-      "count": 0
+      "count": 10317
     },
     "chromium": {
       "ok": true,
@@ -40,5 +300,5 @@
       "count": 0
     }
   },
-  "index_size_kb": 436
+  "index_size_kb": 6231
 }
