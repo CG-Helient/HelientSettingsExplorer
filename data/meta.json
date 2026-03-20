@@ -1,0 +1,36 @@
+{
+  "last_updated": "2026-03-20T14:40:57.701220+00:00",
+  "total_entries": 50,
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "file": "data/chunks/chunk_000.json",
+      "start": 0,
+      "count": 50
+    }
+  ],
+  "sources": {
+    "graph": {
+      "ok": false,
+      "count": 0,
+      "error": "No credentials"
+    },
+    "chromium": {
+      "ok": false,
+      "count": 0
+    },
+    "admx_windows": {
+      "ok": true,
+      "count": 30
+    },
+    "admx_office": {
+      "ok": true,
+      "count": 20
+    },
+    "custom": {
+      "ok": true,
+      "count": 0
+    }
+  },
+  "index_size_kb": 87
+}
