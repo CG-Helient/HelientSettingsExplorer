@@ -57,13 +57,15 @@ jobs:
           echo "Building index with sources: $SOURCES"
           python scripts/build_index.py --sources "$SOURCES"
 
-      - name: Copy data into public for Pages deployment
+      - name: Prepare public folder for deployment
         run: |
-          echo "Copying data/ into public/ so Pages can serve it…"
+          echo "Copying data/ into public/data/ for Pages serving…"
           cp -r data/ public/data/
-          echo "Contents of public/:"
+          echo "Creating .nojekyll to prevent Jekyll from processing JSON files"
+          touch public/.nojekyll
+          echo "Final public/ contents:"
           ls -lh public/
-          echo "Chunks count: $(ls public/data/chunks/ | wc -l)"
+          echo "Chunk count: $(ls public/data/chunks/*.json 2>/dev/null | wc -l)"
 
       - name: Commit updated data files back to repo
         run: |
