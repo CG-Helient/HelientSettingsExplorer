@@ -532,10 +532,10 @@ async function loadIndex() {
     indexMeta = await r.json();
   } catch(e) {
     console.warn("Could not load data/meta.json:", e.message);
-    // No index built yet -- show empty but functional state
+    // No index built yet — show empty but functional state
     setIndexStatus("No index built yet. Run the GitHub Action (or python scripts/build_index.py) to generate data.", false);
     document.getElementById("livePillText").textContent = "No index";
-    document.getElementById("resultCount").textContent = "Index not built -- click ⚙ Settings for setup info.";
+    document.getElementById("resultCount").textContent = "Index not built — click ⚙ Settings for setup info.";
     document.getElementById("resultsGrid").innerHTML = emptyHTML(
       "Index not yet built",
       "Run the GitHub Action to build the settings index. See the About tab for setup instructions.",
@@ -608,10 +608,10 @@ async function loadIndex() {
   if (q.length >= 2) {
     runSearch(q);
   } else {
-    document.getElementById("resultCount").textContent = `${total.toLocaleString()} settings ready -- enter a search term`;
+    document.getElementById("resultCount").textContent = `${total.toLocaleString()} settings ready — enter a search term`;
     document.getElementById("resultsGrid").innerHTML = emptyHTML(
       "Search across all configuration methods",
-      'Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment.'
+      "Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment."
     );
   }
 }
@@ -927,10 +927,10 @@ function showLoader(v, t) {
 }
 function showEmpty() {
   document.getElementById("resultCount").textContent=
-    indexReady ? `${SEARCH_INDEX.length.toLocaleString()} settings ready -- enter a search term` : "Loading…";
+    indexReady ? `${SEARCH_INDEX.length.toLocaleString()} settings ready — enter a search term` : "Loading…";
   document.getElementById("resultsGrid").innerHTML = emptyHTML(
     "Search across all configuration methods",
-    'Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment.'
+    "Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment."
   );
 }
 function showView(v, btn) {
@@ -1145,7 +1145,7 @@ function clearSettings(){
 function refreshGearBtn(){
   const s=loadSaved(),g=document.getElementById("gearBtn");
   if(!g) return;
-  if(s.clientId){g.classList.add("configured");g.title="Settings -- "+s.clientId.slice(0,8)+"…";}
+  if(s.clientId){g.classList.add("configured");g.title="Settings — "+s.clientId.slice(0,8)+"…";}
   else{g.classList.remove("configured");g.title="Configure authentication settings";}
 }
 
