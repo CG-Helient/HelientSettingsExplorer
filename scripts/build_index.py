@@ -42,10 +42,19 @@ def http_get_json(url, headers=None, timeout=45):
     except: return None
 
 def graph_url(path, params=None):
-    """Build a Graph API URL with properly encoded query parameters."""
+    """
+    Build a Graph API URL with properly encoded query parameters.
+    OData params ($select, $filter, $top etc.) must keep the $ literal --
+    do NOT percent-encode it. Only the VALUES of params get encoded.
+    """
     base = "https://graph.microsoft.com/beta/" + path.lstrip("/")
     if params:
-        base += "?" + urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+        parts = []
+        for k, v in params.items():
+            # Keep $ in key names as-is; encode spaces/special chars in values
+            encoded_v = urllib.parse.quote(str(v), safe="',()")
+            parts.append(f"{k}={encoded_v}")
+        base += "?" + "&".join(parts)
     return base
 
 def slugify(s):
@@ -212,14 +221,30 @@ def fetch_graph_gpo(token):
         "$select": "id,classType,displayName,explainText,categoryPath,supportedOn",
         "$top":    "1000",
     })
+
+    # Test the first page — if 401 it means GroupPolicy.Read.All permission is missing
+    # In Azure: App Registration > API Permissions > Add > Graph > Application > GroupPolicy.Read.All
+    first = http_get_json(url, headers=headers, timeout=60)
+    if first is None:
+        log("  groupPolicyDefinitions: 401 Unauthorized")
+        log("  Fix: Azure Portal > App Registrations > Helient Settings Explorer")
+        log("       API Permissions > Add > Microsoft Graph > Application > GroupPolicy.Read.All")
+        log("       Then Grant admin consent and re-run this workflow")
+        return entries
+
     page = 0
-    while url:
+    data_queue = [first]
+    while data_queue or url:
+        if data_queue:
+            data = data_queue.pop(0)
+            url  = data.get("@odata.nextLink")
+        else:
+            data = http_get_json(url, headers=headers, timeout=60)
+            if not data: break
+            url  = data.get("@odata.nextLink")
         page += 1
-        log(f"  GPO page {page} — {len(entries)} so far…")
-        data = http_get_json(url, headers=headers, timeout=60)
-        if not data: break
         items = data.get("value", [])
-        log(f"    Got {len(items)} items this page")
+        log(f"  GPO page {page} — {len(items)} items, {len(entries)} total so far…")
         for d in items:
             did = d.get("id", "")
             if not did or did in seen: continue
