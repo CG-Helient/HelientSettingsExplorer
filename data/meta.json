@@ -1,12 +1,17 @@
 {
-  "last_updated": "2026-03-20T16:13:58.517969+00:00",
-  "total_entries": 152,
-  "chunk_count": 1,
+  "last_updated": "2026-03-20T17:16:53.831445+00:00",
+  "total_entries": 302,
+  "chunk_count": 2,
   "chunks": [
     {
       "file": "data/chunks/chunk_000.json",
       "start": 0,
-      "count": 152
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_001.json",
+      "start": 200,
+      "count": 102
     }
   ],
   "sources": {
@@ -22,6 +27,10 @@
       "ok": true,
       "count": 57
     },
+    "policy_csp": {
+      "ok": true,
+      "count": 150
+    },
     "admx_office": {
       "ok": true,
       "count": 25
@@ -31,5 +40,5 @@
       "count": 0
     }
   },
-  "index_size_kb": 234
+  "index_size_kb": 436
 }
