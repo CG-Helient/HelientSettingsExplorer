@@ -1223,7 +1223,7 @@ function updateAuthUI(connected){
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-document.getElementById("lastUpdated"||"").textContent="";
+(document.getElementById("lastUpdated")||{}).textContent="";
 document.getElementById("redirectUriDisplay").textContent=window.location.origin+window.location.pathname;
 refreshGearBtn();
 
