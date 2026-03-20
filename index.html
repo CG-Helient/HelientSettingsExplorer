@@ -1023,6 +1023,20 @@ function admxToCard(g) {
   };
 }
 
+// ── Search input wiring ──────────────────────────────────────────────────
+document.getElementById("searchInput").addEventListener("input", function(e) {
+  clearTimeout(searchTimer);
+  const q = e.target.value.trim();
+  if (!q) { showEmpty(); return; }
+  const delay = (q.length > 3 && graphToken) ? 600 : 280;
+  searchTimer = setTimeout(function() { runSearch(q); }, delay);
+});
+
+document.getElementById("searchInput").addEventListener("keydown", function(e) {
+  if (e.key === "Escape") { e.target.value = ""; showEmpty(); }
+  if (e.key === "Enter")  { clearTimeout(searchTimer); runSearch(e.target.value.trim()); }
+});
+
 // ── Main search orchestrator ───────────────────────────────────────────────
 async function runSearch(q) {
   if (!q || q.length < 2) return;
