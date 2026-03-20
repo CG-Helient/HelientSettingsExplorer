@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helient — Settings Explorer</title>
+<link rel="icon" href="data:image/png;base64,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" type="image/png">
+<style>
+:root{
+  --h-navy:#1A2D73;--h-navy2:#111F55;--h-navy3:#0D183F;
+  --h-blue:#2197D4;--h-blue2:#3AAEE0;--h-blue-pale:#E8F5FC;
+  --h-surface:#F3F6FB;--h-surface2:#EAF0F8;--h-card:#fff;
+  --h-border:#D5E0EF;--h-border2:#B8CBE8;
+  --h-text:#1A2D73;--h-text2:#3A4E6B;--h-text3:#6B7FA0;
+  --h-success:#00875A;--h-warn:#B86B00;--h-red:#C0392B;
+  --h-tag-gpo-bg:#EBF1FF;--h-tag-gpo:#1A2D73;
+  --h-tag-reg-bg:#FFF3E0;--h-tag-reg:#8B4000;
+  --h-tag-int-bg:#E0F7F0;--h-tag-int:#006B5B;
+  --h-tag-adm-bg:#EDE7FF;--h-tag-adm:#4A00B0;
+  --h-tag-csp-bg:#FFF8DC;--h-tag-csp:#7A5800;
+  --h-tag-chr-bg:#E3F2FD;--h-tag-chr:#0D47A1;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--h-surface);color:var(--h-text);min-height:100vh}
+
+/* HEADER */
+.hdr{background:var(--h-navy3);border-bottom:2px solid var(--h-navy);padding:0 1.5rem;display:flex;align-items:center;height:56px;gap:1.5rem;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(26,45,115,.25)}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0}
+.logo img{width:30px;height:30px;object-fit:contain}
+.logo-text{font-size:15px;font-weight:800;color:#fff;letter-spacing:.04em}
+.logo-text span{color:var(--h-blue2)}
+.hdr-pipe{width:1px;height:20px;background:rgba(33,151,212,.3)}
+.hdr-sub{font-size:11px;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.07em;text-transform:uppercase}
+.hdr-nav{margin-left:auto;display:flex;gap:2px;align-items:center}
+.nav-btn{padding:5px 12px;font-size:12.5px;color:rgba(255,255,255,.5);border:none;background:transparent;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s}
+.nav-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nav-btn.active{color:var(--h-blue2);background:rgba(33,151,212,.12)}
+.gear-btn{padding:5px 9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;cursor:pointer;color:rgba(255,255,255,.5);transition:all .15s;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;font-family:inherit}
+.gear-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.gear-btn.configured{border-color:rgba(33,151,212,.35);color:var(--h-blue2)}
+
+/* AUTH BAR */
+.auth-bar{background:var(--h-navy2);padding:7px 1.5rem;display:flex;align-items:center;gap:10px;font-size:12px;border-bottom:1px solid rgba(33,151,212,.15);flex-wrap:wrap}
+.auth-dot{width:7px;height:7px;border-radius:50%;background:#888;flex-shrink:0;transition:background .3s}
+.auth-dot.ok{background:#2ECC71;box-shadow:0 0 5px rgba(46,204,113,.4)}
+.auth-dot.loading{background:var(--h-blue2);animation:pulse 1s ease-in-out infinite}
+.auth-label{color:rgba(255,255,255,.45);font-size:11.5px}
+.auth-user{color:#fff;font-weight:600}
+.auth-actions{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.auth-btn{padding:4px 13px;background:var(--h-blue);border:none;border-radius:5px;color:#fff;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.auth-btn:hover{background:var(--h-blue2)}
+.auth-btn.danger{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5)}
+.auth-btn.danger:hover{border-color:rgba(255,255,255,.4);color:#fff}
+.index-status{font-size:10.5px;color:rgba(255,255,255,.35)}
+
+/* INDEX PROGRESS */
+.index-bar{background:var(--h-navy);padding:5px 1.5rem;display:flex;align-items:center;gap:10px;font-size:11.5px;border-bottom:1px solid rgba(255,255,255,.05)}
+.progress-track{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;min-width:120px;max-width:300px}
+.progress-fill{height:100%;background:var(--h-blue2);border-radius:2px;transition:width .4s ease;width:0%}
+.index-bar-text{color:rgba(255,255,255,.45)}
+.source-pills{display:flex;gap:5px;flex-wrap:wrap}
+.src-pill{padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;cursor:pointer;transition:all .15s}
+
+/* HERO */
+.hero{background:linear-gradient(160deg,var(--h-navy3) 0%,var(--h-navy) 100%);padding:2rem 1.5rem 1.5rem;border-bottom:1px solid rgba(33,151,212,.2)}
+.hero-inner{max-width:1100px;margin:0 auto}
+.hero h1{font-size:21px;font-weight:800;color:#fff;margin-bottom:3px}
+.hero h1 em{font-style:normal;color:var(--h-blue2)}
+.hero p{font-size:12.5px;color:rgba(255,255,255,.45);margin-bottom:1.1rem;max-width:580px;line-height:1.55}
+.search-row{display:flex;gap:8px;align-items:center}
+.search-wrap{flex:1;position:relative}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:rgba(255,255,255,.3);pointer-events:none}
+#searchInput{width:100%;padding:9px 11px 9px 34px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:13.5px;font-family:inherit;outline:none;transition:all .15s}
+#searchInput::placeholder{color:rgba(255,255,255,.3)}
+#searchInput:focus{border-color:var(--h-blue2);background:rgba(255,255,255,.1)}
+.live-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(33,151,212,.1);border:1px solid rgba(33,151,212,.2);border-radius:20px;font-size:10.5px;font-weight:700;color:var(--h-blue2);letter-spacing:.04em;white-space:nowrap}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--h-blue2);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.filter-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.chip{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);transition:all .15s;user-select:none}
+.chip:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.chip.on{background:var(--h-blue);border-color:var(--h-blue);color:#fff}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:1.25rem 1.5rem}
+.stats-bar{display:flex;align-items:center;gap:10px;margin-bottom:11px;font-size:13px;color:var(--h-text3);flex-wrap:wrap}
+.stats-bar strong{color:var(--h-text);font-weight:600}
+.loader{display:none;align-items:center;gap:6px;font-size:12px;color:var(--h-blue)}
+.loader.show{display:flex}
+.spinner{width:13px;height:13px;border:2px solid rgba(33,151,212,.2);border-top-color:var(--h-blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+
+/* RESULT CARDS */
+.results-grid{display:flex;flex-direction:column;gap:9px}
+.card{background:var(--h-card);border:1px solid var(--h-border);border-radius:10px;overflow:hidden;transition:border-color .15s,box-shadow .15s;cursor:pointer}
+.card:hover{border-color:var(--h-blue);box-shadow:0 2px 12px rgba(33,151,212,.1)}
+.card.expanded{border-color:var(--h-blue)}
+.card-hdr{padding:12px 14px;display:flex;align-items:flex-start;gap:11px}
+.card-icon{width:35px;height:35px;border-radius:8px;background:var(--h-surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;border:1px solid var(--h-border)}
+.card-info{flex:1;min-width:0}
+.card-name{font-size:13.5px;font-weight:700;color:var(--h-text);margin-bottom:2px;line-height:1.35}
+.card-desc{font-size:12px;color:var(--h-text3);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-meta{display:flex;align-items:center;gap:5px;margin-top:6px;flex-wrap:wrap}
+.tag{padding:2px 6px;border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:.03em}
+.t-gpo{background:var(--h-tag-gpo-bg);color:var(--h-tag-gpo)}
+.t-reg{background:var(--h-tag-reg-bg);color:var(--h-tag-reg)}
+.t-int{background:var(--h-tag-int-bg);color:var(--h-tag-int)}
+.t-adm{background:var(--h-tag-adm-bg);color:var(--h-tag-adm)}
+.t-csp{background:var(--h-tag-csp-bg);color:var(--h-tag-csp)}
+.t-chr{background:var(--h-tag-chr-bg);color:var(--h-tag-chr)}
+.t-plt{background:var(--h-surface2);color:var(--h-text2);border:1px solid var(--h-border)}
+.src-badge{padding:2px 6px;border-radius:4px;font-size:9.5px;font-weight:700;letter-spacing:.04em}
+.sb-local{background:#EEF2FF;color:#1A2D73}
+.sb-graph{background:#E0F7F0;color:#006B5B}
+.sb-chrome{background:#E3F2FD;color:#0D47A1}
+.sb-admx{background:#EDE7FF;color:#4A00B0}
+.sb-office{background:#FFF3CD;color:#7A5800}
+.sb-custom{background:#FFF0E0;color:#8B4000}
+.expand-btn{flex-shrink:0;padding:4px 10px;border-radius:6px;border:1px solid var(--h-border2);background:transparent;font-size:11px;color:var(--h-navy);cursor:pointer;font-family:inherit;font-weight:600;display:flex;align-items:center;gap:4px;transition:all .15s}
+.expand-btn:hover{background:var(--h-surface2);border-color:var(--h-blue)}
+.exp-arr{transition:transform .2s;width:10px;height:10px}
+.card.expanded .exp-arr{transform:rotate(180deg)}
+
+/* DETAIL */
+.detail{display:none;border-top:1px solid var(--h-border);background:var(--h-surface)}
+.card.expanded .detail{display:block}
+.dtabs{display:flex;border-bottom:1px solid var(--h-border);background:var(--h-card);padding:0 13px;overflow-x:auto;scrollbar-width:none}
+.dtabs::-webkit-scrollbar{display:none}
+.dtab{padding:8px 12px;font-size:11.5px;font-weight:700;color:var(--h-text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:4px}
+.dtab:hover{color:var(--h-text2)}
+.dtab.active{color:var(--h-navy);border-bottom-color:var(--h-navy)}
+.dpip{width:6px;height:6px;border-radius:50%}
+.dcontent{padding:13px}
+.tp{display:none}
+.tp.active{display:block}
+.cblock{background:var(--h-card);border:1px solid var(--h-border);border-radius:8px;padding:11px 13px;margin-bottom:9px}
+.cblock-title{font-size:12px;font-weight:700;color:var(--h-text);margin-bottom:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.def-id{font-family:"Cascadia Code","Consolas",monospace;font-size:9.5px;background:rgba(0,107,91,.1);color:var(--h-tag-int);padding:2px 6px;border-radius:4px;word-break:break-all}
+.ctable{width:100%;border-collapse:collapse;font-size:11.5px}
+.ctable tr:not(:last-child) td{border-bottom:1px solid var(--h-border)}
+.ctable td{padding:5px 8px;vertical-align:top}
+.ctable td:first-child{width:155px;color:var(--h-text3);font-weight:600;background:var(--h-surface);white-space:nowrap;font-size:11px}
+.ctable td:last-child{color:var(--h-text);word-break:break-all}
+.mono{font-family:"Cascadia Code","Consolas",monospace;font-size:10.5px;background:rgba(26,45,115,.06);color:var(--h-navy);padding:1px 5px;border-radius:3px;display:inline-block;word-break:break-all}
+.cbtn{background:none;border:1px solid var(--h-border2);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--h-text2);cursor:pointer;font-family:inherit;transition:all .15s;margin-left:4px}
+.cbtn:hover{background:var(--h-surface2);border-color:var(--h-blue);color:var(--h-navy)}
+.cbtn.ok{color:var(--h-success);border-color:var(--h-success)}
+.json-pre{background:var(--h-navy3);color:#a8d8f0;padding:9px 11px;border-radius:7px;font-size:10.5px;font-family:"Cascadia Code","Consolas",monospace;overflow-x:auto;line-height:1.65;margin-top:8px}
+.copy-row{display:flex;gap:6px;margin-top:11px;flex-wrap:wrap}
+.cta{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;border:1px solid}
+.cta.intune{background:var(--h-tag-int-bg);border-color:#8CD8C8;color:var(--h-tag-int)}
+.cta.gpo{background:var(--h-tag-gpo-bg);border-color:#B0C8FF;color:var(--h-tag-gpo)}
+.cta.reg{background:var(--h-tag-reg-bg);border-color:#FFCA90;color:var(--h-tag-reg)}
+.cta:hover{filter:brightness(.95);transform:translateY(-1px)}
+.cta.ok{opacity:.6}
+
+/* EMPTY */
+.empty{text-align:center;padding:3.5rem 2rem;color:var(--h-text3)}
+.empty h3{font-size:15px;color:var(--h-text2);margin-bottom:5px;font-weight:600}
+.empty p{font-size:12.5px;line-height:1.6;max-width:480px;margin:0 auto}
+.empty code{font-size:11px;background:var(--h-surface2);padding:1px 5px;border-radius:3px}
+
+/* SETTINGS MODAL */
+.overlay{position:fixed;inset:0;background:rgba(10,20,50,.6);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border:1px solid var(--h-border);box-shadow:0 20px 60px rgba(26,45,115,.18);transform:translateY(10px);transition:transform .2s}
+.overlay.open .modal{transform:translateY(0)}
+.modal-hdr{background:var(--h-navy3);padding:14px 18px;display:flex;align-items:center;gap:9px;position:sticky;top:0;z-index:10}
+.modal-hdr img{width:22px;height:22px;object-fit:contain;opacity:.9}
+.modal-hdr h3{font-size:13.5px;font-weight:700;color:#fff;flex:1}
+.modal-close{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:3px 9px;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;font-family:inherit;transition:all .15s}
+.modal-close:hover{background:rgba(255,255,255,.15);color:#fff}
+.modal-body{padding:18px}
+.modal-section{margin-bottom:18px}
+.modal-section:last-child{margin-bottom:0}
+.modal-section-title{font-size:11px;font-weight:700;color:var(--h-text2);margin-bottom:10px;letter-spacing:.05em;text-transform:uppercase;display:flex;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--h-border)}
+.fld{margin-bottom:13px}
+.fld label{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--h-text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+.badge-r{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--h-tag-gpo-bg);color:var(--h-tag-gpo)}
+.badge-o{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--h-surface2);color:var(--h-text3);border:1px solid var(--h-border)}
+.fld input,.fld select{width:100%;padding:8px 11px;border:1.5px solid var(--h-border);border-radius:8px;font-size:12.5px;font-family:inherit;color:var(--h-text);outline:none;transition:border-color .15s;background:#fff}
+.fld input:focus,.fld select:focus{border-color:var(--h-blue)}
+.fld input::placeholder{color:var(--h-text3)}
+.fld-hint{font-size:11px;color:var(--h-text3);margin-top:3px;line-height:1.5}
+.fld-hint a{color:var(--h-blue);text-decoration:none}
+.fld-hint a:hover{text-decoration:underline}
+.modal-footer{display:flex;align-items:center;gap:7px;padding:12px 18px;border-top:1px solid var(--h-border);background:var(--h-surface);position:sticky;bottom:0}
+.modal-save{padding:7px 18px;background:var(--h-navy);border:none;border-radius:7px;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:6px}
+.modal-save:hover{background:var(--h-navy2)}
+.modal-save.saved{background:var(--h-success)}
+.modal-clr{padding:7px 12px;background:transparent;border:1px solid var(--h-border);border-radius:7px;color:var(--h-text3);font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.modal-clr:hover{border-color:var(--h-red);color:var(--h-red)}
+.modal-status{font-size:11px;margin-left:auto;display:flex;align-items:center;gap:4px}
+.modal-status.ok{color:var(--h-success)}
+.modal-status.err{color:var(--h-red)}
+
+/* Custom source list */
+.src-list{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.src-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--h-card);border:1px solid var(--h-border);border-radius:7px;font-size:12px}
+.src-item-info{flex:1;min-width:0}
+.src-item-name{font-weight:600;color:var(--h-text);font-size:12px;margin-bottom:1px}
+.src-item-url{color:var(--h-text3);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.src-remove{background:none;border:none;color:var(--h-text3);cursor:pointer;padding:3px;font-size:14px;line-height:1;transition:color .15s}
+.src-remove:hover{color:var(--h-red)}
+.add-src-row{display:flex;gap:6px;margin-top:7px}
+.add-src-row input{flex:1;padding:7px 10px;border:1.5px solid var(--h-border);border-radius:7px;font-size:12px;font-family:inherit;color:var(--h-text);outline:none}
+.add-src-row input:focus{border-color:var(--h-blue)}
+.add-src-row button{padding:7px 12px;background:var(--h-navy);border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+
+/* Upload zone */
+.upload-zone{border:2px dashed var(--h-border2);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all .15s;position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--h-blue);background:var(--h-blue-pale)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone p{font-size:12.5px;color:var(--h-text3)}
+.upload-zone strong{color:var(--h-blue)}
+.upload-result{margin-top:8px;font-size:12px;color:var(--h-success);text-align:center}
+
+/* Alt views */
+.alt-view{display:none;max-width:1100px;margin:0 auto;padding:1.5rem}
+.alt-view h2{font-size:17px;font-weight:800;color:var(--h-navy);margin-bottom:3px}
+.alt-view .sub{font-size:12.5px;color:var(--h-text3);margin-bottom:1.5rem}
+.info-card{background:var(--h-card);border:1px solid var(--h-border);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.info-card h3{font-size:13.5px;font-weight:700;color:var(--h-text);margin-bottom:8px}
+.info-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.info-table tr:not(:last-child) td{border-bottom:1px solid var(--h-border)}
+.info-table td{padding:7px 10px;vertical-align:top}
+.info-table td:first-child{width:180px;font-weight:600;color:var(--h-text2);background:var(--h-surface);font-size:12px}
+
+/* Highlight */
+.hl{background:rgba(255,213,0,.35);border-radius:2px;padding:0 1px}
+
+/* Footer */
+footer{margin-top:3rem;padding:1.2rem 1.5rem;border-top:1px solid var(--h-border);text-align:center;font-size:11.5px;color:var(--h-text3)}
+footer a{color:var(--h-blue);text-decoration:none}
+footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
+
+@media(max-width:640px){.main,.alt-view{padding:1rem}.hero{padding:1.5rem 1rem 1rem}.hdr{padding:0 1rem}.ctable td:first-child{width:110px}.search-row{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a class="logo" href="#">
+    <img src="data:image/png;base64,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" alt="Helient">
+    <span class="logo-text">HELI<span>ENT</span></span>
+  </a>
+  <div class="hdr-pipe"></div>
+  <span class="hdr-sub">Settings Explorer</span>
+  <nav class="hdr-nav">
+    <button class="nav-btn active" onclick="showView('search',this)">Search</button>
+    <button class="nav-btn" onclick="showView('graph',this)">Graph Queries</button>
+    <button class="nav-btn" onclick="showView('about',this)">About</button>
+    <button class="gear-btn" id="gearBtn" onclick="openSettings()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+</header>
+
+<!-- AUTH BAR -->
+<div class="auth-bar">
+  <span class="auth-dot" id="authDot"></span>
+  <span id="authLabel"><span class="auth-label">Not connected to Microsoft Graph</span></span>
+  <span class="index-status" id="indexStatus"></span>
+  <div class="auth-actions">
+    <button class="auth-btn" id="authBtn" onclick="handleAuth()">Connect to Graph</button>
+  </div>
+</div>
+
+<!-- INDEX LOAD PROGRESS -->
+<div class="index-bar" id="indexBar" style="display:none">
+  <span class="index-bar-text" id="indexBarText">Loading settings index…</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="source-pills" id="sourcePills"></div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="searchView">
+  <div class="hero-inner">
+    <h1>Policy & Settings <em>Explorer</em></h1>
+    <p>Search 10,000+ settings across Intune Settings Catalog, GPO/ADMX, Registry, CSP/OMA-URI, Edge, Chrome, and Office policies.</p>
+    <div class="search-row">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="searchInput" type="text" placeholder="Policy name, settingDefinitionId, registry key, OMA-URI…" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="live-pill" id="livePill"><span class="live-dot" id="liveDot"></span><span id="livePillText">Loading…</span></div>
+    </div>
+    <div class="filter-row">
+      <div class="chip on" onclick="setChip('all',this)">All</div>
+      <div class="chip" onclick="setChip('intune',this)">Intune Catalog</div>
+      <div class="chip" onclick="setChip('gpo',this)">GPO / ADMX</div>
+      <div class="chip" onclick="setChip('registry',this)">Registry</div>
+      <div class="chip" onclick="setChip('graph',this)">Live Graph</div>
+      <div class="chip" onclick="setChip('chromium',this)">Browser Policies</div>
+      <div class="chip" onclick="setChip('office',this)">Office</div>
+      <div class="chip" onclick="setChip('custom',this)">Custom</div>
+    </div>
+  </div>
+</section>
+
+<main class="main" id="mainView">
+  <div class="stats-bar">
+    <span id="resultCount">Loading settings index…</span>
+    <span class="loader" id="loader"><span class="spinner"></span><span id="loaderText">Searching…</span></span>
+  </div>
+  <div class="results-grid" id="resultsGrid">
+    <div class="empty">
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2;margin-bottom:.75rem"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v3l2 2"/></svg>
+      <h3>Loading settings index…</h3>
+      <p>The index is loading in the background. Search will be ready in a moment.</p>
+    </div>
+  </div>
+</main>
+
+<!-- GRAPH QUERIES VIEW -->
+<div class="alt-view" id="graphView">
+  <h2>Microsoft Graph API Reference</h2>
+  <p class="sub">Ready-to-use queries for Settings Catalog data from your tenant</p>
+  <div class="info-card"><h3>List all Settings Catalog policies</h3>
+    <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</pre>
+    <button class="cbtn" onclick="cp('GET https://graph.microsoft.com/beta/deviceManagement/configurationPolicies',this)">Copy</button>
+  </div>
+  <div class="info-card"><h3>Search Settings Catalog definitions by name</h3>
+    <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationSettings
+  ?$filter=contains(name,'{KEYWORD}')
+  &$select=id,name,description,settingDefinitionId,applicability,defaultValue,categoryId,options
+  &$top=50</pre>
+  </div>
+  <div class="info-card"><h3>Create Settings Catalog policy (POST)</h3>
+    <pre class="json-pre">POST https://graph.microsoft.com/beta/deviceManagement/configurationPolicies
+Content-Type: application/json
+
+{
+  "name": "My Policy",
+  "platforms": "windows10",
+  "technologies": "mdm",
+  "settings": [{
+    "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
+    "settingInstance": {
+      "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+      "settingDefinitionId": "device_vendor_msft_...",
+      "choiceSettingValue": { "value": "..._1", "children": [] }
+    }
+  }]
+}</pre>
+  </div>
+  <div class="info-card"><h3>Required permissions</h3>
+    <table class="info-table">
+      <tr><td>Read policies</td><td><span class="mono">DeviceManagementConfiguration.Read.All</span></td></tr>
+      <tr><td>Write policies</td><td><span class="mono">DeviceManagementConfiguration.ReadWrite.All</span></td></tr>
+      <tr><td>App type for Actions</td><td>App-only (client_credentials) — store secret in GitHub Secrets</td></tr>
+      <tr><td>App type for browser</td><td>SPA / Public client — delegated, MSAL popup</td></tr>
+      <tr><td>Redirect URI</td><td><span class="mono" id="redirectUriDisplay">https://your-github-pages-url</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ABOUT VIEW -->
+<div class="alt-view" id="aboutView">
+  <h2>About Helient Settings Explorer</h2>
+  <p class="sub">Enterprise endpoint policy cross-reference tool by Helient</p>
+  <div class="info-card"><h3>Architecture</h3>
+    <table class="info-table">
+      <tr><td>Hosting</td><td>GitHub Pages — free, HTTPS, custom domain support</td></tr>
+      <tr><td>Data storage</td><td>GitHub repo (data/ folder) — versioned, free, zero DB to maintain</td></tr>
+      <tr><td>Data refresh</td><td>GitHub Actions runs weekly — fetches all sources, commits updated index</td></tr>
+      <tr><td>Search engine</td><td>Client-side full-text index loaded in chunks (~100 KB each)</td></tr>
+      <tr><td>Live Graph</td><td>Optional MSAL auth supplements index with tenant-specific data</td></tr>
+    </table>
+  </div>
+  <div class="info-card"><h3>Data sources</h3>
+    <table class="info-table">
+      <tr><td>Intune Settings Catalog</td><td>Microsoft Graph API (<span class="mono">/deviceManagement/configurationSettings</span>)</td></tr>
+      <tr><td>Windows ADMX / GPO</td><td>Curated from Windows Policy Definitions + Policy CSP reference</td></tr>
+      <tr><td>Microsoft Edge policies</td><td>Chromium policy_templates.json (canonical Edge + Chrome source)</td></tr>
+      <tr><td>Office 365 ADMX</td><td>Microsoft Office ADMX template reference</td></tr>
+      <tr><td>Custom sources</td><td>CSV/Excel/JSON file import + URL sources via custom_sources.json</td></tr>
+    </table>
+  </div>
+  <div class="info-card"><h3>Free hosting setup (5 minutes)</h3>
+    <table class="info-table">
+      <tr><td>1</td><td>Push repo to GitHub</td></tr>
+      <tr><td>2</td><td>Settings → Pages → Deploy from main branch → /public folder</td></tr>
+      <tr><td>3</td><td>Settings → Secrets → Add <span class="mono">AZURE_CLIENT_ID</span>, <span class="mono">AZURE_CLIENT_SECRET</span>, <span class="mono">AZURE_TENANT_ID</span></td></tr>
+      <tr><td>4</td><td>Actions → Build Settings Index → Run workflow</td></tr>
+      <tr><td>5</td><td>Add your GitHub Pages URL as a SPA redirect URI in the Azure App Registration</td></tr>
+    </table>
+  </div>
+  <div class="info-card"><h3>Index status</h3>
+    <div id="aboutIndexStatus" style="font-size:13px;color:var(--h-text3)">Loading…</div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="overlay" id="settingsOverlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <img src="data:image/png;base64,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" alt="Helient">
+      <h3>Settings</h3>
+      <button class="modal-close" onclick="closeSettings()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Auth -->
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Microsoft Graph Authentication
+        </div>
+        <div class="fld">
+          <label>Application (Client) ID <span class="badge-r">Required</span></label>
+          <input id="s_clientId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+          <div class="fld-hint"><a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps" target="_blank">Azure App Registrations ↗</a> · App Registration → Overview → Application (client) ID</div>
+        </div>
+        <div class="fld">
+          <label>Tenant ID <span class="badge-o">Optional</span></label>
+          <input id="s_tenantId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  (leave blank = any Microsoft account)">
+          <div class="fld-hint">Azure AD → Overview → Tenant ID. Scope auth to your specific tenant.</div>
+        </div>
+        <div class="fld">
+          <label>Redirect URI <span class="badge-o">Read-only</span></label>
+          <div style="display:flex;gap:6px">
+            <input id="s_redirectUri" type="text" readonly style="background:var(--h-surface);font-family:monospace;font-size:11.5px;color:var(--h-text2)">
+            <button class="cbtn" style="flex-shrink:0;padding:5px 10px" onclick="cpUri(this)">Copy</button>
+          </div>
+          <div class="fld-hint">Add this as a <strong>Single-page application (SPA)</strong> redirect URI in your App Registration.</div>
+        </div>
+      </div>
+
+      <!-- Custom sources -->
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Custom Data Sources
+        </div>
+        <p style="font-size:12px;color:var(--h-text3);margin-bottom:10px;line-height:1.5">Import settings from Excel/CSV/JSON files or add remote JSON URLs. Data merges into the search index instantly.</p>
+
+        <!-- File upload -->
+        <div class="fld">
+          <label>Upload file (Excel, CSV, or JSON)</label>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.json" onchange="handleFileUpload(this)">
+            <p><strong>Click to browse</strong> or drag & drop an Excel, CSV, or JSON file</p>
+            <p style="font-size:11px;margin-top:4px">Expected columns: name, description, settingDefinitionId, registryKey, registryValue, gpoPath</p>
+          </div>
+          <div id="uploadResult"></div>
+        </div>
+
+        <!-- URL sources -->
+        <div class="fld">
+          <label>Remote JSON URL</label>
+          <div class="add-src-row">
+            <input id="newSrcUrl" type="text" placeholder="https://example.com/my-settings.json">
+            <input id="newSrcName" type="text" placeholder="Label" style="max-width:130px">
+            <button onclick="addCustomSource()">Add</button>
+          </div>
+        </div>
+        <div class="src-list" id="srcList"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="modal-save" id="saveBtn" onclick="saveSettings()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save & Connect
+      </button>
+      <button class="modal-clr" onclick="clearSettings()">Clear Saved</button>
+      <span class="modal-status" id="settingsStatus"></span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <img src="data:image/png;base64,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" alt="">
+  Built by <a href="https://helient.com" target="_blank">Helient</a> &nbsp;·&nbsp;
+  <span id="footerMeta">Settings index loading…</span> &nbsp;·&nbsp;
+  Not affiliated with Microsoft
+</footer>
+
+<!-- MSAL dynamic loader -->
+<script>
+const MSAL_CDNS = [
+  "https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js",
+  "https://unpkg.com/@azure/msal-browser@3.28.1/lib/msal-browser.min.js",
+];
+function loadMsal(urls, idx) {
+  if (idx >= urls.length) { console.warn("All MSAL CDNs failed"); return; }
+  const s = document.createElement("script");
+  s.src = urls[idx];
+  s.onload = () => {
+    const M = window.msal || window.msalBrowser;
+    if (M && M.PublicClientApplication) { window.__MSAL = M; waitForMsalAndInit(20); }
+    else loadMsal(urls, idx + 1);
+  };
+  s.onerror = () => loadMsal(urls, idx + 1);
+  document.head.appendChild(s);
+}
+loadMsal(MSAL_CDNS, 0);
+</script>
+
+<!-- SheetJS for Excel/CSV import -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let SEARCH_INDEX  = [];          // unified flat array of entries (built from chunks)
+let customEntries = [];          // user-uploaded or URL-added entries
+let filter        = "all";
+let msalApp       = null;
+let graphToken    = null;
+let graphUser     = null;
+let searchTimer   = null;
+const graphCache  = {};
+
+// Index loading state
+let chunksTotal   = 0;
+let chunksLoaded  = 0;
+let indexMeta     = null;
+let indexReady    = false;
+
+// Custom sources list (in-memory; saved to localStorage)
+let customSources = [];
+
+// ── CHUNK LOADER ──────────────────────────────────────────────────────────────
+async function loadIndex() {
+  // 1. Fetch meta.json to know how many chunks exist
+  try {
+    const r   = await fetch("data/meta.json", { cache: "no-cache" });
+    if (!r.ok) throw new Error("meta.json not found");
+    indexMeta = await r.json();
+  } catch(e) {
+    console.warn("Could not load data/meta.json:", e.message);
+    // No index built yet — show empty but functional state
+    setIndexStatus("No index built yet. Run the GitHub Action (or python scripts/build_index.py) to generate data.", false);
+    document.getElementById("livePillText").textContent = "No index";
+    document.getElementById("resultCount").textContent = "Index not built — click ⚙ Settings for setup info.";
+    document.getElementById("resultsGrid").innerHTML = emptyHTML(
+      "Index not yet built",
+      "Run the GitHub Action to build the settings index. See the About tab for setup instructions.",
+      true
+    );
+    indexReady = false;
+    return;
+  }
+
+  chunksTotal  = indexMeta.chunks?.length || 0;
+  const bar    = document.getElementById("indexBar");
+  const barTxt = document.getElementById("indexBarText");
+  const fill   = document.getElementById("progressFill");
+
+  if (chunksTotal > 0) {
+    bar.style.display = "flex";
+    barTxt.textContent = `Loading ${indexMeta.total_entries?.toLocaleString() || ""} settings across ${chunksTotal} chunks…`;
+  }
+
+  // 2. Load all chunks in parallel (browser will pipeline these)
+  const chunks = indexMeta.chunks || [];
+  const results = await Promise.allSettled(
+    chunks.map((c, i) =>
+      fetch(c.file, { cache: "default" })
+        .then(r => r.ok ? r.json() : [])
+        .then(data => {
+          chunksLoaded++;
+          fill.style.width = Math.round((chunksLoaded / chunksTotal) * 100) + "%";
+          barTxt.textContent = `Loading… ${chunksLoaded}/${chunksTotal} chunks`;
+          return data;
+        })
+        .catch(() => [])
+    )
+  );
+
+  for (const r of results) {
+    if (r.status === "fulfilled" && Array.isArray(r.value)) {
+      SEARCH_INDEX.push(...r.value);
+    }
+  }
+
+  // 3. Merge custom entries
+  SEARCH_INDEX.push(...customEntries);
+
+  indexReady = true;
+  bar.style.display = "none";
+
+  const total    = SEARCH_INDEX.length;
+  const updated  = indexMeta.last_updated
+    ? new Date(indexMeta.last_updated).toLocaleDateString("en-US", {month:"short", day:"numeric", year:"numeric"})
+    : "unknown";
+
+  setIndexStatus(`✓ ${total.toLocaleString()} settings · updated ${updated}`, true);
+  document.getElementById("livePillText").textContent = `${total.toLocaleString()} settings`;
+  document.getElementById("liveDot").style.background = "#2ECC71";
+  document.getElementById("footerMeta").textContent = `${total.toLocaleString()} settings · last updated ${updated}`;
+  document.getElementById("redirectUriDisplay").textContent = window.location.origin + window.location.pathname;
+
+  // Update about page
+  const src = indexMeta.sources || {};
+  document.getElementById("aboutIndexStatus").innerHTML =
+    `<table style="font-size:12.5px;border-collapse:collapse;width:100%">` +
+    Object.entries(src).map(([k,v]) =>
+      `<tr><td style="padding:4px 10px;font-weight:600;color:var(--h-text2);width:160px">${k}</td>` +
+      `<td style="padding:4px 10px;color:${v.ok?"var(--h-success)":"var(--h-red)"}">${v.ok?"✓":"✗"} ${v.count} entries</td></tr>`
+    ).join("") + `</table>`;
+
+  // If there was a pending search, run it
+  const q = document.getElementById("searchInput").value.trim();
+  if (q.length >= 2) {
+    runSearch(q);
+  } else {
+    document.getElementById("resultCount").textContent = `${total.toLocaleString()} settings ready — enter a search term`;
+    document.getElementById("resultsGrid").innerHTML = emptyHTML(
+      "Search across all configuration methods",
+      "Try "BitLocker", "Windows Update", "SmartScreen", "LAPS", "HomepageLocation", or any settingDefinitionId fragment."
+    );
+  }
+}
+
+function setIndexStatus(msg, ok) {
+  const el = document.getElementById("indexStatus");
+  el.textContent = msg;
+  el.style.color = ok ? "rgba(46,204,113,.8)" : "rgba(255,255,255,.35)";
+}
+
+// ── SOURCE BADGE HELPERS ──────────────────────────────────────────────────────
+const SRC_MAP = {
+  local:       ["sb-local",  "● Built-in"],
+  graph:       ["sb-graph",  "☁ Graph"],
+  chromium:    ["sb-chrome", "🌐 Browser"],
+  admx_windows:["sb-admx",   "📋 Windows ADMX"],
+  admx_office: ["sb-office", "📄 Office"],
+  custom:      ["sb-custom", "⭐ Custom"],
+};
+function srcBadge(s) {
+  const [cls, lbl] = SRC_MAP[s] || ["sb-local", "● Built-in"];
+  return `<span class="src-badge ${cls}">${lbl}</span>`;
+}
+
+// ── FULL-TEXT SEARCH ──────────────────────────────────────────────────────────
+function scoreEntry(e, terms) {
+  const t    = e._text || "";
+  const name = (e.name || "").toLowerCase();
+  let score  = 0;
+  for (const term of terms) {
+    if (!t.includes(term)) return 0;
+    if (name.startsWith(term))  score += 20;
+    else if (name.includes(term)) score += 10;
+    else score += 1;
+  }
+  if (!e._source || e._source === "local") score += 3;
+  return score;
+}
+
+function doSearch(q) {
+  const terms = q.toLowerCase().trim().split(/[\s,]+/).filter(t => t.length >= 2);
+  if (!terms.length) return [];
+
+  // Apply method/source filter
+  let pool = SEARCH_INDEX;
+  if (filter === "intune")   pool = pool.filter(e => (e.methods||[]).includes("intune"));
+  if (filter === "gpo")      pool = pool.filter(e => (e.methods||[]).includes("gpo"));
+  if (filter === "registry") pool = pool.filter(e => (e.methods||[]).includes("registry"));
+  if (filter === "graph")    pool = pool.filter(e => e._source === "graph");
+  if (filter === "chromium") pool = pool.filter(e => e._source === "chromium");
+  if (filter === "office")   pool = pool.filter(e => e._source === "admx_office");
+  if (filter === "custom")   pool = pool.filter(e => e._source === "custom");
+
+  const hits = [];
+  for (const e of pool) {
+    const sc = scoreEntry(e, terms);
+    if (sc > 0) hits.push({ sc, e });
+  }
+  hits.sort((a, b) => b.sc - a.sc);
+  return hits.slice(0, 150).map(h => h.e);
+}
+
+// ── GRAPH LIVE SUPPLEMENT ─────────────────────────────────────────────────────
+async function graphSearch(q) {
+  if (!graphToken) return [];
+  const key = "g:" + q;
+  if (graphCache[key]) return graphCache[key];
+  const h = { Authorization: "Bearer " + graphToken, ConsistencyLevel: "eventual" };
+  const results = [];
+  const seen = new Set(SEARCH_INDEX.map(e => e.name?.toLowerCase()).filter(Boolean));
+
+  try {
+    const r = await fetch(
+      `https://graph.microsoft.com/beta/deviceManagement/configurationSettings` +
+      `?$filter=contains(name,'${encodeURIComponent(q)}')` +
+      `&$select=id,name,description,settingDefinitionId,applicability,defaultValue,categoryId,options,valueDefinition&$top=30`,
+      { headers: h }
+    );
+    if (r.ok) {
+      const d = await r.json();
+      for (const s of (d.value || [])) {
+        const nm = (s.name || "").toLowerCase();
+        if (!seen.has(nm)) {
+          seen.add(nm);
+          results.push(graphEntryToCard(s));
+        }
+      }
+    }
+  } catch(e) { console.warn("Graph search error:", e.message); }
+  graphCache[key] = results;
+  return results;
+}
+
+function graphEntryToCard(s) {
+  const defId = s.settingDefinitionId || s.id || "";
+  const isUser = defId.toLowerCase().startsWith("user_");
+  const pfx = isUser ? "./User" : "./Device";
+  const oma = defId ? pfx + "/Vendor/MSFT/" + defId
+    .replace(/^(device|user)_vendor_msft_/i,"").split("_")
+    .map(p => p[0].toUpperCase() + p.slice(1)).join("/") : "";
+  const vals = (s.options||[]).map(o=>({v:String(o.itemId||o.value||""),l:o.displayName||""}));
+  return {
+    id:"graph_"+defId, name:s.name||defId, desc:s.description||"No description.",
+    icon:"⚙️", cats:[s.categoryId||"Settings Catalog"],
+    plat:(s.applicability?.platform||"windows").toLowerCase().replace("windows10","windows"),
+    methods:["intune"], _source:"graph", _infoUrl:(s.infoUrls||[""])[0],
+    intune:[{cat:"Settings Catalog (Live)",name:s.name||defId,defId,oma,dtype:"Choice",vals,
+      rec:String(s.defaultValue??"")||(vals[0]?.v||""),
+      json:`"settingDefinitionId": "${defId}"`}]
+  };
+}
+
+// ── SEARCH ORCHESTRATOR ───────────────────────────────────────────────────────
+document.getElementById("searchInput").addEventListener("input", function(e) {
+  clearTimeout(searchTimer);
+  const q = e.target.value.trim();
+  if (!q) { showEmpty(); return; }
+  searchTimer = setTimeout(() => runSearch(q), 260);
+});
+document.getElementById("searchInput").addEventListener("keydown", function(e) {
+  if (e.key === "Escape") { e.target.value = ""; showEmpty(); }
+  if (e.key === "Enter")  { clearTimeout(searchTimer); runSearch(e.target.value.trim()); }
+});
+
+async function runSearch(q) {
+  if (!q || q.length < 2) return;
+  showLoader(true, "Searching…");
+
+  const indexHits = doSearch(q);
+  renderResults(indexHits, q, !!graphToken);
+
+  if (graphToken) {
+    showLoader(true, "Querying Microsoft Graph…");
+    const gHits = await graphSearch(q);
+    showLoader(false);
+    const seen = new Set(indexHits.map(e => e.name?.toLowerCase()));
+    const merged = [...indexHits, ...gHits.filter(g => !seen.has(g.name?.toLowerCase()))];
+    renderResults(merged, q, false);
+  } else {
+    showLoader(false);
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderResults(results, q, isPartial) {
+  const terms = q.toLowerCase().split(/[\s,]+/).filter(t => t.length >= 2);
+  const nSrc = {};
+  for (const e of results) { const s = e._source||"local"; nSrc[s] = (nSrc[s]||0)+1; }
+
+  const pills = Object.entries(nSrc).map(([s,n]) => {
+    const [cls,lbl] = SRC_MAP[s]||["sb-local","Local"];
+    return `<span class="src-badge ${cls}" style="cursor:pointer" onclick="setChipById('${s}')">${lbl} ${n}</span>`;
+  }).join(" ");
+
+  const loadNote = isPartial ? ` <span style="font-size:11px;color:var(--h-blue)">· querying Graph…</span>` : "";
+
+  document.getElementById("resultCount").innerHTML = results.length === 0
+    ? `<span style="color:var(--h-red)">No results for <strong>"${esc(q)}"</strong></span>`
+    : `<strong>${results.length.toLocaleString()}</strong> result${results.length!==1?"s":""} for <strong>"${esc(q)}"</strong> ${pills}${loadNote}`;
+
+  if (!results.length && !isPartial) {
+    document.getElementById("resultsGrid").innerHTML = emptyHTML(
+      "No settings found",
+      `Try the exact UI label from Intune, a registry value name, a <code>settingDefinitionId</code> fragment, or an ADMX policy name.`
+    );
+    return;
+  }
+  document.getElementById("resultsGrid").innerHTML = results.map(s => cardHTML(s, terms)).join("");
+}
+
+function emptyHTML(h, p, noSearch) {
+  return `<div class="empty">
+    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2;margin-bottom:.75rem"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <h3>${h}</h3><p>${p}</p>
+    ${!noSearch ? "" : '<p style="margin-top:8px;font-size:12px;color:var(--h-blue)">See the <strong>About</strong> tab for setup instructions.</p>'}
+  </div>`;
+}
+
+function cardHTML(e, terms) {
+  const mt = (e.methods||[]).map(m => {
+    const map={intune:["t-int","Intune"],gpo:["t-gpo","GPO"],registry:["t-reg","Reg"],admx:["t-adm","ADMX"],csp:["t-csp","CSP"]};
+    const [c,l] = map[m]||["t-plt",m.toUpperCase()];
+    return `<span class="tag ${c}">${l}</span>`;
+  }).join("");
+  const infoLink = e._infoUrl ? `<a href="${esc(e._infoUrl)}" target="_blank" style="font-size:10px;color:var(--h-blue);text-decoration:none;margin-left:3px">docs ↗</a>` : "";
+
+  return `<div class="card" id="card-${e.id}">
+    <div class="card-hdr" onclick="toggleCard('${e.id}')">
+      <div class="card-icon">${e.icon||"⚙️"}</div>
+      <div class="card-info">
+        <div class="card-name">${hl(e.name||"",terms)}</div>
+        <div class="card-desc">${hl(e.desc||"",terms)}</div>
+        <div class="card-meta">${mt}<span class="tag t-plt">${e.plat==="windows"?"Windows":e.plat||"Windows"}</span>${srcBadge(e._source||"local")}${infoLink}</div>
+      </div>
+      <button class="expand-btn">Details<svg class="exp-arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+    <div class="detail">${detailHTML(e)}</div>
+  </div>`;
+}
+
+function detailHTML(e) {
+  let tabs="",panes="",first=true;
+  function addTab(id,pip,label,content){
+    tabs+=`<div class="dtab${first?" active":""}" onclick="swTab(this,'${id}')"><span class="dpip" style="background:${pip}"></span>${label}</div>`;
+    panes+=`<div class="tp${first?" active":""}" id="${id}">${content}</div>`;
+    first=false;
+  }
+  if ((e.intune||[]).length) addTab(`ti-${e.id}`,"var(--h-tag-int)","Intune Settings Catalog",intunePane(e));
+  if (e.gpo)                 addTab(`tg-${e.id}`,"var(--h-tag-gpo)","GPO / ADMX",gpoPane(e));
+  if (e.reg)                 addTab(`tr-${e.id}`,"var(--h-tag-reg)","Registry",regPane(e));
+  return `<div class="dtabs">${tabs}</div><div class="dcontent">${panes}</div>`;
+}
+
+function intunePane(e) {
+  let h="";
+  for (const i of (e.intune||[])) {
+    h+=`<div class="cblock">
+      <div class="cblock-title">${esc(i.name||"")}<span class="def-id">${esc(i.defId||"")}</span><button class="cbtn" onclick="cp(${JSON.stringify(i.defId||"")},this)">Copy ID</button></div>
+      <table class="ctable">
+        <tr><td>Category</td><td>${esc(i.cat||"")}</td></tr>
+        <tr><td>Definition ID</td><td><span class="mono">${esc(i.defId||"")}</span><button class="cbtn" onclick="cp(${JSON.stringify(i.defId||"")},this)">Copy</button></td></tr>
+        ${i.oma?`<tr><td>OMA-URI</td><td><span class="mono">${esc(i.oma)}</span><button class="cbtn" onclick="cp(${JSON.stringify(i.oma)},this)">Copy</button></td></tr>`:""}
+        <tr><td>Data type</td><td>${esc(i.dtype||"")}</td></tr>
+        ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v)}</span> <span style="color:var(--h-text3)">${esc(v.l)}</span>`).join("<br>")}</td></tr>`:""}
+        ${i.rec?`<tr><td>Recommended</td><td><span class="mono">${esc(i.rec)}</span></td></tr>`:""}
+      </table>
+      ${i.json?`<div style="margin-top:9px"><div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">JSON Fragment (Graph API)</div>
+      <pre class="json-pre">${esc(i.json)}</pre>
+      <button class="cbtn" style="margin-top:4px" onclick="cp(${JSON.stringify(i.json)},this)">Copy JSON</button></div>`:""}
+    </div>`;
+  }
+  h+=`<div class="copy-row"><button class="cta intune" onclick="cpAllIntune(${JSON.stringify(e.id)},this)">Copy All Intune Config</button></div>`;
+  return h;
+}
+
+function gpoPane(e) {
+  const g=e.gpo||{}, a=e.admx;
+  return `<div class="cblock">
+    <div class="cblock-title"><span class="tag t-gpo">GPO</span> Group Policy Path</div>
+    <table class="ctable">
+      <tr><td>Path</td><td>${esc(g.path||"")}</td></tr>
+      <tr><td>Policy</td><td>${esc(g.policy||"")}</td></tr>
+      <tr><td>ADMX file</td><td><span class="mono">${esc(g.admx||"")}</span></td></tr>
+      ${g.ns?`<tr><td>Namespace</td><td><span class="mono">${esc(g.ns)}</span></td></tr>`:""}
+    </table>
+  </div>
+  ${a?`<div class="cblock">
+    <div class="cblock-title"><span class="tag t-adm">ADMX</span> Administrative Template</div>
+    <table class="ctable">
+      <tr><td>Policy name</td><td><span class="mono">${esc(a.name||"")}</span><button class="cbtn" onclick="cp(${JSON.stringify(a.name||"")},this)">Copy</button></td></tr>
+      <tr><td>ADMX file</td><td><span class="mono">${esc(a.file||"")}</span></td></tr>
+      ${a.cat?`<tr><td>Category</td><td>${esc(a.cat)}</td></tr>`:""}
+      <tr><td>Registry key</td><td><span class="mono">${esc(a.regKey||"")}</span><button class="cbtn" onclick="cp(${JSON.stringify(a.regKey||"")},this)">Copy</button></td></tr>
+      <tr><td>Value name</td><td><span class="mono">${esc(a.val||"")}</span></td></tr>
+      <tr><td>Value type</td><td><span class="mono">${esc(a.type||"")}</span></td></tr>
+    </table>
+  </div>`:""}
+  <div class="copy-row">
+    <button class="cta gpo" onclick="cp(${JSON.stringify(g.path||"")},this)">Copy GPO Path</button>
+    ${a?.regKey?`<button class="cta gpo" onclick="cp(${JSON.stringify(a.regKey)},this)">Copy Registry Key</button>`:""}
+  </div>`;
+}
+
+function regPane(e) {
+  const r=e.reg||{};
+  const full=`${r.hive||"HKLM"}\\${r.key||""}`;
+  const snippet=`Windows Registry Editor Version 5.00\n\n[${r.hive||"HKLM"}\\${r.key||""}]\n"${r.val||""}"=${r.type==="REG_DWORD"?"dword:00000001":r.type==="REG_SZ"?'"value"':"hex:01"}`;
+  return `<div class="cblock">
+    <div class="cblock-title"><span class="tag t-reg">REG</span> Registry Configuration</div>
+    <table class="ctable">
+      <tr><td>Hive</td><td><span class="mono">${esc(r.hive||"")}</span></td></tr>
+      <tr><td>Key path</td><td><span class="mono">${esc(r.key||"")}</span><button class="cbtn" onclick="cp(${JSON.stringify(full)},this)">Copy Full</button></td></tr>
+      <tr><td>Value name</td><td><span class="mono">${esc(r.val||"")}</span></td></tr>
+      <tr><td>Type</td><td><span class="mono">${esc(r.type||"")}</span></td></tr>
+      <tr><td>Data</td><td>${esc(r.data||"")}</td></tr>
+      ${r.note?`<tr><td>Notes</td><td style="color:var(--h-text3);font-size:11px">${esc(r.note)}</td></tr>`:""}
+    </table>
+  </div>
+  <div class="copy-row">
+    <button class="cta reg" onclick="cp(${JSON.stringify(snippet)},this)">.REG snippet</button>
+    <button class="cta reg" onclick="cp(${JSON.stringify(full)},this)">Copy Key Path</button>
+  </div>`;
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function toggleCard(id) { document.getElementById("card-"+id)?.classList.toggle("expanded"); }
+function swTab(el, id) {
+  const p=el.closest(".detail");
+  p.querySelectorAll(".dtab").forEach(t=>t.classList.remove("active"));
+  p.querySelectorAll(".tp").forEach(x=>x.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById(id)?.classList.add("active");
+}
+function setChip(f, el) {
+  filter=f;
+  document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));
+  el.classList.add("on");
+  const q=document.getElementById("searchInput").value.trim();
+  if (q) runSearch(q);
+}
+function setChipById(srcId) {
+  const map={graph:"graph",chromium:"chromium",admx_office:"office",custom:"custom",
+             admx_windows:"gpo",local:"intune"};
+  const chipTarget = map[srcId]||"all";
+  document.querySelectorAll(".chip").forEach(c=>{
+    const onclick=c.getAttribute("onclick")||"";
+    if (onclick.includes("'"+chipTarget+"'")) { c.click(); }
+  });
+}
+function showLoader(v, t) {
+  document.getElementById("loader").classList.toggle("show",v);
+  if(t) document.getElementById("loaderText").textContent=t;
+}
+function showEmpty() {
+  document.getElementById("resultCount").textContent=
+    indexReady ? `${SEARCH_INDEX.length.toLocaleString()} settings ready — enter a search term` : "Loading…";
+  document.getElementById("resultsGrid").innerHTML = emptyHTML(
+    "Search across all configuration methods",
+    "Try "BitLocker", "Windows Update", "SmartScreen", "LAPS", "HomepageLocation", or any <code>settingDefinitionId</code> fragment."
+  );
+}
+function showView(v, btn) {
+  ["searchView","mainView","graphView","aboutView"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=(id==="searchView"||id==="mainView")?v==="search"?"":"none":id===v+"View"?"block":"none";
+  });
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+}
+function cp(text, btn) {
+  navigator.clipboard.writeText(text).then(()=>{
+    const o=btn.textContent; btn.textContent="✓ Copied"; btn.classList.add("ok");
+    setTimeout(()=>{btn.textContent=o;btn.classList.remove("ok");},1500);
+  });
+}
+function cpAllIntune(id, btn) {
+  const e=SEARCH_INDEX.find(x=>x.id===id);
+  if(!e?.intune?.length){cp("",btn);return;}
+  const out=e.intune.map(i=>`// ${i.name}\n// Definition ID: ${i.defId}\n// OMA-URI: ${i.oma||""}\n{\n  ${i.json}\n}`).join("\n\n");
+  cp(out,btn);
+}
+function cpUri(btn){cp(window.location.origin+window.location.pathname,btn);}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function hl(text,terms){
+  let t=esc(text);
+  for(const term of terms){const re=new RegExp("("+term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");t=t.replace(re,"<span class=\'hl\'>$1</span>");}
+  return t;
+}
+
+// ── FILE IMPORT (Excel/CSV/JSON) ──────────────────────────────────────────────
+function handleFileUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let entries = [];
+    try {
+      if (file.name.endsWith(".json")) {
+        const data = JSON.parse(e.target.result);
+        entries = Array.isArray(data) ? data : (data.settings || data.entries || []);
+      } else {
+        // Excel or CSV via SheetJS
+        const wb = XLSX.read(e.target.result, { type: "binary" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+        entries = rows.map((row, i) => ({
+          id:      "custom_upload_" + i,
+          name:    row.name || row.Name || row.PolicyName || row["Setting Name"] || `Custom Setting ${i+1}`,
+          desc:    row.description || row.Description || row.Desc || row.helpText || "",
+          cats:    ["Custom Import"],
+          plat:    (row.platform || row.Platform || "windows").toLowerCase(),
+          methods: ["registry","gpo","intune"].filter(m => row[m] || row[m.toUpperCase()]),
+          _source: "custom",
+          intune:  row.settingDefinitionId ? [{
+            cat:"Custom",name:row.name||"",
+            defId:row.settingDefinitionId||row.DefinitionId||"",
+            oma:row.omaUri||row.OMA_URI||"",
+            dtype:row.dataType||"String",vals:[],rec:"",
+            json:`"settingDefinitionId": "${row.settingDefinitionId||""}"`
+          }] : [],
+          gpo: row.gpoPath ? {path:row.gpoPath,policy:row.policyName||row.name||"",admx:row.admxFile||"",ns:""} : null,
+          reg: row.registryKey ? {
+            hive: (row.registryKey||"").startsWith("HKCU")?"HKCU":"HKLM",
+            key:  (row.registryKey||"").replace(/^HK[A-Z_]+\\/,""),
+            val:  row.registryValue||row.ValueName||"",
+            type: row.valueType||"REG_DWORD",
+            data: row.data||row.ValueData||"",note:""
+          } : null,
+        }));
+      }
+
+      // Build search text and merge into index
+      for (const entry of entries) {
+        entry._text = [entry.name,entry.desc,...(entry.cats||[]),
+          entry.reg?.key||"",entry.reg?.val||"",
+          entry.gpo?.path||"",entry.gpo?.policy||"",
+          ...(entry.intune||[]).map(i=>i.defId+" "+i.name+" "+i.oma)
+        ].join(" ").toLowerCase();
+      }
+
+      customEntries.push(...entries);
+      SEARCH_INDEX.push(...entries);
+      saveCustomEntries();
+
+      document.getElementById("uploadResult").innerHTML =
+        `<div style="color:var(--h-success);font-size:12px;margin-top:6px">✓ Imported ${entries.length} settings from ${file.name}</div>`;
+      renderCustomSourceList();
+
+    } catch(err) {
+      document.getElementById("uploadResult").innerHTML =
+        `<div style="color:var(--h-red);font-size:12px;margin-top:6px">✗ Error: ${err.message}</div>`;
+    }
+  };
+
+  if (file.name.endsWith(".json")) {
+    reader.readAsText(file);
+  } else {
+    reader.readAsBinaryString(file);
+  }
+}
+
+// ── CUSTOM URL SOURCES ────────────────────────────────────────────────────────
+function addCustomSource() {
+  const url  = document.getElementById("newSrcUrl").value.trim();
+  const name = document.getElementById("newSrcName").value.trim() || url;
+  if (!url) return;
+  customSources.push({ url, name, added: new Date().toISOString() });
+  document.getElementById("newSrcUrl").value  = "";
+  document.getElementById("newSrcName").value = "";
+  saveCustomSources();
+  renderCustomSourceList();
+
+  // Fetch and merge immediately
+  fetch(url).then(r=>r.ok?r.json():null).then(data=>{
+    if(!data) return;
+    const items = Array.isArray(data)?data:(data.settings||data.entries||[]);
+    for(const item of items){
+      item._source = item._source || "custom";
+      item._text   = [item.name||"",item.desc||"",...(item.cats||[])].join(" ").toLowerCase();
+      if (!item.id) item.id = "custom_url_" + Math.random().toString(36).slice(2,10);
+    }
+    customEntries.push(...items);
+    SEARCH_INDEX.push(...items);
+    saveCustomEntries();
+  }).catch(e=>console.warn("Custom source fetch failed:", url, e.message));
+}
+
+function removeCustomSource(idx) {
+  customSources.splice(idx, 1);
+  saveCustomSources();
+  renderCustomSourceList();
+}
+
+function renderCustomSourceList() {
+  const list = document.getElementById("srcList");
+  if (!customSources.length) { list.innerHTML=""; return; }
+  list.innerHTML = customSources.map((s,i) =>
+    `<div class="src-item">
+      <div class="src-item-info">
+        <div class="src-item-name">${esc(s.name)}</div>
+        <div class="src-item-url">${esc(s.url)}</div>
+      </div>
+      <button class="src-remove" onclick="removeCustomSource(${i})" title="Remove">✕</button>
+    </div>`
+  ).join("");
+}
+
+function saveCustomSources() { localStorage.setItem("helient_custom_sources",JSON.stringify(customSources)); }
+function saveCustomEntries()  { try { localStorage.setItem("helient_custom_entries",JSON.stringify(customEntries)); } catch(e){} }
+
+// ── SETTINGS MODAL ────────────────────────────────────────────────────────────
+const SK = "helient_settings_v1";
+function loadSaved(){try{return JSON.parse(localStorage.getItem(SK)||"{}");}catch{return{};}}
+function saveSaved(o){localStorage.setItem(SK,JSON.stringify(o));}
+
+function getMsalConfig(){
+  const s=loadSaved();
+  const cid=s.clientId||localStorage.getItem("helient_clientId")||"";
+  if(!cid) return null;
+  return {auth:{clientId:cid,authority:"https://login.microsoftonline.com/"+(s.tenantId||"common"),redirectUri:window.location.origin+window.location.pathname},cache:{cacheLocation:"sessionStorage",storeAuthStateInCookie:true}};
+}
+
+function openSettings(){
+  const s=loadSaved();
+  document.getElementById("s_clientId").value=s.clientId||"";
+  document.getElementById("s_tenantId").value=s.tenantId||"";
+  document.getElementById("s_redirectUri").value=window.location.origin+window.location.pathname;
+  document.getElementById("settingsStatus").textContent="";
+  document.getElementById("settingsStatus").className="modal-status";
+  renderCustomSourceList();
+  document.getElementById("settingsOverlay").classList.add("open");
+}
+function closeSettings(){document.getElementById("settingsOverlay").classList.remove("open");}
+function overlayClick(e){if(e.target===document.getElementById("settingsOverlay"))closeSettings();}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSettings();});
+
+async function saveSettings(){
+  const cid=document.getElementById("s_clientId").value.trim();
+  const tid=document.getElementById("s_tenantId").value.trim();
+  const btn=document.getElementById("saveBtn");
+  const status=document.getElementById("settingsStatus");
+  if(cid){
+    const g=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if(!g.test(cid)){status.textContent="⚠ Client ID must be a valid GUID";status.className="modal-status err";return;}
+    if(tid&&!g.test(tid)){status.textContent="⚠ Tenant ID must be a valid GUID";status.className="modal-status err";return;}
+  }
+  saveSaved({clientId:cid,tenantId:tid,savedAt:new Date().toISOString()});
+  if(cid) localStorage.setItem("helient_clientId",cid);
+  btn.textContent="✓ Saved";btn.classList.add("saved");
+  status.textContent="Saved to this browser";status.className="modal-status ok";
+  setTimeout(async()=>{
+    closeSettings();btn.classList.remove("saved");
+    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save & Connect';
+    refreshGearBtn();
+    if(cid) await handleAuth();
+  },700);
+}
+
+function clearSettings(){
+  if(!confirm("Clear all saved settings? This removes your auth credentials and custom entries.")) return;
+  [SK,"helient_clientId","helient_custom_sources","helient_custom_entries"].forEach(k=>localStorage.removeItem(k));
+  customSources=[]; customEntries=[];
+  SEARCH_INDEX=SEARCH_INDEX.filter(e=>e._source!=="custom");
+  document.getElementById("s_clientId").value="";document.getElementById("s_tenantId").value="";
+  const s=document.getElementById("settingsStatus");s.textContent="✓ Cleared";s.className="modal-status ok";
+  refreshGearBtn();
+  if(graphToken){graphToken=null;graphUser=null;msalApp=null;clearMsalState();updateAuthUI(false);}
+  renderCustomSourceList();
+}
+
+function refreshGearBtn(){
+  const s=loadSaved(),g=document.getElementById("gearBtn");
+  if(!g) return;
+  if(s.clientId){g.classList.add("configured");g.title="Settings — "+s.clientId.slice(0,8)+"…";}
+  else{g.classList.remove("configured");g.title="Configure authentication settings";}
+}
+
+// ── MSAL AUTH ─────────────────────────────────────────────────────────────────
+const SCOPES=["DeviceManagementConfiguration.Read.All"];
+async function initMsal(){
+  const MSAL=window.__MSAL;if(!MSAL) return;
+  const s=loadSaved();
+  const cid=s.clientId||localStorage.getItem("helient_clientId")||"";
+  if(!cid) return;
+  const cfg={auth:{clientId:cid,authority:"https://login.microsoftonline.com/"+(s.tenantId||"common"),redirectUri:window.location.origin+window.location.pathname},cache:{cacheLocation:"sessionStorage",storeAuthStateInCookie:true}};
+  try{
+    msalApp=new MSAL.PublicClientApplication(cfg);await msalApp.initialize();
+    const rr=await msalApp.handleRedirectPromise();
+    if(rr){await completeAuth(rr);return;}
+    const accs=msalApp.getAllAccounts();
+    if(accs.length){
+      try{const t=await msalApp.acquireTokenSilent({scopes:SCOPES,account:accs[0]});
+        graphToken=t.accessToken;graphUser=accs[0].username;updateAuthUI(true);}catch(e){}
+    }
+  }catch(e){console.warn("MSAL init:",e.message);clearMsalState();}
+}
+async function completeAuth(resp){
+  if(!resp?.account) return;
+  try{const t=await msalApp.acquireTokenSilent({scopes:SCOPES,account:resp.account});
+    graphToken=t.accessToken;graphUser=resp.account.username;updateAuthUI(true);}catch(e){}
+}
+function clearMsalState(){const k=[];for(let i=0;i<sessionStorage.length;i++){const key=sessionStorage.key(i);if(key&&(key.includes("msal.")||key.includes("msal|")))k.push(key);}k.forEach(k=>sessionStorage.removeItem(k));}
+async function handleAuth(){
+  if(graphToken){
+    graphToken=null;graphUser=null;
+    try{if(msalApp)await msalApp.clearCache();}catch(e){}
+    msalApp=null;clearMsalState();updateAuthUI(false);return;
+  }
+  const cfg=getMsalConfig();
+  if(!cfg){alert("Please enter your Azure App Client ID in ⚙️ Settings.");return;}
+  const MSAL=window.__MSAL;
+  if(!MSAL?.PublicClientApplication){alert("MSAL library has not loaded yet. Disable ad blockers, reload, then try again.");return;}
+  try{
+    setAuthLoading(true);
+    if(!msalApp){msalApp=new MSAL.PublicClientApplication(cfg);await msalApp.initialize();}
+    await msalApp.handleRedirectPromise().catch(()=>{});
+    for(let i=sessionStorage.length-1;i>=0;i--){const k=sessionStorage.key(i);if(k?.includes("interaction.status"))sessionStorage.removeItem(k);}
+    let resp;
+    try{resp=await msalApp.loginPopup({scopes:SCOPES});}
+    catch(pe){
+      if(["popup_window_error","empty_window_error"].includes(pe.errorCode)){
+        sessionStorage.setItem("helient_clientId",cfg.auth.clientId);
+        await msalApp.loginRedirect({scopes:SCOPES});return;
+      }
+      throw pe;
+    }
+    await completeAuth(resp);
+  }catch(e){
+    let msg=e.message||String(e);
+    if(msg.includes("interaction_in_progress")){msg="Reloading to clear stale auth state…";clearMsalState();setTimeout(()=>location.reload(),1500);}
+    else if(msg.includes("AADSTS50011")||msg.includes("redirect_uri_mismatch")){msg="Redirect URI mismatch.\nAdd this URI as SPA type in your App Registration:\n\n"+window.location.origin+window.location.pathname;}
+    alert("Authentication failed: "+msg);
+    updateAuthUI(false);msalApp=null;clearMsalState();
+  }finally{setAuthLoading(false);}
+}
+function setAuthLoading(v){
+  document.getElementById("authDot").className="auth-dot"+(v?" loading":"");
+  document.getElementById("authBtn").textContent=v?"Connecting…":(graphToken?"Disconnect":"Connect to Graph");
+  document.getElementById("authBtn").disabled=v;
+}
+function updateAuthUI(connected){
+  document.getElementById("authDot").className="auth-dot"+(connected?" ok":"");
+  document.getElementById("authLabel").innerHTML=connected
+    ?`<span class="auth-label">Connected as</span> <span class="auth-user">${esc(graphUser)}</span>`
+    :`<span class="auth-label">Not connected to Microsoft Graph</span>`;
+  document.getElementById("authBtn").textContent=connected?"Disconnect":"Connect to Graph";
+  document.getElementById("authBtn").className="auth-btn"+(connected?" danger":"");
+  refreshGearBtn();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.getElementById("lastUpdated"||"").textContent="";
+document.getElementById("redirectUriDisplay").textContent=window.location.origin+window.location.pathname;
+refreshGearBtn();
+
+// Restore custom entries from localStorage
+try{
+  const ce=localStorage.getItem("helient_custom_entries");
+  if(ce) customEntries=JSON.parse(ce);
+  const cs=localStorage.getItem("helient_custom_sources");
+  if(cs) customSources=JSON.parse(cs);
+}catch(e){}
+
+// Handle URL clientId param
+const urlCid=new URLSearchParams(window.location.search).get("clientId");
+if(urlCid){const s=loadSaved();s.clientId=urlCid;saveSaved(s);localStorage.setItem("helient_clientId",urlCid);refreshGearBtn();}
+
+// Load index and init MSAL in parallel
+loadIndex();
+
+function waitForMsalAndInit(n){
+  const M=window.__MSAL||window.msal||window.msalBrowser;
+  if(M?.PublicClientApplication){window.__MSAL=M;initMsal();}
+  else if(n>0) setTimeout(()=>waitForMsalAndInit(n-1),300);
+}
+waitForMsalAndInit(20);
+</script>
+</body>
+</html>

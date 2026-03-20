@@ -1,0 +1,16 @@
+{
+  "_comment": "Add custom data sources here. The GitHub Action will fetch these URLs weekly and merge their data into the search index. Run scripts/build_index.py --sources custom to test locally.",
+  "_schema": {
+    "url":  "Public URL to a JSON or CSV file",
+    "type": "json | csv (default: json)",
+    "name": "Friendly label shown in UI"
+  },
+  "sources": [
+    {
+      "_example": true,
+      "url":  "https://raw.githubusercontent.com/your-org/your-repo/main/custom-settings.json",
+      "type": "json",
+      "name": "My Organization Custom Settings"
+    }
+  ]
+}
