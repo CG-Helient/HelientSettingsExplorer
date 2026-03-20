@@ -534,6 +534,153 @@ def fetch_windows_admx():
     return entries
 
 
+# ─── SOURCE 5a: IntunePMFiles/DeviceConfig — Public Settings Definitions ────────
+# Microsoft's Intune PM team publishes periodic exports of the full Settings Catalog
+# to a public GitHub repo. No authentication required.
+# Reference: https://github.com/IntunePMFiles/DeviceConfig (MIT License)
+# Microsoft Docs reference: https://learn.microsoft.com/en-us/intune/intune-service/configuration/settings-catalog
+
+INTUNE_PM_URLS = [
+    # Try the most recent known file first, then fall back to older versions
+    "https://raw.githubusercontent.com/IntunePMFiles/DeviceConfig/main/Settings%20Definitions%20Export%203-23.xlsx",
+    "https://raw.githubusercontent.com/IntunePMFiles/DeviceConfig/main/Settings+Definitions+Export+3-23.xlsx",
+]
+
+def fetch_intune_pm_files():
+    """
+    Fetch the Settings Catalog definitions from IntunePMFiles/DeviceConfig.
+    This is a public GitHub repo maintained by the Microsoft Intune PM team.
+    Contains periodic exports of all settings available in the Settings Catalog.
+    """
+    log("Fetching IntunePMFiles/DeviceConfig Settings Catalog export…")
+
+    # First try to get the repo contents to find the latest file
+    api_url = "https://api.github.com/repos/IntunePMFiles/DeviceConfig/contents/"
+    raw = http_get(api_url, headers={"Accept": "application/vnd.github.v3+json"}, timeout=30)
+    xlsx_url = None
+    if raw:
+        try:
+            files = json.loads(raw)
+            for f in files:
+                name = f.get("name","")
+                if name.endswith(".xlsx") and "Settings" in name:
+                    xlsx_url = f.get("download_url") or f.get("html_url","").replace(
+                        "github.com","raw.githubusercontent.com"
+                    ).replace("/blob/","/" )
+                    log(f"  Found: {name}")
+                    break
+        except:
+            pass
+
+    if not xlsx_url:
+        xlsx_url = INTUNE_PM_URLS[0]
+
+    # Download the xlsx
+    log(f"  Downloading: {xlsx_url[:80]}…")
+    raw_bytes = None
+    req = urllib.request.Request(xlsx_url, headers={"User-Agent": "HelientBot/1.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            raw_bytes = r.read()
+            log(f"  Downloaded {len(raw_bytes)//1024} KB")
+    except Exception as e:
+        log(f"  Download failed: {e}")
+        return []
+
+    if not raw_bytes:
+        return []
+
+    # Parse xlsx using openpyxl
+    try:
+        import io, openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(raw_bytes), read_only=True, data_only=True)
+        entries = []
+        seen = set()
+
+        for sheet_name in wb.sheetnames:
+            ws = wb[sheet_name]
+            rows = list(ws.iter_rows(values_only=True))
+            if not rows:
+                continue
+
+            # Find header row
+            headers = [str(h).lower().strip() if h else "" for h in rows[0]]
+            col = {h: i for i, h in enumerate(headers)}
+
+            name_col  = col.get("name") or col.get("display name") or col.get("displayname") or 0
+            desc_col  = col.get("description") or col.get("desc") or 1
+            cat_col   = col.get("category") or col.get("categoryname") or col.get("categorypath") or 2
+            plat_col  = col.get("platform") or col.get("applicability") or 3
+            defid_col = (col.get("id") or col.get("settingdefinitionid") or
+                         col.get("setting definition id") or None)
+
+            plat_map = {
+                "windows": "windows", "windows10": "windows",
+                "macos": "macos", "ios": "ios", "android": "android", "linux": "linux"
+            }
+
+            for row in rows[1:]:
+                if not row or not any(row):
+                    continue
+                try:
+                    name  = str(row[name_col] or "").strip()
+                    desc  = str(row[desc_col] or "").strip() if desc_col < len(row) else ""
+                    cat   = str(row[cat_col]  or "").strip() if cat_col  < len(row) else ""
+                    plat_raw = str(row[plat_col] or "").lower().strip() if plat_col < len(row) else "windows"
+                    defid = str(row[defid_col] or "").strip() if defid_col is not None and defid_col < len(row) else ""
+
+                    if not name or name.lower() in ("name","display name","setting name"):
+                        continue
+
+                    plat = next((v for k,v in plat_map.items() if k in plat_raw), "windows")
+                    eid  = "pm_" + (defid or slugify(name + cat + sheet_name))
+                    if eid in seen:
+                        continue
+                    seen.add(eid)
+
+                    oma = defid_to_oma(defid) if defid else ""
+
+                    e = make_entry(
+                        source_id = "graph",
+                        entry_id  = eid,
+                        name      = name,
+                        desc      = desc[:500],
+                        cats      = [cat, "Settings Catalog", sheet_name] if cat else ["Settings Catalog", sheet_name],
+                        plat      = plat,
+                        methods   = ["intune"],
+                        intune    = [{
+                            "cat":   cat or "Settings Catalog",
+                            "name":  name,
+                            "defId": defid,
+                            "oma":   oma,
+                            "dtype": "Choice",
+                            "vals":  [],
+                            "rec":   "",
+                            "json":  f'"settingDefinitionId": "{defid}"' if defid else f'"name": "{name}"',
+                        }],
+                    )
+                    entries.append(e)
+                except Exception:
+                    continue
+
+        log(f"  IntunePMFiles: {len(entries)} settings from {len(wb.sheetnames)} sheet(s)")
+        return entries
+
+    except ImportError:
+        log("  openpyxl not installed — installing…")
+        import subprocess
+        subprocess.run(["pip", "install", "openpyxl", "--quiet", "--break-system-packages"],
+                      capture_output=True)
+        try:
+            import openpyxl
+            return fetch_intune_pm_files()  # retry after install
+        except:
+            log("  openpyxl install failed — skipping IntunePMFiles source")
+            return []
+    except Exception as e:
+        log(f"  IntunePMFiles parse error: {e}")
+        return []
+
 # ─── SOURCE 5b: Policy CSP — Windows MDM Settings Reference ──────────────────
 # The complete Policy CSP is Microsoft's authoritative list of all MDM-manageable
 # Windows settings. Every entry has an OMA-URI, registry location, and maps
@@ -855,12 +1002,33 @@ def main():
             log("Authenticating to Microsoft Graph…")
             token = get_graph_token(cid, csec, tid)
             if token:
+                # Decode JWT payload to show what roles are actually in the token
+                try:
+                    import base64, json as _json
+                    parts = token.split(".")
+                    if len(parts) >= 2:
+                        payload_b64 = parts[1] + "=="  # pad
+                        payload = _json.loads(base64.urlsafe_b64decode(payload_b64).decode())
+                        roles = payload.get("roles", [])
+                        scp   = payload.get("scp", "")
+                        appid = payload.get("appid", "")
+                        log(f"  Token roles (application permissions in token): {roles if roles else ['(none — application permissions not present in token)']}")
+                        if scp:
+                            log(f"  Token scp (delegated scopes): {scp[:200]}")
+                        if not roles:
+                            log("  !! No 'roles' claim in token = Application permissions NOT effective")
+                            log("     Check Azure Portal > Enterprise Applications > Helient Settings Explorer")
+                            log("     > Permissions > verify admin consent shows Application permissions (not Delegated)")
+                            log("     Also check: App Registration > API Permissions > all Application perms show 'Granted' in green")
+                except Exception as e:
+                    log(f"  Could not decode token: {e}")
+
                 cat = fetch_graph_catalog(token)
                 gpo = fetch_graph_gpo(token)
                 all_entries.extend(cat)
                 all_entries.extend(gpo)
                 total = len(cat) + len(gpo)
-                source_status["graph"] = {"ok": True, "count": total}
+                source_status["graph"] = {"ok": total > 0, "count": total}
                 log(f"  Graph total: {total} (catalog:{len(cat)}, gpo:{len(gpo)})")
             else:
                 log("  Graph auth failed — check AZURE_CLIENT_ID / SECRET / TENANT_ID secrets")
@@ -868,6 +1036,17 @@ def main():
         else:
             log("  Skipping Graph (no credentials configured)")
             source_status["graph"] = {"ok": False, "count": 0, "error": "No credentials"}
+
+        # Always try the public IntunePMFiles dataset — no auth required
+        pm_entries = fetch_intune_pm_files()
+        if pm_entries:
+            all_entries.extend(pm_entries)
+            existing = source_status.get("graph", {})
+            source_status["graph"] = {
+                "ok": True,
+                "count": existing.get("count", 0) + len(pm_entries),
+            }
+            log(f"  IntunePMFiles added {len(pm_entries)} entries to graph source")
 
     if want("chromium"):
         e = fetch_chromium()
