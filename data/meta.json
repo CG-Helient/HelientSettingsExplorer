@@ -1,12 +1,12 @@
 {
-  "last_updated": "2026-03-20T14:48:42.200452+00:00",
-  "total_entries": 50,
+  "last_updated": "2026-03-20T15:09:14.111397+00:00",
+  "total_entries": 137,
   "chunk_count": 1,
   "chunks": [
     {
       "file": "data/chunks/chunk_000.json",
       "start": 0,
-      "count": 50
+      "count": 137
     }
   ],
   "sources": {
@@ -15,21 +15,21 @@
       "count": 0
     },
     "chromium": {
-      "ok": false,
-      "count": 0
+      "ok": true,
+      "count": 59
     },
     "admx_windows": {
       "ok": true,
-      "count": 30
+      "count": 53
     },
     "admx_office": {
       "ok": true,
-      "count": 20
+      "count": 25
     },
     "custom": {
       "ok": true,
       "count": 0
     }
   },
-  "index_size_kb": 87
+  "index_size_kb": 211
 }
