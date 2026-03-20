@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Local test data (don't commit large test indexes)
+data/index.json
+data/chunks/
+
+# Keep meta.json and track empty data dir
+!data/.gitkeep
+!data/chunks/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
