@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-03-20T14:40:57.701220+00:00",
+  "last_updated": "2026-03-20T14:48:42.200452+00:00",
   "total_entries": 50,
   "chunk_count": 1,
   "chunks": [
@@ -11,9 +11,8 @@
   ],
   "sources": {
     "graph": {
-      "ok": false,
-      "count": 0,
-      "error": "No credentials"
+      "ok": true,
+      "count": 0
     },
     "chromium": {
       "ok": false,
