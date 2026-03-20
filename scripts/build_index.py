@@ -354,12 +354,17 @@ def fetch_chromium():
         if chrome_reg and "Policies\\Google\\Chrome" in chrome_reg: browsers.append("Google Chrome")
         if not browsers: browsers = ["Microsoft Edge", "Google Chrome"]
         bs = " / ".join(browsers)
+        SEP = "\\"
         note_parts = []
-        if edge_reg   and "Microsoft\\Edge" in (edge_reg or ""):     note_parts.append(f"Edge: HKLM\\{edge_reg.replace('HKLM\\\\','').replace('HKLM\\','')}\\{name}")
-        if chrome_reg and "Google\\Chrome"  in (chrome_reg or ""):   note_parts.append(f"Chrome: HKLM\\{chrome_reg.replace('HKLM\\\\','').replace('HKLM\\','')}\\{name}")
+        if edge_reg and "Microsoft" in (edge_reg or ""):
+            edge_key = edge_reg.split(SEP, 1)[-1] if SEP in edge_reg else edge_reg
+            note_parts.append("Edge: HKLM" + SEP + edge_key + SEP + name)
+        if chrome_reg and "Google" in (chrome_reg or ""):
+            chrome_key = chrome_reg.split(SEP, 1)[-1] if SEP in chrome_reg else chrome_reg
+            note_parts.append("Chrome: HKLM" + SEP + chrome_key + SEP + name)
         reg_key = edge_reg or chrome_reg or ""
         hive = "HKCU" if reg_key.startswith("HKCU") else "HKLM"
-        key  = reg_key.replace("HKLM\\", "").replace("HKCU\\", "")
+        key = reg_key.split(SEP, 1)[-1] if SEP in reg_key else reg_key
         e = make_entry(
             source_id="chromium",
             entry_id="browser_" + slugify(name),
