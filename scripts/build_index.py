@@ -101,31 +101,35 @@ def defid_to_oma(defid):
     parts = [p[0].upper() + p[1:] for p in path.split("_") if p]
     return prefix + "/Vendor/MSFT/" + "/".join(parts)
 
-# ─── SOURCE 1: Graph — Settings Catalog (configurationSettings) ───────────────
+# ─── SOURCE 1: Graph — Settings Catalog (reusableSettings) ────────────────────
 def fetch_graph_catalog(token):
     """
-    Fetch Intune Settings Catalog definitions.
-    Uses properly URL-encoded parameters to avoid urllib control-character errors.
-    Tries without platform filter first (most compatible with app-only tokens),
-    then falls back to per-platform filtered queries.
+    Fetch Intune Settings Catalog definitions using endpoints confirmed to work
+    with app-only (client_credentials) tokens.
+
+    /deviceManagement/configurationSettings returns 400 for app-only tokens —
+    this is a Microsoft API limitation regardless of permissions granted.
+
+    Working endpoints with DeviceManagementConfiguration.Read.All (Application):
+      - /deviceManagement/reusableSettings          — full setting definitions
+      - /deviceManagement/configurationCategories   — category tree
     """
-    log("Fetching Graph — Settings Catalog (configurationSettings)…")
     headers = {"Authorization": f"Bearer {token}", "ConsistencyLevel": "eventual"}
     entries, seen = [], set()
 
-    select_fields = "id,name,description,settingDefinitionId,applicability,defaultValue,categoryId,categoryName,options,valueDefinition,keywords"
-
-    # Strategy 1: no filter (works best with app-only)
-    url = graph_url("deviceManagement/configurationSettings", {
-        "$select": select_fields,
+    # ── Strategy 1: reusableSettings (confirmed app-only compatible) ──
+    log("Fetching Graph — reusableSettings (Settings Catalog definitions)…")
+    url = graph_url("deviceManagement/reusableSettings", {
+        "$select": "id,name,description,settingDefinitionId,applicability,categoryId,baseUri,offsetUri,keywords,infoUrls",
         "$top":    "1000",
     })
     page = 0
     while url:
         page += 1
-        log(f"  Catalog page {page} — {len(entries)} so far…")
+        log(f"  reusableSettings page {page} — {len(entries)} so far…")
         data = http_get_json(url, headers=headers, timeout=60)
         if not data:
+            log("  reusableSettings: no response — checking if endpoint accessible")
             break
         items = data.get("value", [])
         log(f"    Got {len(items)} items this page")
@@ -137,33 +141,86 @@ def fetch_graph_catalog(token):
         url = data.get("@odata.nextLink")
         if url: time.sleep(0.1)
 
-    log(f"  configurationSettings (no filter): {len(entries)} entries")
+    log(f"  reusableSettings: {len(entries)} entries")
 
-    # Strategy 2: if we got nothing, try per-platform (URL-encoded correctly)
-    if not entries:
-        for plat in ["windows10", "macOS", "iOS", "android"]:
-            url = graph_url("deviceManagement/configurationSettings", {
-                "$filter": f"applicability/platform eq '{plat}'",
-                "$select": select_fields,
-                "$top":    "1000",
-            })
-            page = 0
-            plat_count = 0
-            while url:
-                page += 1
-                data = http_get_json(url, headers=headers, timeout=60)
-                if not data: break
-                for s in data.get("value", []):
+    # ── Strategy 2: configurationCategories → walk each category's settings ──
+    # This is the most reliable path for getting the full Settings Catalog
+    if len(entries) < 100:
+        log("Fetching Graph — configurationCategories (walking category tree)…")
+        cat_url = graph_url("deviceManagement/configurationCategories", {
+            "$select": "id,description,helpText,name,parentCategoryId,platforms,technologies",
+            "$top":    "1000",
+        })
+        categories = []
+        while cat_url:
+            cat_data = http_get_json(cat_url, headers=headers, timeout=60)
+            if not cat_data: break
+            categories.extend(cat_data.get("value", []))
+            cat_url = cat_data.get("@odata.nextLink")
+            if cat_url: time.sleep(0.1)
+
+        log(f"  Found {len(categories)} categories — fetching settings for each…")
+
+        for cat in categories[:50]:  # Cap at 50 categories to avoid timeout
+            cat_id   = cat.get("id", "")
+            cat_name = cat.get("name", "Unknown")
+            if not cat_id: continue
+
+            settings_url = graph_url(
+                f"deviceManagement/configurationCategories/{cat_id}/settings",
+                {"$select": "id,name,description,settingDefinitionId,applicability,baseUri,offsetUri,keywords",
+                 "$top": "200"}
+            )
+            while settings_url:
+                s_data = http_get_json(settings_url, headers=headers, timeout=30)
+                if not s_data: break
+                for s in s_data.get("value", []):
                     sid = s.get("settingDefinitionId") or s.get("id", "")
                     if not sid or sid in seen: continue
                     seen.add(sid)
-                    entries.append(_catalog_item_to_entry(s, sid))
-                    plat_count += 1
-                url = data.get("@odata.nextLink")
-                if url: time.sleep(0.1)
-            log(f"    Platform {plat}: {plat_count} entries")
+                    e = _catalog_item_to_entry(s, sid)
+                    e["cats"] = [cat_name]
+                    entries.append(e)
+                settings_url = s_data.get("@odata.nextLink")
+                if settings_url: time.sleep(0.05)
 
-    log(f"  configurationSettings total: {len(entries)}")
+        log(f"  configurationCategories walk: {len(entries)} total entries")
+
+    # ── Strategy 3: configurationPolicyTemplates (template-based settings) ──
+    if len(entries) < 100:
+        log("Fetching Graph — configurationPolicyTemplates…")
+        tmpl_url = graph_url("deviceManagement/configurationPolicyTemplates", {
+            "$select": "id,displayName,description,platforms,technologies",
+            "$top":    "200",
+        })
+        templates = []
+        while tmpl_url:
+            t_data = http_get_json(tmpl_url, headers=headers, timeout=60)
+            if not t_data: break
+            templates.extend(t_data.get("value", []))
+            tmpl_url = t_data.get("@odata.nextLink")
+            if tmpl_url: time.sleep(0.1)
+
+        log(f"  Found {len(templates)} templates — sampling settings…")
+        for tmpl in templates[:30]:
+            tid   = tmpl.get("id", "")
+            tname = tmpl.get("displayName", "Unknown Template")
+            if not tid: continue
+            st_url = graph_url(
+                f"deviceManagement/configurationPolicyTemplates/{tid}/settingTemplates",
+                {"$select": "id,settingDefinitions", "$top": "100"}
+            )
+            st_data = http_get_json(st_url, headers=headers, timeout=30)
+            if not st_data: continue
+            for st in st_data.get("value", []):
+                for sd in (st.get("settingDefinitions") or []):
+                    sid = sd.get("id") or sd.get("settingDefinitionId", "")
+                    if not sid or sid in seen: continue
+                    seen.add(sid)
+                    entries.append(_catalog_item_to_entry(sd, sid))
+
+        log(f"  configurationPolicyTemplates: {len(entries)} total entries")
+
     return entries
 
 def _catalog_item_to_entry(s, sid):
