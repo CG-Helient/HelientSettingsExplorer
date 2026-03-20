@@ -1,0 +1,59 @@
+name: Build Settings Index
+
+on:
+  # Run every Sunday at 02:00 UTC (weekly refresh)
+  schedule:
+    - cron: "0 2 * * 0"
+
+  # Allow manual trigger from the Actions tab with optional source selection
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: "Sources to fetch (all | graph | chromium | admx | office | custom)"
+        required: false
+        default: "all"
+
+  # Also rebuild when the pipeline script itself changes
+  push:
+    paths:
+      - "scripts/build_index.py"
+      - "custom_sources.json"
+
+permissions:
+  contents: write   # needed to commit data/ back to the repo
+
+jobs:
+  build:
+    name: Fetch & Build Index
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run index builder
+        env:
+          AZURE_CLIENT_ID:     ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID:     ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          SOURCES="${{ github.event.inputs.sources || 'all' }}"
+          echo "Building index with sources: $SOURCES"
+          python scripts/build_index.py --sources "$SOURCES"
+
+      - name: Commit updated data files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          # Only commit if there are actual changes
+          git diff --staged --quiet || git commit -m "chore: update settings index [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+          git push
