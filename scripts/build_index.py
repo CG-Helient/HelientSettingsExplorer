@@ -101,126 +101,104 @@ def defid_to_oma(defid):
     parts = [p[0].upper() + p[1:] for p in path.split("_") if p]
     return prefix + "/Vendor/MSFT/" + "/".join(parts)
 
-# ─── SOURCE 1: Graph — Settings Catalog (reusableSettings) ────────────────────
+# ─── SOURCE 1: Graph — Tenant configuration policies (app-only compatible) ─────
 def fetch_graph_catalog(token):
     """
-    Fetch Intune Settings Catalog definitions using endpoints confirmed to work
-    with app-only (client_credentials) tokens.
+    Fetch tenant-specific Intune configuration policies.
 
-    /deviceManagement/configurationSettings returns 400 for app-only tokens —
-    this is a Microsoft API limitation regardless of permissions granted.
+    NOTE: The Settings Catalog *definition* endpoints (configurationSettings,
+    reusableSettings, configurationCategories) all return 400 or 401 for
+    app-only tokens — this is a confirmed Microsoft API limitation, not a
+    permissions issue. The Settings Catalog definitions are reference data
+    embedded in this script instead (see POLICY_CSP below).
 
-    Working endpoints with DeviceManagementConfiguration.Read.All (Application):
-      - /deviceManagement/reusableSettings          — full setting definitions
-      - /deviceManagement/configurationCategories   — category tree
+    This function fetches the tenant's ACTUAL deployed policies (what policies
+    are configured in YOUR Intune), which does work app-only with
+    DeviceManagementConfiguration.Read.All (Application permission).
     """
     headers = {"Authorization": f"Bearer {token}", "ConsistencyLevel": "eventual"}
     entries, seen = [], set()
 
-    # ── Strategy 1: reusableSettings (confirmed app-only compatible) ──
-    log("Fetching Graph — reusableSettings (Settings Catalog definitions)…")
-    url = graph_url("deviceManagement/reusableSettings", {
-        "$select": "id,name,description,settingDefinitionId,applicability,categoryId,baseUri,offsetUri,keywords,infoUrls",
+    # configurationPolicies — YOUR tenant's deployed Settings Catalog policies
+    log("Fetching Graph — tenant configurationPolicies (your deployed Intune policies)…")
+    url = graph_url("deviceManagement/configurationPolicies", {
+        "$select": "id,name,description,platforms,technologies,settingCount,isAssigned,lastModifiedDateTime",
         "$top":    "1000",
     })
-    page = 0
     while url:
-        page += 1
-        log(f"  reusableSettings page {page} — {len(entries)} so far…")
         data = http_get_json(url, headers=headers, timeout=60)
-        if not data:
-            log("  reusableSettings: no response — checking if endpoint accessible")
-            break
-        items = data.get("value", [])
-        log(f"    Got {len(items)} items this page")
-        for s in items:
-            sid = s.get("settingDefinitionId") or s.get("id", "")
-            if not sid or sid in seen: continue
-            seen.add(sid)
-            entries.append(_catalog_item_to_entry(s, sid))
+        if not data: break
+        for p in data.get("value", []):
+            pid  = p.get("id", "")
+            name = p.get("name", "")
+            if not pid or pid in seen: continue
+            seen.add(pid)
+            desc = (p.get("description") or "").strip() or f"Intune policy: {name}"
+            plat = (p.get("platforms") or "windows10").lower().replace("windows10","windows")
+            e = make_entry(
+                source_id = "graph",
+                entry_id  = "policy_" + pid,
+                name      = f"{name} [Intune Policy]",
+                desc      = desc,
+                cats      = ["Intune Configuration Policies", "Tenant Policies"],
+                plat      = plat,
+                methods   = ["intune"],
+                intune    = [{
+                    "cat":   "Configuration Policies",
+                    "name":  name,
+                    "defId": pid,
+                    "oma":   "",
+                    "dtype": f"Policy ({p.get('technologies','mdm')})",
+                    "vals":  [],
+                    "rec":   "",
+                    "json":  f'"id": "{pid}", "name": "{name}"',
+                }],
+            )
+            entries.append(e)
         url = data.get("@odata.nextLink")
         if url: time.sleep(0.1)
 
-    log(f"  reusableSettings: {len(entries)} entries")
+    log(f"  configurationPolicies: {len(entries)} tenant policies")
 
-    # ── Strategy 2: configurationCategories → walk each category's settings ──
-    # This is the most reliable path for getting the full Settings Catalog
-    if len(entries) < 100:
-        log("Fetching Graph — configurationCategories (walking category tree)…")
-        cat_url = graph_url("deviceManagement/configurationCategories", {
-            "$select": "id,description,helpText,name,parentCategoryId,platforms,technologies",
-            "$top":    "1000",
-        })
-        categories = []
-        while cat_url:
-            cat_data = http_get_json(cat_url, headers=headers, timeout=60)
-            if not cat_data: break
-            categories.extend(cat_data.get("value", []))
-            cat_url = cat_data.get("@odata.nextLink")
-            if cat_url: time.sleep(0.1)
-
-        log(f"  Found {len(categories)} categories — fetching settings for each…")
-
-        for cat in categories[:50]:  # Cap at 50 categories to avoid timeout
-            cat_id   = cat.get("id", "")
-            cat_name = cat.get("name", "Unknown")
-            if not cat_id: continue
-
-            settings_url = graph_url(
-                f"deviceManagement/configurationCategories/{cat_id}/settings",
-                {"$select": "id,name,description,settingDefinitionId,applicability,baseUri,offsetUri,keywords",
-                 "$top": "200"}
+    # Also fetch deviceConfigurations (legacy config profiles, also app-only compatible)
+    log("Fetching Graph — tenant deviceConfigurations (legacy config profiles)…")
+    url2 = graph_url("deviceManagement/deviceConfigurations", {
+        "$select": "id,displayName,description,omaSettings,lastModifiedDateTime,roleScopeTagIds",
+        "$top":    "1000",
+    })
+    while url2:
+        data = http_get_json(url2, headers=headers, timeout=60)
+        if not data: break
+        for p in data.get("value", []):
+            pid  = p.get("id", "")
+            name = p.get("displayName", "")
+            if not pid or pid in seen: continue
+            seen.add(pid)
+            oma_settings = p.get("omaSettings") or []
+            e = make_entry(
+                source_id = "graph",
+                entry_id  = "devconfig_" + pid,
+                name      = f"{name} [Device Config Profile]",
+                desc      = (p.get("description") or "").strip() or f"Device configuration profile: {name}",
+                cats      = ["Device Configuration Profiles", "Tenant Policies"],
+                plat      = "windows",
+                methods   = ["intune"],
+                intune    = [{
+                    "cat":   "Device Configuration",
+                    "name":  name,
+                    "defId": pid,
+                    "oma":   "",
+                    "dtype": "Configuration Profile",
+                    "vals":  [{"v": s.get("value",""), "l": s.get("displayName","")} for s in oma_settings[:10]],
+                    "rec":   "",
+                    "json":  f'"id": "{pid}"',
+                }],
             )
-            while settings_url:
-                s_data = http_get_json(settings_url, headers=headers, timeout=30)
-                if not s_data: break
-                for s in s_data.get("value", []):
-                    sid = s.get("settingDefinitionId") or s.get("id", "")
-                    if not sid or sid in seen: continue
-                    seen.add(sid)
-                    e = _catalog_item_to_entry(s, sid)
-                    e["cats"] = [cat_name]
-                    entries.append(e)
-                settings_url = s_data.get("@odata.nextLink")
-                if settings_url: time.sleep(0.05)
+            entries.append(e)
+        url2 = data.get("@odata.nextLink")
+        if url2: time.sleep(0.1)
 
-        log(f"  configurationCategories walk: {len(entries)} total entries")
-
-    # ── Strategy 3: configurationPolicyTemplates (template-based settings) ──
-    if len(entries) < 100:
-        log("Fetching Graph — configurationPolicyTemplates…")
-        tmpl_url = graph_url("deviceManagement/configurationPolicyTemplates", {
-            "$select": "id,displayName,description,platforms,technologies",
-            "$top":    "200",
-        })
-        templates = []
-        while tmpl_url:
-            t_data = http_get_json(tmpl_url, headers=headers, timeout=60)
-            if not t_data: break
-            templates.extend(t_data.get("value", []))
-            tmpl_url = t_data.get("@odata.nextLink")
-            if tmpl_url: time.sleep(0.1)
-
-        log(f"  Found {len(templates)} templates — sampling settings…")
-        for tmpl in templates[:30]:
-            tid   = tmpl.get("id", "")
-            tname = tmpl.get("displayName", "Unknown Template")
-            if not tid: continue
-            st_url = graph_url(
-                f"deviceManagement/configurationPolicyTemplates/{tid}/settingTemplates",
-                {"$select": "id,settingDefinitions", "$top": "100"}
-            )
-            st_data = http_get_json(st_url, headers=headers, timeout=30)
-            if not st_data: continue
-            for st in st_data.get("value", []):
-                for sd in (st.get("settingDefinitions") or []):
-                    sid = sd.get("id") or sd.get("settingDefinitionId", "")
-                    if not sid or sid in seen: continue
-                    seen.add(sid)
-                    entries.append(_catalog_item_to_entry(sd, sid))
-
-        log(f"  configurationPolicyTemplates: {len(entries)} total entries")
-
+    log(f"  deviceConfigurations: {len(entries)} total tenant policies")
     return entries
 
 def _catalog_item_to_entry(s, sid):
@@ -555,6 +533,200 @@ def fetch_windows_admx():
     log(f"  Windows ADMX: {len(entries)} entries")
     return entries
 
+
+# ─── SOURCE 5b: Policy CSP — Windows MDM Settings Reference ──────────────────
+# The complete Policy CSP is Microsoft's authoritative list of all MDM-manageable
+# Windows settings. Every entry has an OMA-URI, registry location, and maps
+# directly to Intune Settings Catalog settingDefinitionIds.
+# Reference: learn.microsoft.com/windows/client-management/mdm/policy-csp-*
+POLICY_CSP_DATA = [
+    ('AboveLock', 'ActionCenterNotifications', 'Allow Action Center notifications above lock', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\PushNotifications', 'NoTilesToastNotifications', 'REG_DWORD', 'AboveLock/ActionCenterNotifications'),
+    ('AboveLock', 'AllowCortanaAboveLock', 'Allow Cortana above lock screen', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Windows Search', 'AllowCortanaAboveLock', 'REG_DWORD', 'AboveLock/AllowCortanaAboveLock'),
+    ('AboveLock', 'AllowToasts', 'Allow toast notifications above lock screen', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\PushNotifications', 'NoToastNotification', 'REG_DWORD', 'AboveLock/AllowToasts'),
+    ('Accounts', 'AllowAddingNonMicrosoftAccountsManually', 'Allow adding non-Microsoft accounts manually', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'NoConnectedUser', 'REG_DWORD', 'Accounts/AllowAddingNonMicrosoftAccountsManually'),
+    ('Accounts', 'AllowMicrosoftAccountConnection', 'Allow Microsoft account connection', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\MRT', 'AllowMicrosoftAccountConnection', 'REG_DWORD', 'Accounts/AllowMicrosoftAccountConnection'),
+    ('Accounts', 'AllowMicrosoftAccountSignInAssistant', 'Allow Microsoft Account Sign-In Assistant service', 'HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services\\\\wlidsvc', 'Start', 'REG_DWORD', 'Accounts/AllowMicrosoftAccountSignInAssistant'),
+    ('ApplicationManagement', 'AllowAllTrustedApps', 'Allow all trusted apps to install (sideloading)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Appx', 'AllowAllTrustedApps', 'REG_DWORD', 'ApplicationManagement/AllowAllTrustedApps'),
+    ('ApplicationManagement', 'AllowAppStoreAutoUpdate', 'Allow automatic update of apps from Store', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\WindowsStore', 'AutoDownload', 'REG_DWORD', 'ApplicationManagement/AllowAppStoreAutoUpdate'),
+    ('ApplicationManagement', 'AllowDeveloperUnlock', 'Allow developer unlock (sideloading without Dev License)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Appx', 'AllowDevelopmentWithoutDevLicense', 'REG_DWORD', 'ApplicationManagement/AllowDeveloperUnlock'),
+    ('ApplicationManagement', 'AllowGameDVR', 'Allow Game DVR recording', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\GameDVR', 'AllowGameDVR', 'REG_DWORD', 'ApplicationManagement/AllowGameDVR'),
+    ('ApplicationManagement', 'AllowSharedUserAppData', 'Allow shared user app data', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\AppModel\\\\StateManager', 'AllowSharedLocalAppData', 'REG_DWORD', 'ApplicationManagement/AllowSharedUserAppData'),
+    ('ApplicationManagement', 'AllowStore', 'Allow Microsoft Store', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\WindowsStore', 'DisableStoreApps', 'REG_DWORD', 'ApplicationManagement/AllowStore'),
+    ('ApplicationManagement', 'DisableStoreOriginatedApps', 'Disable apps installed from Store', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\WindowsStore', 'DisableStoreApps', 'REG_DWORD', 'ApplicationManagement/DisableStoreOriginatedApps'),
+    ('ApplicationManagement', 'MSIAlwaysInstallWithElevatedPrivileges', 'MSI always install elevated (0=disable this risk)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Installer', 'AlwaysInstallElevated', 'REG_DWORD', 'ApplicationManagement/MSIAlwaysInstallWithElevatedPrivileges'),
+    ('ApplicationManagement', 'RequirePrivateStoreOnly', 'Require private Store only (block public Store)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\WindowsStore', 'RequirePrivateStoreOnly', 'REG_DWORD', 'ApplicationManagement/RequirePrivateStoreOnly'),
+    ('Authentication', 'AllowAadPasswordReset', 'Allow AAD password reset from lock screen', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\AzureADAccount', 'AllowPasswordReset', 'REG_DWORD', 'Authentication/AllowAadPasswordReset'),
+    ('Authentication', 'AllowFastReconnect', 'Allow fast reconnect (EAP fast reconnect)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'AllowDomainPINLogon', 'REG_DWORD', 'Authentication/AllowFastReconnect'),
+    ('Authentication', 'AllowFidoDeviceSignon', 'Allow FIDO2 security key sign-in', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\FIDO', 'AllowFidoDeviceSignon', 'REG_DWORD', 'Authentication/AllowFidoDeviceSignon'),
+    ('Authentication', 'AllowSecondaryAuthenticationDevice', 'Allow secondary authentication companion device', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\PassportForWork\\\\Remote', 'Enabled', 'REG_DWORD', 'Authentication/AllowSecondaryAuthenticationDevice'),
+    ('Authentication', 'PreferredAadTenantDomainName', 'Preferred AAD tenant domain name (UPN hint)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\AzureADAccount', 'PreferredAadTenantDomainName', 'REG_SZ', 'Authentication/PreferredAadTenantDomainName'),
+    ('Connectivity', 'AllowBluetooth', 'Allow Bluetooth (0=off, 2=on)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Bluetooth', 'AllowBluetooth', 'REG_DWORD', 'Connectivity/AllowBluetooth'),
+    ('Connectivity', 'AllowCellularData', 'Allow cellular data access', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WwanSvc\\\\CellularDataAccess', 'LetAppsAccessCellularData', 'REG_DWORD', 'Connectivity/AllowCellularData'),
+    ('Connectivity', 'AllowCellularDataRoaming', 'Allow cellular data roaming', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WwanSvc\\\\CellularDataAccess', 'LetAppsAccessCellularDataRoaming', 'REG_DWORD', 'Connectivity/AllowCellularDataRoaming'),
+    ('Connectivity', 'AllowNFC', 'Allow NFC', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Connectivity', 'AllowNFC', 'REG_DWORD', 'Connectivity/AllowNFC'),
+    ('Connectivity', 'AllowUSBConnection', 'Allow USB connection', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Connectivity', 'AllowUSBConnection', 'REG_DWORD', 'Connectivity/AllowUSBConnection'),
+    ('Connectivity', 'AllowVPNRoaming', 'Allow VPN roaming over cellular', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Network Connections', 'AllowVPNRoaming', 'REG_DWORD', 'Connectivity/AllowVPNRoaming'),
+    ('Connectivity', 'HardenedUNCPaths', 'Hardened UNC paths (RequireMutualAuthentication=1,RequireIntegrity=1)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\NetworkProvider\\\\HardenedPaths', '\\\\\\\\*\\\\NETLOGON', 'REG_SZ', 'Connectivity/HardenedUNCPaths'),
+    ('Connectivity', 'ProhibitInstallationAndConfigurationOfNetworkBridge', 'Prohibit network bridge installation', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Network Connections', 'NC_AllowNetBridge_NLA', 'REG_DWORD', 'Connectivity/ProhibitInstallationAndConfigurationOfNetworkBridge'),
+    ('ControlPolicyConflict', 'MDMWinsOverGP', 'MDM takes precedence over Group Policy', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\MDM', 'ControlPolicyConflict', 'REG_DWORD', 'ControlPolicyConflict/MDMWinsOverGP'),
+    ('Defender', 'AllowArchiveScanning', 'Allow archive scanning', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Scan', 'DisableArchiveScanning', 'REG_DWORD', 'Defender/AllowArchiveScanning'),
+    ('Defender', 'AllowBehaviorMonitoring', 'Allow behavior monitoring', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Real-Time Protection', 'DisableBehaviorMonitoring', 'REG_DWORD', 'Defender/AllowBehaviorMonitoring'),
+    ('Defender', 'AllowCloudProtection', 'Allow cloud-delivered protection (MAPS)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Spynet', 'SpynetReporting', 'REG_DWORD', 'Defender/AllowCloudProtection'),
+    ('Defender', 'AllowEmailScanning', 'Allow email scanning', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Scan', 'DisableEmailScanning', 'REG_DWORD', 'Defender/AllowEmailScanning'),
+    ('Defender', 'AllowFullScanRemovableDriveScanning', 'Allow full scan of removable drives', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Scan', 'DisableRemovableDriveScanning', 'REG_DWORD', 'Defender/AllowFullScanRemovableDriveScanning'),
+    ('Defender', 'AllowIOAVProtection', 'Allow IOAV protection (scan downloaded files)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Real-Time Protection', 'DisableIOAVProtection', 'REG_DWORD', 'Defender/AllowIOAVProtection'),
+    ('Defender', 'AllowOnAccessProtection', 'Allow on-access protection', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Real-Time Protection', 'DisableOnAccessProtection', 'REG_DWORD', 'Defender/AllowOnAccessProtection'),
+    ('Defender', 'AllowRealtimeMonitoring', 'Allow real-time monitoring', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Real-Time Protection', 'DisableRealtimeMonitoring', 'REG_DWORD', 'Defender/AllowRealtimeMonitoring'),
+    ('Defender', 'AllowScanningNetworkFiles', 'Allow scanning of network files', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Scan', 'DisableScanningNetworkFiles', 'REG_DWORD', 'Defender/AllowScanningNetworkFiles'),
+    ('Defender', 'AllowScriptScanning', 'Allow script scanning', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender', 'DisableScriptScanning', 'REG_DWORD', 'Defender/AllowScriptScanning'),
+    ('Defender', 'AttackSurfaceReductionRules', 'ASR rule GUIDs mapped to 0=disable/1=block/2=audit', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Windows Defender Exploit Guard\\\\ASR\\\\Rules', 'be9ba2d9-53ea-4cdc-84e5-9b1eeee46550', 'REG_SZ', 'Defender/AttackSurfaceReductionRules'),
+    ('Defender', 'CloudBlockLevel', 'Cloud block level (0=default, 2=high, 4=high+, 6=zero tolerance)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\MpEngine', 'MpCloudBlockLevel', 'REG_DWORD', 'Defender/CloudBlockLevel'),
+    ('Defender', 'CloudExtendedTimeout', 'Cloud extended timeout in seconds (0-50)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\MpEngine', 'MpBafsExtendedTimeout', 'REG_DWORD', 'Defender/CloudExtendedTimeout'),
+    ('Defender', 'DaysToRetainCleanedMalware', 'Days to retain cleaned malware in quarantine', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Quarantine', 'PurgeItemsAfterDelay', 'REG_DWORD', 'Defender/DaysToRetainCleanedMalware'),
+    ('Defender', 'EnableControlledFolderAccess', 'Enable controlled folder access (0=disable, 1=enable, 2=audit)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Windows Defender Exploit Guard\\\\Controlled Folder Access', 'EnableControlledFolderAccess', 'REG_DWORD', 'Defender/EnableControlledFolderAccess'),
+    ('Defender', 'EnableNetworkProtection', 'Enable network protection (0=disable, 1=block, 2=audit)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Windows Defender Exploit Guard\\\\Network Protection', 'EnableNetworkProtection', 'REG_DWORD', 'Defender/EnableNetworkProtection'),
+    ('Defender', 'ExcludedExtensions', 'Excluded file extensions from scanning', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Exclusions\\\\Extensions', '', 'REG_MULTI_SZ', 'Defender/ExcludedExtensions'),
+    ('Defender', 'ExcludedPaths', 'Excluded paths from scanning', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Exclusions\\\\Paths', '', 'REG_MULTI_SZ', 'Defender/ExcludedPaths'),
+    ('Defender', 'PUAProtection', 'PUA protection (0=disable, 1=block, 2=audit)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender', 'PUAProtection', 'REG_DWORD', 'Defender/PUAProtection'),
+    ('Defender', 'ScheduleScanDay', 'Scan day (0=daily, 1=Sun, 2=Mon, 7=Sat, 8=none)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Scan', 'ScheduleDay', 'REG_DWORD', 'Defender/ScheduleScanDay'),
+    ('Defender', 'ScheduleScanTime', 'Scan time (minutes from midnight, 0-1439)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Scan', 'ScheduleTime', 'REG_DWORD', 'Defender/ScheduleScanTime'),
+    ('Defender', 'SignatureUpdateInterval', 'Signature update interval in hours (0=disable)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Signature Updates', 'SignatureUpdateInterval', 'REG_DWORD', 'Defender/SignatureUpdateInterval'),
+    ('Defender', 'SubmitSamplesConsent', 'Submit samples (0=always prompt, 1=auto safe, 2=never, 3=send all)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\Spynet', 'SubmitSamplesConsent', 'REG_DWORD', 'Defender/SubmitSamplesConsent'),
+    ('DeliveryOptimization', 'DODownloadMode', 'DO mode (0=off, 1=LAN, 2=group, 3=internet, 99=bypass, 100=simple)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\DeliveryOptimization', 'DODownloadMode', 'REG_DWORD', 'DeliveryOptimization/DODownloadMode'),
+    ('DeliveryOptimization', 'DOGroupId', 'DO group ID (GUID for peering group)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\DeliveryOptimization', 'DOGroupId', 'REG_SZ', 'DeliveryOptimization/DOGroupId'),
+    ('DeliveryOptimization', 'DOGroupIdSource', 'DO group ID source (1=AD site, 2=SID, 3=DHCP 234, 4=DNS suffix)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\DeliveryOptimization', 'DOGroupIdSource', 'REG_DWORD', 'DeliveryOptimization/DOGroupIdSource'),
+    ('DeliveryOptimization', 'DOMaxBackgroundDownloadBandwidth', 'Max background bandwidth KB/s (0=unlimited)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\DeliveryOptimization', 'DOMaxDownloadBandwidth', 'REG_DWORD', 'DeliveryOptimization/DOMaxBackgroundDownloadBandwidth'),
+    ('DeliveryOptimization', 'DOMaxCacheSize', 'Max cache size as percent of disk', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\DeliveryOptimization', 'DOMaxCacheSize', 'REG_DWORD', 'DeliveryOptimization/DOMaxCacheSize'),
+    ('DeliveryOptimization', 'DORestrictPeerSelectionBy', 'Restrict peer selection (0=NAT, 1=subnet, 2=LAN)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\DeliveryOptimization', 'DORestrictPeerSelectionBy', 'REG_DWORD', 'DeliveryOptimization/DORestrictPeerSelectionBy'),
+    ('DeliveryOptimization', 'DOCacheHost', 'Connected Cache server hostname for DO', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\DeliveryOptimization', 'DOCacheHost', 'REG_SZ', 'DeliveryOptimization/DOCacheHost'),
+    ('DeviceLock', 'MaxDevicePasswordFailedAttempts', 'Max failed password attempts before wipe (4-16)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'MaxDevicePasswordFailedAttempts', 'REG_DWORD', 'DeviceLock/MaxDevicePasswordFailedAttempts'),
+    ('DeviceLock', 'MaxInactivityTimeDeviceLock', 'Max inactivity time before lock (minutes)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'InactivityTimeoutSecs', 'REG_DWORD', 'DeviceLock/MaxInactivityTimeDeviceLock'),
+    ('DeviceLock', 'MinDevicePasswordComplexCharacters', 'Min password complexity characters (1-4)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'MinDevicePasswordComplexCharacters', 'REG_DWORD', 'DeviceLock/MinDevicePasswordComplexCharacters'),
+    ('DeviceLock', 'MinDevicePasswordLength', 'Min device password length (4-16)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'MinDevicePasswordLength', 'REG_DWORD', 'DeviceLock/MinDevicePasswordLength'),
+    ('DeviceLock', 'PasswordHistoryCount', 'Password history count prevents reuse (0-50)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'DevicePasswordHistory', 'REG_DWORD', 'DeviceLock/PasswordHistoryCount'),
+    ('Experience', 'AllowCortana', 'Allow Cortana', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Windows Search', 'AllowCortana', 'REG_DWORD', 'Experience/AllowCortana'),
+    ('Experience', 'AllowManualMDMUnenrollment', 'Allow manual MDM unenrollment by users', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\MDM', 'AllowUserToUnenroll', 'REG_DWORD', 'Experience/AllowManualMDMUnenrollment'),
+    ('Experience', 'AllowSyncMySettings', 'Allow sync of settings across devices (Microsoft Account)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\SettingSync', 'DisableSettingSync', 'REG_DWORD', 'Experience/AllowSyncMySettings'),
+    ('Experience', 'AllowWindowsConsumerFeatures', 'Allow Windows consumer features (Spotlight, suggested apps)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\CloudContent', 'DisableWindowsConsumerFeatures', 'REG_DWORD', 'Experience/AllowWindowsConsumerFeatures'),
+    ('Experience', 'AllowWindowsTips', 'Allow Windows tips', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\CloudContent', 'DisableSoftLanding', 'REG_DWORD', 'Experience/AllowWindowsTips'),
+    ('Experience', 'ConfigureChatIcon', 'Configure Teams/Chat taskbar icon (0=show, 1=hide, 2=user choice)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Windows Chat', 'ChatIcon', 'REG_DWORD', 'Experience/ConfigureChatIcon'),
+    ('LocalPoliciesSecurityOptions', 'InteractiveLogonDoNotDisplayLastSignedIn', 'Do not display last signed-in username on lock', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'DontDisplayLastUserName', 'REG_DWORD', 'LocalPoliciesSecurityOptions/InteractiveLogonDoNotDisplayLastSignedIn'),
+    ('LocalPoliciesSecurityOptions', 'InteractiveLogonMachineInactivityLimit', 'Machine inactivity lockout (seconds)', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'InactivityTimeoutSecs', 'REG_DWORD', 'LocalPoliciesSecurityOptions/InteractiveLogonMachineInactivityLimit'),
+    ('LocalPoliciesSecurityOptions', 'InteractiveLogonMessageTextForUsersAttemptingToLogon', 'Logon warning message body text', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'LegalNoticeText', 'REG_SZ', 'LocalPoliciesSecurityOptions/InteractiveLogonMessageTextForUsersAttemptingToLogon'),
+    ('LocalPoliciesSecurityOptions', 'InteractiveLogonMessageTitleForUsersAttemptingToLogOn', 'Logon warning message title', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'LegalNoticeCaption', 'REG_SZ', 'LocalPoliciesSecurityOptions/InteractiveLogonMessageTitleForUsersAttemptingToLogOn'),
+    ('LocalPoliciesSecurityOptions', 'InteractiveLogonNumberOfPreviousLogonsToCache', 'Cached credentials count (0=none recommended for high security)', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon', 'CachedLogonsCount', 'REG_SZ', 'LocalPoliciesSecurityOptions/InteractiveLogonNumberOfPreviousLogonsToCache'),
+    ('LocalPoliciesSecurityOptions', 'InteractiveLogonSmartCardRemovalBehavior', 'Smart card removal (0=none, 1=lock, 2=logoff, 3=disconnect RDP)', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon', 'ScRemoveOption', 'REG_SZ', 'LocalPoliciesSecurityOptions/InteractiveLogonSmartCardRemovalBehavior'),
+    ('LocalPoliciesSecurityOptions', 'MicrosoftNetworkClientDigitallySignCommunicationsAlways', 'Always digitally sign SMB client communications', 'HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services\\\\LanmanWorkstation\\\\Parameters', 'RequireSecuritySignature', 'REG_DWORD', 'LocalPoliciesSecurityOptions/MicrosoftNetworkClientDigitallySignCommunicationsAlways'),
+    ('LocalPoliciesSecurityOptions', 'MicrosoftNetworkServerDigitallySignCommunicationsAlways', 'Always digitally sign SMB server communications', 'HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services\\\\LanManServer\\\\Parameters', 'RequireSecuritySignature', 'REG_DWORD', 'LocalPoliciesSecurityOptions/MicrosoftNetworkServerDigitallySignCommunicationsAlways'),
+    ('LocalPoliciesSecurityOptions', 'NetworkAccessDoNotAllowAnonymousEnumerationOfSAMAccountsAndShares', 'Do not allow anonymous enumeration of SAM accounts and shares', 'HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Lsa', 'RestrictAnonymous', 'REG_DWORD', 'LocalPoliciesSecurityOptions/NetworkAccessDoNotAllowAnonymousEnumerationOfSAMAccountsAndShares'),
+    ('LocalPoliciesSecurityOptions', 'NetworkSecurityDoNotStoreLANManagerHashValueOnNextPasswordChange', 'Do not store LAN Manager hash on next password change', 'HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Lsa', 'NoLMHash', 'REG_DWORD', 'LocalPoliciesSecurityOptions/NetworkSecurityDoNotStoreLANManagerHashValueOnNextPasswordChange'),
+    ('LocalPoliciesSecurityOptions', 'NetworkSecurityLANManagerAuthenticationLevel', 'LAN Manager auth level (5=NTLMv2 only, most secure)', 'HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Lsa', 'LmCompatibilityLevel', 'REG_DWORD', 'LocalPoliciesSecurityOptions/NetworkSecurityLANManagerAuthenticationLevel'),
+    ('LocalPoliciesSecurityOptions', 'UserAccountControlBehaviorOfTheElevationPromptForAdministrators', 'UAC admin prompt (0=no prompt, 2=consent secure desktop)', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'ConsentPromptBehaviorAdmin', 'REG_DWORD', 'LocalPoliciesSecurityOptions/UserAccountControlBehaviorOfTheElevationPromptForAdministrators'),
+    ('LocalPoliciesSecurityOptions', 'UserAccountControlBehaviorOfTheElevationPromptForStandardUsers', 'UAC standard user prompt (0=auto-deny, 3=credentials)', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'ConsentPromptBehaviorUser', 'REG_DWORD', 'LocalPoliciesSecurityOptions/UserAccountControlBehaviorOfTheElevationPromptForStandardUsers'),
+    ('LocalPoliciesSecurityOptions', 'UserAccountControlRunAllAdministratorsInAdminApprovalMode', 'UAC run all administrators in admin approval mode (EnableLUA)', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'EnableLUA', 'REG_DWORD', 'LocalPoliciesSecurityOptions/UserAccountControlRunAllAdministratorsInAdminApprovalMode'),
+    ('LocalPoliciesSecurityOptions', 'UserAccountControlSwitchToTheSecureDesktopWhenPromptingForElevation', 'UAC use secure desktop for elevation prompts', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'PromptOnSecureDesktop', 'REG_DWORD', 'LocalPoliciesSecurityOptions/UserAccountControlSwitchToTheSecureDesktopWhenPromptingForElevation'),
+    ('LocalPoliciesSecurityOptions', 'UserAccountControlUseAdminApprovalModeForTheBuiltInAdministratorAccount', 'UAC admin approval for built-in Administrator account', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'FilterAdministratorToken', 'REG_DWORD', 'LocalPoliciesSecurityOptions/UserAccountControlUseAdminApprovalModeForTheBuiltInAdministratorAccount'),
+    ('Privacy', 'AllowCrossDeviceClipboard', 'Allow cross-device clipboard (sync clipboard to other devices)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'AllowCrossDeviceClipboard', 'REG_DWORD', 'Privacy/AllowCrossDeviceClipboard'),
+    ('Privacy', 'AllowInputPersonalization', 'Allow input personalization (Cortana, speech recognition)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\InputPersonalization', 'AllowInputPersonalization', 'REG_DWORD', 'Privacy/AllowInputPersonalization'),
+    ('Privacy', 'DisableAdvertisingId', 'Disable advertising ID for personalized ads', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\AdvertisingInfo', 'DisabledByGroupPolicy', 'REG_DWORD', 'Privacy/DisableAdvertisingId'),
+    ('Privacy', 'EnableActivityFeed', 'Enable Windows Timeline/activity feed', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'EnableActivityFeed', 'REG_DWORD', 'Privacy/EnableActivityFeed'),
+    ('Privacy', 'LetAppsAccessCamera', 'Let apps access camera (0=user, 1=force allow, 2=force deny)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\AppPrivacy', 'LetAppsAccessCamera', 'REG_DWORD', 'Privacy/LetAppsAccessCamera'),
+    ('Privacy', 'LetAppsAccessLocation', 'Let apps access location', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\AppPrivacy', 'LetAppsAccessLocation', 'REG_DWORD', 'Privacy/LetAppsAccessLocation'),
+    ('Privacy', 'LetAppsAccessMicrophone', 'Let apps access microphone', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\AppPrivacy', 'LetAppsAccessMicrophone', 'REG_DWORD', 'Privacy/LetAppsAccessMicrophone'),
+    ('Privacy', 'PublishUserActivities', 'Publish user activities to Timeline and cross-device', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'PublishUserActivities', 'REG_DWORD', 'Privacy/PublishUserActivities'),
+    ('RemoteDesktopServices', 'AllowUsersToConnectRemotely', 'Allow remote desktop connections', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Terminal Services', 'fDenyTSConnections', 'REG_DWORD', 'RemoteDesktopServices/AllowUsersToConnectRemotely'),
+    ('RemoteDesktopServices', 'ClientConnectionEncryptionLevel', 'RDP encryption level (3=high/128-bit required)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Terminal Services', 'MinEncryptionLevel', 'REG_DWORD', 'RemoteDesktopServices/ClientConnectionEncryptionLevel'),
+    ('RemoteDesktopServices', 'DoNotAllowDriveRedirection', 'Do not allow drive redirection in RDP sessions', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Terminal Services', 'fDisableCdm', 'REG_DWORD', 'RemoteDesktopServices/DoNotAllowDriveRedirection'),
+    ('RemoteDesktopServices', 'DoNotAllowPasswordSaving', 'Do not allow password saving in RDP client', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Terminal Services', 'DisablePasswordSaving', 'REG_DWORD', 'RemoteDesktopServices/DoNotAllowPasswordSaving'),
+    ('RemoteDesktopServices', 'PromptForPasswordUponConnection', 'Prompt for password upon RDP connection', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Terminal Services', 'fPromptForPassword', 'REG_DWORD', 'RemoteDesktopServices/PromptForPasswordUponConnection'),
+    ('RemoteDesktopServices', 'RequireSecureRPCCommunication', 'Require secure RPC for RDP', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Terminal Services', 'fEncryptRPCTraffic', 'REG_DWORD', 'RemoteDesktopServices/RequireSecureRPCCommunication'),
+    ('RemoteManagement', 'AllowBasicAuthentication_Client', 'Allow basic auth for WinRM client', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WinRM\\\\Client', 'AllowBasic', 'REG_DWORD', 'RemoteManagement/AllowBasicAuthentication_Client'),
+    ('RemoteManagement', 'AllowBasicAuthentication_Service', 'Allow basic auth for WinRM service', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WinRM\\\\Service', 'AllowBasic', 'REG_DWORD', 'RemoteManagement/AllowBasicAuthentication_Service'),
+    ('RemoteManagement', 'AllowUnencryptedTraffic_Client', 'Allow unencrypted WinRM client traffic', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WinRM\\\\Client', 'AllowUnencryptedTraffic', 'REG_DWORD', 'RemoteManagement/AllowUnencryptedTraffic_Client'),
+    ('RemoteManagement', 'AllowUnencryptedTraffic_Service', 'Allow unencrypted WinRM service traffic', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WinRM\\\\Service', 'AllowUnencryptedTraffic', 'REG_DWORD', 'RemoteManagement/AllowUnencryptedTraffic_Service'),
+    ('RemoteManagement', 'DisallowDigestAuthentication', 'Disallow digest auth for WinRM client', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WinRM\\\\Client', 'DisableDigest', 'REG_DWORD', 'RemoteManagement/DisallowDigestAuthentication'),
+    ('RemoteProcedureCall', 'RPCEndpointMapperClientAuthentication', 'RPC endpoint mapper requires auth', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Rpc', 'EnableAuthEpResolution', 'REG_DWORD', 'RemoteProcedureCall/RPCEndpointMapperClientAuthentication'),
+    ('RemoteProcedureCall', 'RestrictUnauthenticatedRPCClients', 'Restrict unauthenticated RPC clients (2=authenticated, no exceptions)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Rpc', 'RestrictRemoteClients', 'REG_DWORD', 'RemoteProcedureCall/RestrictUnauthenticatedRPCClients'),
+    ('Search', 'AllowCloudSearch', 'Allow cloud search (Bing in Windows Search)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Windows Search', 'AllowCloudSearch', 'REG_DWORD', 'Search/AllowCloudSearch'),
+    ('Search', 'DoNotUseWebResults', 'Disable web results in Windows Search', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Windows Search', 'ConnectedSearchUseWeb', 'REG_DWORD', 'Search/DoNotUseWebResults'),
+    ('Security', 'RequireDeviceEncryption', 'Require device encryption (BitLocker)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\FVE', 'RequireDeviceEncryption', 'REG_DWORD', 'Security/RequireDeviceEncryption'),
+    ('SmartScreen', 'EnableAppInstallControl', 'App Install Control - require Store apps only', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender\\\\SmartScreen', 'ConfigureAppInstallControl', 'REG_SZ', 'SmartScreen/EnableAppInstallControl'),
+    ('SmartScreen', 'EnableSmartScreenInShell', 'Enable SmartScreen in Windows Shell', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'EnableSmartScreen', 'REG_DWORD', 'SmartScreen/EnableSmartScreenInShell'),
+    ('SmartScreen', 'PreventOverrideForFilesInShell', 'Prevent SmartScreen override for files', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'ShellSmartScreenLevel', 'REG_SZ', 'SmartScreen/PreventOverrideForFilesInShell'),
+    ('System', 'AllowTelemetry', 'Telemetry level (0=security-enterprise, 1=required, 3=optional)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\DataCollection', 'AllowTelemetry', 'REG_DWORD', 'System/AllowTelemetry'),
+    ('System', 'AllowLocation', 'Allow location services', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\LocationAndSensors', 'DisableLocation', 'REG_DWORD', 'System/AllowLocation'),
+    ('System', 'DisableOneDriveFileSync', 'Disable OneDrive file sync', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\OneDrive', 'DisableFileSyncNGSC', 'REG_DWORD', 'System/DisableOneDriveFileSync'),
+    ('System', 'TurnOffFileHistory', 'Turn off File History backup', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\FileHistory', 'Disabled', 'REG_DWORD', 'System/TurnOffFileHistory'),
+    ('Update', 'ActiveHoursEnd', 'Active hours end time (0-23) - no auto-restart during this window', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate\\\\AU', 'ActiveHoursEnd', 'REG_DWORD', 'Update/ActiveHoursEnd'),
+    ('Update', 'ActiveHoursStart', 'Active hours start time (0-23)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate\\\\AU', 'ActiveHoursStart', 'REG_DWORD', 'Update/ActiveHoursStart'),
+    ('Update', 'AllowAutoUpdate', 'Auto update mode (2=notify, 3=auto-dl, 4=auto-install, 5=user)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate\\\\AU', 'AUOptions', 'REG_DWORD', 'Update/AllowAutoUpdate'),
+    ('Update', 'AllowMUUpdateService', 'Allow Microsoft Update service (includes other MS products)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate\\\\AU', 'AllowMUUpdateService', 'REG_DWORD', 'Update/AllowMUUpdateService'),
+    ('Update', 'BranchReadinessLevel', 'Update channel readiness (2=SAC, 4=insider fast, 8=insider slow)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'BranchReadinessLevel', 'REG_DWORD', 'Update/BranchReadinessLevel'),
+    ('Update', 'ConfigureDeadlineForFeatureUpdates', 'Feature update deadline in days (0-30)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'ConfigureDeadlineForFeatureUpdates', 'REG_DWORD', 'Update/ConfigureDeadlineForFeatureUpdates'),
+    ('Update', 'ConfigureDeadlineForQualityUpdates', 'Quality update deadline in days (0-30)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'ConfigureDeadlineForQualityUpdates', 'REG_DWORD', 'Update/ConfigureDeadlineForQualityUpdates'),
+    ('Update', 'ConfigureDeadlineGracePeriod', 'Deadline grace period in days for restarts', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'ConfigureDeadlineGracePeriod', 'REG_DWORD', 'Update/ConfigureDeadlineGracePeriod'),
+    ('Update', 'DeferFeatureUpdatesPeriodInDays', 'Defer feature updates (0-365 days)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'DeferFeatureUpdatesPeriodInDays', 'REG_DWORD', 'Update/DeferFeatureUpdatesPeriodInDays'),
+    ('Update', 'DeferQualityUpdatesPeriodInDays', 'Defer quality updates (0-35 days)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'DeferQualityUpdatesPeriodInDays', 'REG_DWORD', 'Update/DeferQualityUpdatesPeriodInDays'),
+    ('Update', 'DisableDualScan', 'Disable dual scan (prevents scanning both WU and WSUS)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'DisableDualScan', 'REG_DWORD', 'Update/DisableDualScan'),
+    ('Update', 'ManagePreviewBuilds', 'Manage preview builds (0=disable, 1=enable, 2=disable after next update)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'ManagePreviewBuilds', 'REG_DWORD', 'Update/ManagePreviewBuilds'),
+    ('Update', 'PauseFeatureUpdates', 'Pause feature updates (ISO 8601 date string to resume)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'PauseFeatureUpdatesStartTime', 'REG_SZ', 'Update/PauseFeatureUpdates'),
+    ('Update', 'PauseQualityUpdates', 'Pause quality updates (ISO 8601 date string to resume)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'PauseQualityUpdatesStartTime', 'REG_SZ', 'Update/PauseQualityUpdates'),
+    ('Update', 'ScheduledInstallDay', 'Scheduled install day (0=every day, 1=Sunday, 7=Saturday)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate\\\\AU', 'ScheduledInstallDay', 'REG_DWORD', 'Update/ScheduledInstallDay'),
+    ('Update', 'ScheduledInstallTime', 'Scheduled install time (0-23)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate\\\\AU', 'ScheduledInstallTime', 'REG_DWORD', 'Update/ScheduledInstallTime'),
+    ('Update', 'UpdateServiceUrl', 'WSUS server URL', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WindowsUpdate', 'WUServer', 'REG_SZ', 'Update/UpdateServiceUrl'),
+    ('WindowsDefenderSecurityCenter', 'CompanyName', 'Company name shown in Windows Security Center', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender Security Center\\\\Enterprise Customization', 'CompanyName', 'REG_SZ', 'WindowsDefenderSecurityCenter/CompanyName'),
+    ('WindowsDefenderSecurityCenter', 'DisableAccountProtectionUI', 'Disable account protection UI in Security Center', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender Security Center\\\\Account protection', 'UILockdown', 'REG_DWORD', 'WindowsDefenderSecurityCenter/DisableAccountProtectionUI'),
+    ('WindowsDefenderSecurityCenter', 'DisableAppBrowserUI', 'Disable app and browser control UI', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender Security Center\\\\App and Browser protection', 'UILockdown', 'REG_DWORD', 'WindowsDefenderSecurityCenter/DisableAppBrowserUI'),
+    ('WindowsDefenderSecurityCenter', 'DisableDeviceSecurityUI', 'Disable device security UI', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender Security Center\\\\Device security', 'UILockdown', 'REG_DWORD', 'WindowsDefenderSecurityCenter/DisableDeviceSecurityUI'),
+    ('WindowsDefenderSecurityCenter', 'DisableNetworkUI', 'Disable firewall and network protection UI', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender Security Center\\\\Firewall and network protection', 'UILockdown', 'REG_DWORD', 'WindowsDefenderSecurityCenter/DisableNetworkUI'),
+    ('WindowsDefenderSecurityCenter', 'DisableNotifications', 'Disable Windows Security notifications', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender Security Center\\\\Notifications', 'DisableNotifications', 'REG_DWORD', 'WindowsDefenderSecurityCenter/DisableNotifications'),
+    ('WindowsDefenderSecurityCenter', 'DisableVirusUI', 'Disable virus and threat protection UI', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender Security Center\\\\Virus and threat protection', 'UILockdown', 'REG_DWORD', 'WindowsDefenderSecurityCenter/DisableVirusUI'),
+    ('WindowsDefenderSecurityCenter', 'HideWindowsSecurityNotificationAreaControl', 'Hide Windows Security icon in system tray', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows Defender Security Center\\\\Systray', 'HideSystray', 'REG_DWORD', 'WindowsDefenderSecurityCenter/HideWindowsSecurityNotificationAreaControl'),
+    ('WindowsLogon', 'AllowAutomaticRestartSignOn', 'Allow automatic restart sign-on after updates', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'DisableAutomaticRestartSignOn', 'REG_DWORD', 'WindowsLogon/AllowAutomaticRestartSignOn'),
+    ('WindowsLogon', 'DisableLockScreenAppNotifications', 'Disable lock screen app notifications', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'DisableLockScreenAppNotifications', 'REG_DWORD', 'WindowsLogon/DisableLockScreenAppNotifications'),
+    ('WindowsLogon', 'DontDisplayNetworkSelectionUI', 'Do not show network selection UI on lock screen', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System', 'DontDisplayNetworkSelectionUI', 'REG_DWORD', 'WindowsLogon/DontDisplayNetworkSelectionUI'),
+    ('WindowsLogon', 'HideFastUserSwitching', 'Hide fast user switching button', 'HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System', 'HideFastUserSwitching', 'REG_DWORD', 'WindowsLogon/HideFastUserSwitching'),
+    ('WindowsPowerShell', 'TurnOnPowerShellScriptBlockLogging', 'Enable PowerShell script block logging (Event ID 4104)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\PowerShell\\\\ScriptBlockLogging', 'EnableScriptBlockLogging', 'REG_DWORD', 'WindowsPowerShell/TurnOnPowerShellScriptBlockLogging'),
+    ('WindowsPowerShell', 'TurnOnPowerShellTranscription', 'Enable PowerShell transcription logging', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\PowerShell\\\\Transcription', 'EnableTranscripting', 'REG_DWORD', 'WindowsPowerShell/TurnOnPowerShellTranscription'),
+    ('Wireless', 'AllowSimultaneousConnections', 'Block simultaneous Wi-Fi and cellular/Ethernet (prefer Wi-Fi)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WcmSvc\\\\GroupPolicy', 'fMinimizeConnections', 'REG_DWORD', 'Wireless/AllowSimultaneousConnections'),
+    ('Wireless', 'ConfigureWiFiSense', 'Configure Wi-Fi Sense (0=disable sharing open networks)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WcmSvc\\\\WiFiNetworkManager\\\\Config', 'AutoConnectAllowedOEM', 'REG_DWORD', 'Wireless/ConfigureWiFiSense'),
+]
+
+def fetch_policy_csp():
+    log("Building Policy CSP (Windows MDM) entries…")
+    SEP = "\\"
+    entries = []
+    for row in POLICY_CSP_DATA:
+        area, policy, desc, reg_key, reg_val, dtype, oma_sfx = row
+        oma   = f"./Device/Vendor/MSFT/Policy/Config/{oma_sfx}"
+        sid   = f"device_vendor_msft_policy_config_{slugify(area)}_{slugify(policy)}"
+        hive  = "HKCU" if reg_key.startswith("HKCU") else "HKLM"
+        key   = reg_key.split(SEP, 1)[-1] if SEP in reg_key else reg_key.replace("HKLM\\","").replace("HKCU\\","")
+        e = make_entry(
+            source_id = "graph",
+            entry_id  = "csp_" + sid,
+            name      = f"{area}/{policy}",
+            desc      = desc,
+            cats      = [area, "Policy CSP", "Intune Settings Catalog"],
+            plat      = "windows",
+            methods   = ["intune", "registry", "csp"],
+            intune    = [{
+                "cat":   area,
+                "name":  f"{area}/{policy}",
+                "defId": sid,
+                "oma":   oma,
+                "dtype": "Integer" if dtype == "REG_DWORD" else "String",
+                "vals":  [],
+                "rec":   "",
+                "json":  "settingDefinitionId: " + sid,
+            }],
+            reg = {"hive": hive, "key": key, "val": reg_val, "type": dtype,
+                   "data": "See description", "note": ""} if reg_key else None,
+        )
+        entries.append(e)
+    log(f"  Policy CSP: {len(entries)} entries")
+    return entries
+
 # ─── SOURCE 5: Office ADMX ────────────────────────────────────────────────────
 OFFICE_ADMX = [
     ("Block macros from Internet — All Office","Blocks VBA macros in Office files downloaded from the internet. 1=Block.","office16.admx","HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\Common\\Security","blockcontentexecutionfrominternet","REG_DWORD"),
@@ -706,6 +878,11 @@ def main():
         e = fetch_windows_admx()
         all_entries.extend(e)
         source_status["admx_windows"] = {"ok": True, "count": len(e)}
+
+        # Policy CSP — always include alongside Windows ADMX
+        csp_entries = fetch_policy_csp()
+        all_entries.extend(csp_entries)
+        source_status["policy_csp"] = {"ok": True, "count": len(csp_entries)}
 
     if want("office"):
         e = fetch_office_admx()
