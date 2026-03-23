@@ -792,24 +792,29 @@ function emptyHTML(h, p, noSearch) {
 
 function cardHTML(e, terms) {
   const mt = (e.methods||[]).map(m=>{
-    if(m==='intune')   return '<span class="tag t-int">Intune</span>';
-    if(m==='gpo'||m==='admx') return '<span class="tag t-gpo">GPO / ADMX</span>';
-    if(m==='registry') return '<span class="tag t-reg">Registry</span>';
-    if(m==='csp')      return '<span class="tag t-csp">CSP</span>';
+    if(m==='intune')         return '<span class="tag t-int">Intune</span>';
+    if(m==='gpo'||m==='admx')return '<span class="tag t-gpo">GPO / ADMX</span>';
+    if(m==='registry')       return '<span class="tag t-reg">Registry</span>';
+    if(m==='csp')            return '<span class="tag t-csp">CSP</span>';
     return '';
   }).join('');
 
-  // For Intune catalog entries: friendly name is i.defId, category is e.name
-  const isCatalog = e._source === 'graph' && e.desc && e.desc.startsWith('device_vendor_msft');
-  const cardName = isCatalog
-    ? (e.intune && e.intune[0] && e.intune[0].defId ? e.intune[0].defId : humanizeName(e.name||''))
-    : humanizeName(e.name||'');
-  const cardDesc = isCatalog
-    ? (e.name||'')
-    : (e.cats && e.cats.filter(c=>c&&!['Settings Catalog','Intune Settings Catalog','Policy CSP','Sheet 1'].includes(c))[0] || e.desc || '');
+  // Derive best display name from available data
+  const i0 = e.intune && e.intune[0];
+  let cardName, cardDesc;
 
-  const srcB  = srcBadge(e._source||'local');
-  const infoLink = '';
+  if (e._source === 'graph' && i0 && i0.defId) {
+    // PascalCase key → friendly name: "ConfigureXboxLiveGameSaveServiceStartupMode" → "Configure Xbox Live Game Save Service Startup Mode"
+    cardName = i0.defId
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/[_-]/g, ' ')
+      .trim();
+    cardDesc = e.name || ''; // category like "System Services"
+  } else {
+    cardName = humanizeName(e.name || '');
+    cardDesc = e.cats && e.cats.filter(c=>c&&!['Settings Catalog','Intune Settings Catalog','Policy CSP'].includes(c))[0] || e.desc || '';
+  }
 
   return `<div class="card" id="card-${e.id}">
     <div class="card-hdr" onclick="toggleCard('${e.id}')">
@@ -817,7 +822,7 @@ function cardHTML(e, terms) {
       <div class="card-info">
         <div class="card-name">${hl(cardName,terms)}</div>
         <div class="card-desc">${hl(cardDesc,terms)}</div>
-        <div class="card-meta">${mt}<span class="tag t-plt">${e.plat==="windows"?"Windows":e.plat||"Windows"}</span>${srcB}${infoLink}</div>
+        <div class="card-meta">${mt}<span class="tag t-plt">${e.plat==="windows"?"Windows":e.plat||"Windows"}</span>${srcBadge(e._source||"local")}</div>
       </div>
       <button class="expand-btn">Details<svg class="exp-arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
@@ -842,48 +847,80 @@ function detailHTML(e) {
 
 
 function intunePane(e) {
-  // Field mapping in current data (built before column fix):
-  // e.name         = category path ("Accounts", "System Services")
-  // e.desc         = real settingDefinitionId ("device_vendor_msft_...")
-  // e.cats[0]      = OMA leaf key ("AllowAddingNonMicrosoftAccountsManually")
-  // i.defId        = friendly display name ("Allow Adding Non Microsoft Accounts Manually")
-  // i.name         = category (same as e.name)
-  const realDefId = (e.desc && e.desc.startsWith('device_vendor_msft')) ? e.desc : '';
-  const omaLeaf   = e.cats && e.cats[0] ? e.cats[0] : '';
-  const catPath   = e.name || '';
+  // Current data layout (pre-pipeline-fix):
+  //   e.name   = category path  e.g. "System Services", "Above Lock"
+  //   e.desc   = OMA base path  e.g. "./Device/Vendor/MSFT/Policy"
+  //   e.cats[0]= platform       e.g. "Windows", "iOS"
+  //   i.defId  = PascalCase key e.g. "ConfigureXboxLiveGameSaveServiceStartupMode"
+  //   i.oma    = partial OMA    e.g. "./Device/Vendor/MSFT/ConfigureXbox..."
+  //   i.name   = category path  (same as e.name)
+  //   i.cat    = platform       (same as e.cats[0])
 
-  // mkBtn uses data-copy to avoid HTML attribute escaping issues
-  function mkBtn(val, label, extraStyle) {
+  function mkBtn(val, label, style) {
     const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-    return `<button class="cbtn"${extraStyle?' style="'+extraStyle+'"':''} data-copy="${safe}" onclick="cp(this.dataset.copy,this)">${label}</button>`;
+    return `<button class="cbtn"${style?' style="'+style+'"':''} data-copy="${safe}" onclick="cp(this.dataset.copy,this)">${label}</button>`;
+  }
+
+  // Derive settingDefinitionId from i.oma and e.name (category)
+  function deriveDefId(oma, category, leafKey) {
+    if (!oma) return '';
+    // e.g. "./Device/Vendor/MSFT/ConfigureXboxLiveGameSaveServiceStartupMode"
+    // → "device_vendor_msft_configurexboxlivegamesaveservicestartupmode"
+    const parts = oma.replace(/^\.?\//,'').split('/').filter(Boolean);
+    return parts.map(p => p.toLowerCase()).join('_');
+  }
+
+  // Convert PascalCase/camelCase key to friendly display name
+  function toFriendly(key) {
+    if (!key) return '';
+    return key
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/[_-]/g, ' ')
+      .trim();
+  }
+
+  // Build proper OMA-URI
+  // For Policy CSP: ./Device/Vendor/MSFT/Policy/Config/{Category}/{LeafKey}
+  // For others: use i.oma as-is if it looks complete
+  function buildOma(oma, category, leafKey) {
+    if (!oma) return '';
+    // If oma ends with the leafKey it's likely Policy/Config path style
+    if (oma.toLowerCase().includes('policy') && category && leafKey) {
+      const cat = category.replace(/[\s\/\\]/g, '');
+      return `./Device/Vendor/MSFT/Policy/Config/${cat}/${leafKey}`;
+    }
+    return oma;
   }
 
   let h = '';
   for (const i of (e.intune||[])) {
-    const displayName = i.defId || '';
-    const category    = catPath || i.name || '';
-    const defId       = realDefId || '';
+    const leafKey    = i.defId || '';
+    const category   = e.name || i.name || '';
+    const omaBase    = e.desc || '';
+    const rawOma     = i.oma  || '';
 
-    // Build correct OMA-URI from the real defId
-    let oma = '';
-    if (defId.startsWith('device_vendor_msft_policy_config_') && catPath && omaLeaf) {
-      oma = './Device/Vendor/MSFT/Policy/Config/' +
-            catPath.replace(/ /g,'') + '/' + omaLeaf;
-    } else if (defId.startsWith('device_vendor_msft_')) {
-      const parts = defId.replace('device_vendor_msft_','').split('_');
-      oma = './Device/Vendor/MSFT/' + parts.map(p => p.charAt(0).toUpperCase()+p.slice(1)).join('/');
-    } else if (i.oma && !i.oma.includes(' ')) {
-      oma = i.oma;
-    }
+    // Friendly display name from PascalCase key
+    const displayName = toFriendly(leafKey);
+
+    // settingDefinitionId in device_vendor_msft_... format
+    const defId = deriveDefId(rawOma, category, leafKey);
+
+    // Full OMA-URI
+    const oma = buildOma(rawOma, category, leafKey);
 
     // Full JSON fragment for Graph API
     const jsonFrag = defId ? `"settingDefinitionId": "${defId}"` : '';
-    const jsonFull = defId ? `{
+    const jsonFull  = defId ? `{
   "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
   "settingInstance": {
     "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
     "settingDefinitionId": "${defId}",
-    "choiceSettingValue": { "value": "${defId}_1", "children": [] }
+    "choiceSettingValue": {
+      "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingValue",
+      "value": "${defId}_0",
+      "children": []
+    }
   }
 }` : '';
 
