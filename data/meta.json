@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-03-23T13:32:11.747158+00:00",
-  "total_entries": 10368,
+  "last_updated": "2026-03-23T14:46:50.779149+00:00",
+  "total_entries": 10344,
   "chunk_count": 52,
   "chunks": [
     {
@@ -261,13 +261,13 @@
     {
       "file": "data/chunks/chunk_051.json",
       "start": 10200,
-      "count": 168
+      "count": 144
     }
   ],
   "sources": {
     "graph": {
       "ok": true,
-      "count": 10066
+      "count": 10042
     },
     "chromium": {
       "ok": true,
@@ -290,5 +290,5 @@
       "count": 0
     }
   },
-  "index_size_kb": 11425
+  "index_size_kb": 7906
 }
