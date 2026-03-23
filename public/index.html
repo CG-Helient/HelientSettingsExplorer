@@ -791,42 +791,40 @@ function emptyHTML(h, p, noSearch) {
 }
 
 function cardHTML(e, terms) {
-  const mt = (e.methods||[]).map(m => {
-    const map={intune:["t-int","Intune"],gpo:["t-gpo","GPO"],registry:["t-reg","Reg"],admx:["t-adm","ADMX"],csp:["t-csp","CSP"]};
-    const [c,l] = map[m]||["t-plt",m.toUpperCase()];
-    return `<span class="tag ${c}">${l}</span>`;
-  }).join("");
-  const infoLink = e._infoUrl ? `<a href="${esc(e._infoUrl)}" target="_blank" style="font-size:10px;color:var(--h-blue);text-decoration:none;margin-left:3px">docs ↗</a>` : "";
+  const mt = (e.methods||[]).map(m=>{
+    if(m==='intune')   return '<span class="tag t-int">Intune</span>';
+    if(m==='gpo'||m==='admx') return '<span class="tag t-gpo">GPO / ADMX</span>';
+    if(m==='registry') return '<span class="tag t-reg">Registry</span>';
+    if(m==='csp')      return '<span class="tag t-csp">CSP</span>';
+    return '';
+  }).join('');
+
+  // For Intune catalog entries: friendly name is i.defId, category is e.name
+  const isCatalog = e._source === 'graph' && e.desc && e.desc.startsWith('device_vendor_msft');
+  const cardName = isCatalog
+    ? (e.intune && e.intune[0] && e.intune[0].defId ? e.intune[0].defId : humanizeName(e.name||''))
+    : humanizeName(e.name||'');
+  const cardDesc = isCatalog
+    ? (e.name||'')
+    : (e.cats && e.cats.filter(c=>c&&!['Settings Catalog','Intune Settings Catalog','Policy CSP','Sheet 1'].includes(c))[0] || e.desc || '');
+
+  const srcB  = srcBadge(e._source||'local');
+  const infoLink = '';
 
   return `<div class="card" id="card-${e.id}">
     <div class="card-hdr" onclick="toggleCard('${e.id}')">
       <div class="card-icon">${e.icon||"⚙️"}</div>
       <div class="card-info">
-        <div class="card-name">${hl(
-          /* Display name: for graph/catalog entries use i.defId (friendly name), else use e.name */
-          (e._source==='graph' && e.intune && e.intune[0] && e.intune[0].defId &&
-           !e.desc?.startsWith('device_vendor_msft') && e.intune[0].defId !== e.name)
-            ? e.intune[0].defId
-            : (e.desc && e.desc.startsWith('device_vendor_msft')
-                ? humanizeName(e.intune?.[0]?.defId || e.name || '')
-                : humanizeName(e.name||'')),
-          terms
-        )}</div>
-        <div class="card-desc">${hl(
-          /* Category breadcrumb: for catalog entries use e.name (category path) */
-          (e._source==='graph' && e.desc?.startsWith('device_vendor_msft'))
-            ? e.name
-            : (e.cats && e.cats.filter(c => c && !['Settings Catalog','Intune Settings Catalog','Sheet 1','Policy CSP','graph','admx_windows','admx_office','chromium'].includes(c)).slice(0,2).join(' > ')
-               || e.desc || ''),
-          terms
-        )}</div>
-        <div class="card-meta">${mt}<span class="tag t-plt">${e.plat==="windows"?"Windows":e.plat||"Windows"}</span>${srcBadge(e._source||"local")}${infoLink}</div>
+        <div class="card-name">${hl(cardName,terms)}</div>
+        <div class="card-desc">${hl(cardDesc,terms)}</div>
+        <div class="card-meta">${mt}<span class="tag t-plt">${e.plat==="windows"?"Windows":e.plat||"Windows"}</span>${srcB}${infoLink}</div>
       </div>
       <button class="expand-btn">Details<svg class="exp-arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
     <div class="detail">${detailHTML(e)}</div>
   </div>`;
 }
+
 
 function detailHTML(e) {
   let tabs="",panes="",first=true;
@@ -835,62 +833,78 @@ function detailHTML(e) {
     panes+=`<div class="tp${first?" active":""}" id="${id}">${content}</div>`;
     first=false;
   }
+  // Call intunePane directly (not via closure) so patches always take effect
   if ((e.intune||[]).length) addTab(`ti-${e.id}`,"var(--h-tag-int)","Intune Settings Catalog",intunePane(e));
   if (e.gpo)                 addTab(`tg-${e.id}`,"var(--h-tag-gpo)","GPO / ADMX",gpoPane(e));
   if (e.reg)                 addTab(`tr-${e.id}`,"var(--h-tag-reg)","Registry",regPane(e));
   return `<div class="dtabs">${tabs}</div><div class="dcontent">${panes}</div>`;
 }
 
+
 function intunePane(e) {
-  let h="";
-  // Field remapping: the build pipeline stored data in unexpected fields.
-  // Compute correct values here until next rebuild fixes the pipeline.
-  const realDefId = (e.desc && e.desc.startsWith("device_vendor_msft")) ? e.desc : (e.intune?.[0]?.defId || "");
-  const omaLeaf   = e.cats?.[0] || "";
-  const catPath   = e.name || "";
+  // Field mapping in current data (built before column fix):
+  // e.name         = category path ("Accounts", "System Services")
+  // e.desc         = real settingDefinitionId ("device_vendor_msft_...")
+  // e.cats[0]      = OMA leaf key ("AllowAddingNonMicrosoftAccountsManually")
+  // i.defId        = friendly display name ("Allow Adding Non Microsoft Accounts Manually")
+  // i.name         = category (same as e.name)
+  const realDefId = (e.desc && e.desc.startsWith('device_vendor_msft')) ? e.desc : '';
+  const omaLeaf   = e.cats && e.cats[0] ? e.cats[0] : '';
+  const catPath   = e.name || '';
 
+  // mkBtn uses data-copy to avoid HTML attribute escaping issues
+  function mkBtn(val, label, extraStyle) {
+    const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    return `<button class="cbtn"${extraStyle?' style="'+extraStyle+'"':''} data-copy="${safe}" onclick="cp(this.dataset.copy,this)">${label}</button>`;
+  }
+
+  let h = '';
   for (const i of (e.intune||[])) {
-    // Display name is in i.defId (friendly name like "Allow Cortana Above Lock")
-    const displayName = i.defId || i.name || "";
-    // Real settingDefinitionId
-    const defId = realDefId || i.defId || "";
-    // Build correct OMA-URI from the real defId
-    let oma = i.oma || "";
-    if (defId.startsWith("device_vendor_msft_policy_config_")) {
-      // e.g. device_vendor_msft_policy_config_abovelock_allowcortanaabovelock
-      // -> ./Device/Vendor/MSFT/Policy/Config/AboveLock/AllowCortanaAboveLock
-      // Use catPath (category) and omaLeaf (internal key) for casing
-      if (catPath && omaLeaf) {
-        oma = "./Device/Vendor/MSFT/Policy/Config/" + catPath.replace(/ /g,"") + "/" + omaLeaf;
-      } else {
-        // Fallback: convert snake_case segments
-        const parts = defId.replace("device_vendor_msft_","").split("_");
-        oma = "./Device/Vendor/MSFT/" + parts.map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join("/");
-      }
-    } else if (defId && !oma.includes(defId)) {
-      oma = "./Device/Vendor/MSFT/" + defId;
-    }
-    // Correct JSON fragment
-    const jsonFrag = defId ? `"settingDefinitionId": "${defId}"` : (i.json || "");
-    // Category for display
-    const cat = catPath || i.cat || "";
+    const displayName = i.defId || '';
+    const category    = catPath || i.name || '';
+    const defId       = realDefId || '';
 
-    h+=`<div class="cblock">
-      <div class="cblock-title">${esc(displayName)}<span class="def-id">${esc(defId)}</span><button class="cbtn" onclick="cp(${JSON.stringify(defId)},this)">Copy ID</button></div>
+    // Build correct OMA-URI from the real defId
+    let oma = '';
+    if (defId.startsWith('device_vendor_msft_policy_config_') && catPath && omaLeaf) {
+      oma = './Device/Vendor/MSFT/Policy/Config/' +
+            catPath.replace(/ /g,'') + '/' + omaLeaf;
+    } else if (defId.startsWith('device_vendor_msft_')) {
+      const parts = defId.replace('device_vendor_msft_','').split('_');
+      oma = './Device/Vendor/MSFT/' + parts.map(p => p.charAt(0).toUpperCase()+p.slice(1)).join('/');
+    } else if (i.oma && !i.oma.includes(' ')) {
+      oma = i.oma;
+    }
+
+    // Full JSON fragment for Graph API
+    const jsonFrag = defId ? `"settingDefinitionId": "${defId}"` : '';
+    const jsonFull = defId ? `{
+  "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
+  "settingInstance": {
+    "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+    "settingDefinitionId": "${defId}",
+    "choiceSettingValue": { "value": "${defId}_1", "children": [] }
+  }
+}` : '';
+
+    h += `<div class="cblock">
+      <div class="cblock-title">${esc(displayName)}${mkBtn(defId,'Copy ID')}</div>
       <table class="ctable">
-        <tr><td>Category</td><td>${esc(cat)}</td></tr>
-        <tr><td>Definition ID</td><td><span class="mono">${esc(defId)}</span><button class="cbtn" onclick="cp(${JSON.stringify(defId)},this)">Copy</button></td></tr>
-        ${oma?`<tr><td>OMA-URI</td><td><span class="mono">${esc(oma)}</span><button class="cbtn" onclick="cp(${JSON.stringify(oma)},this)">Copy</button></td></tr>`:""}
-        <tr><td>Data type</td><td>${esc(i.dtype||"")}</td></tr>
-        ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v)}</span> <span style="color:var(--h-text3)">${esc(v.l)}</span>`).join("<br>")}</td></tr>`:""}
-        ${i.rec?`<tr><td>Recommended</td><td><span class="mono">${esc(i.rec)}</span></td></tr>`:""}
+        <tr><td>Category</td><td>${esc(category)}</td></tr>
+        <tr><td>Definition ID</td><td><span class="mono">${esc(defId)}</span>${mkBtn(defId,'Copy')}</td></tr>
+        ${oma?`<tr><td>OMA-URI</td><td><span class="mono">${esc(oma)}</span>${mkBtn(oma,'Copy')}</td></tr>`:''}
+        <tr><td>Data type</td><td>${esc(i.dtype||'')}</td></tr>
+        ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v)}</span> <span style="color:var(--h-text3)">${esc(v.l)}</span>`).join('<br>')}</td></tr>`:''}
+        ${i.rec?`<tr><td>Recommended</td><td><span class="mono">${esc(i.rec)}</span></td></tr>`:''}
       </table>
-      ${jsonFrag?`<div style="margin-top:9px"><div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">JSON Fragment (Graph API)</div>
-      <pre class="json-pre">${esc(jsonFrag)}</pre>
-      <button class="cbtn" style="margin-top:4px" onclick="cp(${JSON.stringify(jsonFrag)},this)">Copy JSON</button></div>`:""}
+      ${jsonFrag?`<div style="margin-top:9px">
+        <div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">JSON Fragment (Graph API)</div>
+        <pre class="json-pre">${esc(jsonFrag)}</pre>
+        ${mkBtn(jsonFull||jsonFrag,'Copy JSON','margin-top:4px')}
+      </div>`:''}
     </div>`;
   }
-  h+=`<div class="copy-row"><button class="cta intune" onclick="cpAllIntune(${JSON.stringify(e.id)},this)">Copy All Intune Config</button></div>`;
+  h += `<div class="copy-row"><button class="cta intune" onclick="cpAllIntune(${JSON.stringify(e.id)},this)">Copy All Intune Config</button></div>`;
   return h;
 }
 
