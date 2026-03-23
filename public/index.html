@@ -611,7 +611,7 @@ async function loadIndex() {
     document.getElementById("resultCount").textContent = `${total.toLocaleString()} settings ready — enter a search term`;
     document.getElementById("resultsGrid").innerHTML = emptyHTML(
       "Search across all configuration methods",
-      "Try "BitLocker", "Windows Update", "SmartScreen", "LAPS", "HomepageLocation", or any settingDefinitionId fragment."
+      "Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment."
     );
   }
 }
@@ -804,7 +804,7 @@ function cardHTML(e, terms) {
       <div class="card-info">
         <div class="card-name">${hl(humanizeName(e.name||''), terms)}</div>
         <div class="card-desc">${hl(
-          e.cats && e.cats.filter(c => c && !['Settings Catalog','Intune Settings Catalog','Sheet 1','Policy CSP','graph','admx_windows','admx_office','chromium'].includes(c)).slice(0,2).join(' › ') 
+          e.cats && e.cats.filter(c => c && !['Settings Catalog','Intune Settings Catalog','Sheet 1','Policy CSP','graph','admx_windows','admx_office','chromium'].includes(c)).slice(0,2).join(' > ') 
           || e.desc || '',
           terms
         )}</div>
@@ -934,7 +934,7 @@ function showEmpty() {
     indexReady ? `${SEARCH_INDEX.length.toLocaleString()} settings ready — enter a search term` : "Loading…";
   document.getElementById("resultsGrid").innerHTML = emptyHTML(
     "Search across all configuration methods",
-    "Try "BitLocker", "Windows Update", "SmartScreen", "LAPS", "HomepageLocation", or any <code>settingDefinitionId</code> fragment."
+    "Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment."
   );
 }
 function showView(v, btn) {
