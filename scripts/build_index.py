@@ -612,6 +612,15 @@ def fetch_intune_pm_files():
             # col4=Description (sometimes)
             # The header row identifies columns by name if present
             # Use sentinel to safely handle column index 0 (which is falsy)
+            # IntunePMFiles/DeviceConfig Excel actual column order (confirmed):
+            # col0 = CategoryPath  (e.g. "Above Lock", "System Services")
+            # col1 = Display Name  (e.g. "Allow Cortana Above Lock")
+            # col2 = settingDefinitionId (e.g. "device_vendor_msft_policy_config_...")
+            # col3 = Internal key / OMA leaf (e.g. "AllowCortanaAboveLock")
+            # col4 = Platform      (e.g. "windows", "iOS")
+            # col5+ = Description/tooltip
+            #
+            # If the header row has explicit column names, use those; otherwise use positional defaults
             _NOTFOUND = object()
             def _c(*keys, default=None):
                 for k in keys:
@@ -619,11 +628,13 @@ def fetch_intune_pm_files():
                     if v is not _NOTFOUND:
                         return v
                 return default
+            cat_col   = _c("categorypath", "category path", "categoryname", "category", default=0)
             name_col  = _c("name", "display name", "displayname", "setting name", "settingname", default=1)
-            desc_col  = _c("description", "desc", "tooltip", "helptext", default=(4 if len(headers) > 4 else None))
-            cat_col   = _c("categorypath", "category path", "categoryname", "category", default=2)
-            plat_col  = _c("platform", "platforms", "applicability", default=0)
-            defid_col = _c("settingdefinitionid", "setting definition id", "id", "definitionid", default=3)
+            defid_col = _c("settingdefinitionid", "setting definition id", "id", "definitionid", default=2)
+            oma_col   = _c("omauri", "oma-uri", "oma uri", "offseturi", default=3)
+            plat_col  = _c("platform", "platforms", "applicability", default=4)
+            desc_col  = _c("description", "desc", "tooltip", "helptext",
+                           default=(5 if len(headers) > 5 else None))
 
             plat_map = {
                 "windows": "windows", "windows10": "windows",
@@ -634,19 +645,17 @@ def fetch_intune_pm_files():
                 if not row or not any(row):
                     continue
                 try:
-                    name  = str(row[name_col] or "").strip()
-                    desc  = str(row[desc_col] or "").strip() if desc_col < len(row) else ""
-                    cat   = str(row[cat_col]  or "").strip() if cat_col  < len(row) else ""
-                    plat_raw = str(row[plat_col] or "").lower().strip() if plat_col < len(row) else "windows"
+                    cat   = str(row[cat_col]   or "").strip() if cat_col   is not None and cat_col   < len(row) else ""
+                    name  = str(row[name_col]  or "").strip() if name_col  is not None and name_col  < len(row) else ""
                     defid = str(row[defid_col] or "").strip() if defid_col is not None and defid_col < len(row) else ""
+                    oma_leaf = str(row[oma_col] or "").strip() if oma_col is not None and oma_col < len(row) else ""
+                    plat_raw = str(row[plat_col] or "").lower().strip() if plat_col is not None and plat_col < len(row) else "windows"
+                    desc  = str(row[desc_col] or "").strip() if desc_col is not None and desc_col < len(row) else ""
 
                     # Skip header rows, platform-only rows, and empty names
-                    platform_words = {"ios","windows","macos","android","linux","platform",
-                                      "name","display name","setting name","windows 10","windows 11",
-                                      "ios/ipados","chrome os","chromeos","windows 10/11"}
-                    if not name or name.lower().strip() in platform_words:
+                    # Skip rows with no display name or that are header rows
+                    if not name or name.lower().strip() in ("name", "display name", "setting name", "settingname"):
                         continue
-                    # Skip if name looks like a column header
                     if "this is the" in name.lower() or name.lower().startswith("name -"):
                         continue
 
@@ -656,17 +665,33 @@ def fetch_intune_pm_files():
                         continue
                     seen.add(eid)
 
-                    oma = defid_to_oma(defid) if defid else ""
+                    # Build OMA-URI from settingDefinitionId
+                    # defid format: "device_vendor_msft_policy_config_abovelock_allowcortanaabovelock"
+                    # OMA-URI:      "./Device/Vendor/MSFT/Policy/Config/AboveLock/AllowCortanaAboveLock"
+                    if defid and defid.startswith("device_vendor_msft_"):
+                        # Convert snake_case defId to OMA-URI path
+                        # Strip prefix and rebuild with correct casing from oma_leaf
+                        parts = defid.replace("device_vendor_msft_", "").split("_")
+                        if oma_leaf:
+                            # Use oma_leaf for the last segment (it has correct casing)
+                            # and reconstruct the path from the defId
+                            oma = "./Device/Vendor/MSFT/Policy/Config/" + cat + "/" + oma_leaf
+                        else:
+                            oma = defid_to_oma(defid)
+                    elif defid:
+                        oma = defid_to_oma(defid)
+                    else:
+                        oma = ""
 
-                    # Build a meaningful description from available fields
+                    # Build a meaningful description from available fields  
                     if not desc or len(desc) < 5:
-                        desc = cat or ""  # Use category as desc if no real desc
+                        desc = cat or ""  # Use category path as fallback description
                     e = make_entry(
                         source_id = "graph",
                         entry_id  = eid,
                         name      = name,
                         desc      = desc[:500],
-                        cats      = [cat, "Settings Catalog", "Intune Settings Catalog"] if cat else ["Settings Catalog", "Intune Settings Catalog"],
+                        cats      = [cat] if cat else ["Settings Catalog"],
                         plat      = plat,
                         methods   = ["intune"],
                         intune    = [{
