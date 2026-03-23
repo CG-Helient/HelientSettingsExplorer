@@ -607,12 +607,23 @@ def fetch_intune_pm_files():
             headers = [str(h).lower().strip() if h else "" for h in rows[0]]
             col = {h: i for i, h in enumerate(headers)}
 
-            name_col  = col.get("name") or col.get("display name") or col.get("displayname") or 0
-            desc_col  = col.get("description") or col.get("desc") or 1
-            cat_col   = col.get("category") or col.get("categoryname") or col.get("categorypath") or 2
-            plat_col  = col.get("platform") or col.get("applicability") or 3
-            defid_col = (col.get("id") or col.get("settingdefinitionid") or
-                         col.get("setting definition id") or None)
+            # IntunePMFiles Excel column order:
+            # col0=Platform, col1=Name, col2=CategoryName/CategoryPath, col3=SettingDefinitionId
+            # col4=Description (sometimes)
+            # The header row identifies columns by name if present
+            # Use sentinel to safely handle column index 0 (which is falsy)
+            _NOTFOUND = object()
+            def _c(*keys, default=None):
+                for k in keys:
+                    v = col.get(k, _NOTFOUND)
+                    if v is not _NOTFOUND:
+                        return v
+                return default
+            name_col  = _c("name", "display name", "displayname", "setting name", "settingname", default=1)
+            desc_col  = _c("description", "desc", "tooltip", "helptext", default=(4 if len(headers) > 4 else None))
+            cat_col   = _c("categorypath", "category path", "categoryname", "category", default=2)
+            plat_col  = _c("platform", "platforms", "applicability", default=0)
+            defid_col = _c("settingdefinitionid", "setting definition id", "id", "definitionid", default=3)
 
             plat_map = {
                 "windows": "windows", "windows10": "windows",
@@ -629,7 +640,14 @@ def fetch_intune_pm_files():
                     plat_raw = str(row[plat_col] or "").lower().strip() if plat_col < len(row) else "windows"
                     defid = str(row[defid_col] or "").strip() if defid_col is not None and defid_col < len(row) else ""
 
-                    if not name or name.lower() in ("name","display name","setting name"):
+                    # Skip header rows, platform-only rows, and empty names
+                    platform_words = {"ios","windows","macos","android","linux","platform",
+                                      "name","display name","setting name","windows 10","windows 11",
+                                      "ios/ipados","chrome os","chromeos","windows 10/11"}
+                    if not name or name.lower().strip() in platform_words:
+                        continue
+                    # Skip if name looks like a column header
+                    if "this is the" in name.lower() or name.lower().startswith("name -"):
                         continue
 
                     plat = next((v for k,v in plat_map.items() if k in plat_raw), "windows")
@@ -640,12 +658,15 @@ def fetch_intune_pm_files():
 
                     oma = defid_to_oma(defid) if defid else ""
 
+                    # Build a meaningful description from available fields
+                    if not desc or len(desc) < 5:
+                        desc = cat or ""  # Use category as desc if no real desc
                     e = make_entry(
                         source_id = "graph",
                         entry_id  = eid,
                         name      = name,
                         desc      = desc[:500],
-                        cats      = [cat, "Settings Catalog", sheet_name] if cat else ["Settings Catalog", sheet_name],
+                        cats      = [cat, "Settings Catalog", "Intune Settings Catalog"] if cat else ["Settings Catalog", "Intune Settings Catalog"],
                         plat      = plat,
                         methods   = ["intune"],
                         intune    = [{
