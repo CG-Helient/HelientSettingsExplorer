@@ -3,6 +3,7 @@
 Helient Settings Explorer — Data Pipeline v3
 =============================================
 Fixed:
+  - Update 2/23/26 12:50 PM. 
   - URL-encode all Graph API query strings (spaces in $filter broke urllib)
   - Graph 401: use correct scope + try both endpoints with proper encoding
   - Git push conflict: handled in workflow (not script concern)
