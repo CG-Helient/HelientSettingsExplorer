@@ -802,10 +802,22 @@ function cardHTML(e, terms) {
     <div class="card-hdr" onclick="toggleCard('${e.id}')">
       <div class="card-icon">${e.icon||"⚙️"}</div>
       <div class="card-info">
-        <div class="card-name">${hl(humanizeName(e.name||''), terms)}</div>
+        <div class="card-name">${hl(
+          /* Display name: for graph/catalog entries use i.defId (friendly name), else use e.name */
+          (e._source==='graph' && e.intune && e.intune[0] && e.intune[0].defId &&
+           !e.desc?.startsWith('device_vendor_msft') && e.intune[0].defId !== e.name)
+            ? e.intune[0].defId
+            : (e.desc && e.desc.startsWith('device_vendor_msft')
+                ? humanizeName(e.intune?.[0]?.defId || e.name || '')
+                : humanizeName(e.name||'')),
+          terms
+        )}</div>
         <div class="card-desc">${hl(
-          e.cats && e.cats.filter(c => c && !['Settings Catalog','Intune Settings Catalog','Sheet 1','Policy CSP','graph','admx_windows','admx_office','chromium'].includes(c)).slice(0,2).join(' > ') 
-          || e.desc || '',
+          /* Category breadcrumb: for catalog entries use e.name (category path) */
+          (e._source==='graph' && e.desc?.startsWith('device_vendor_msft'))
+            ? e.name
+            : (e.cats && e.cats.filter(c => c && !['Settings Catalog','Intune Settings Catalog','Sheet 1','Policy CSP','graph','admx_windows','admx_office','chromium'].includes(c)).slice(0,2).join(' > ')
+               || e.desc || ''),
           terms
         )}</div>
         <div class="card-meta">${mt}<span class="tag t-plt">${e.plat==="windows"?"Windows":e.plat||"Windows"}</span>${srcBadge(e._source||"local")}${infoLink}</div>
@@ -831,25 +843,57 @@ function detailHTML(e) {
 
 function intunePane(e) {
   let h="";
+  // Field remapping: the build pipeline stored data in unexpected fields.
+  // Compute correct values here until next rebuild fixes the pipeline.
+  const realDefId = (e.desc && e.desc.startsWith("device_vendor_msft")) ? e.desc : (e.intune?.[0]?.defId || "");
+  const omaLeaf   = e.cats?.[0] || "";
+  const catPath   = e.name || "";
+
   for (const i of (e.intune||[])) {
+    // Display name is in i.defId (friendly name like "Allow Cortana Above Lock")
+    const displayName = i.defId || i.name || "";
+    // Real settingDefinitionId
+    const defId = realDefId || i.defId || "";
+    // Build correct OMA-URI from the real defId
+    let oma = i.oma || "";
+    if (defId.startsWith("device_vendor_msft_policy_config_")) {
+      // e.g. device_vendor_msft_policy_config_abovelock_allowcortanaabovelock
+      // -> ./Device/Vendor/MSFT/Policy/Config/AboveLock/AllowCortanaAboveLock
+      // Use catPath (category) and omaLeaf (internal key) for casing
+      if (catPath && omaLeaf) {
+        oma = "./Device/Vendor/MSFT/Policy/Config/" + catPath.replace(/ /g,"") + "/" + omaLeaf;
+      } else {
+        // Fallback: convert snake_case segments
+        const parts = defId.replace("device_vendor_msft_","").split("_");
+        oma = "./Device/Vendor/MSFT/" + parts.map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join("/");
+      }
+    } else if (defId && !oma.includes(defId)) {
+      oma = "./Device/Vendor/MSFT/" + defId;
+    }
+    // Correct JSON fragment
+    const jsonFrag = defId ? `"settingDefinitionId": "${defId}"` : (i.json || "");
+    // Category for display
+    const cat = catPath || i.cat || "";
+
     h+=`<div class="cblock">
-      <div class="cblock-title">${esc(i.name||"")}<span class="def-id">${esc(i.defId||"")}</span><button class="cbtn" onclick="cp(${JSON.stringify(i.defId||"")},this)">Copy ID</button></div>
+      <div class="cblock-title">${esc(displayName)}<span class="def-id">${esc(defId)}</span><button class="cbtn" onclick="cp(${JSON.stringify(defId)},this)">Copy ID</button></div>
       <table class="ctable">
-        <tr><td>Category</td><td>${esc(i.cat||"")}</td></tr>
-        <tr><td>Definition ID</td><td><span class="mono">${esc(i.defId||"")}</span><button class="cbtn" onclick="cp(${JSON.stringify(i.defId||"")},this)">Copy</button></td></tr>
-        ${i.oma?`<tr><td>OMA-URI</td><td><span class="mono">${esc(i.oma)}</span><button class="cbtn" onclick="cp(${JSON.stringify(i.oma)},this)">Copy</button></td></tr>`:""}
+        <tr><td>Category</td><td>${esc(cat)}</td></tr>
+        <tr><td>Definition ID</td><td><span class="mono">${esc(defId)}</span><button class="cbtn" onclick="cp(${JSON.stringify(defId)},this)">Copy</button></td></tr>
+        ${oma?`<tr><td>OMA-URI</td><td><span class="mono">${esc(oma)}</span><button class="cbtn" onclick="cp(${JSON.stringify(oma)},this)">Copy</button></td></tr>`:""}
         <tr><td>Data type</td><td>${esc(i.dtype||"")}</td></tr>
         ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v)}</span> <span style="color:var(--h-text3)">${esc(v.l)}</span>`).join("<br>")}</td></tr>`:""}
         ${i.rec?`<tr><td>Recommended</td><td><span class="mono">${esc(i.rec)}</span></td></tr>`:""}
       </table>
-      ${i.json?`<div style="margin-top:9px"><div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">JSON Fragment (Graph API)</div>
-      <pre class="json-pre">${esc(i.json)}</pre>
-      <button class="cbtn" style="margin-top:4px" onclick="cp(${JSON.stringify(i.json)},this)">Copy JSON</button></div>`:""}
+      ${jsonFrag?`<div style="margin-top:9px"><div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">JSON Fragment (Graph API)</div>
+      <pre class="json-pre">${esc(jsonFrag)}</pre>
+      <button class="cbtn" style="margin-top:4px" onclick="cp(${JSON.stringify(jsonFrag)},this)">Copy JSON</button></div>`:""}
     </div>`;
   }
   h+=`<div class="copy-row"><button class="cta intune" onclick="cpAllIntune(${JSON.stringify(e.id)},this)">Copy All Intune Config</button></div>`;
   return h;
 }
+
 
 function gpoPane(e) {
   const g=e.gpo||{}, a=e.admx;
