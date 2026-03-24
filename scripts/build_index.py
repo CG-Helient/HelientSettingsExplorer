@@ -604,7 +604,7 @@ def fetch_intune_pm_files():
                 continue
 
             # Find header row
-            headers = [str(h).lower().strip() if h else "" for h in rows[0]]
+            headers = [str(h).lower().strip() if h else "" for h in rows[1]]  # row[1] has actual headers
             col = {h: i for i, h in enumerate(headers)}
 
             # IntunePMFiles Excel column order:
@@ -612,15 +612,22 @@ def fetch_intune_pm_files():
             # col4=Description (sometimes)
             # The header row identifies columns by name if present
             # Use sentinel to safely handle column index 0 (which is falsy)
-            # IntunePMFiles/DeviceConfig Excel actual column order (confirmed):
-            # col0 = CategoryPath  (e.g. "Above Lock", "System Services")
-            # col1 = Display Name  (e.g. "Allow Cortana Above Lock")
-            # col2 = settingDefinitionId (e.g. "device_vendor_msft_policy_config_...")
-            # col3 = Internal key / OMA leaf (e.g. "AllowCortanaAboveLock")
-            # col4 = Platform      (e.g. "windows", "iOS")
-            # col5+ = Description/tooltip
+            # IntunePMFiles/DeviceConfig Excel column order (verified from actual file):
+            # Row 0: Copyright notice (skipped)
+            # Row 1: Column headers
+            # Row 2+: Data
             #
-            # If the header row has explicit column names, use those; otherwise use positional defaults
+            # col0 = Platform       ("Windows", "iOS", "macOS")
+            # col1 = CategoryName   ("Accounts", "Above Lock", "System Services")
+            # col2 = Name/OMA leaf  ("AllowAddingNonMicrosoftAccountsManually")  <- internal key
+            # col3 = FriendlyName   ("Allow Adding Non Microsoft Accounts Manually") <- DISPLAY NAME
+            # col4 = ItemId         ("device_vendor_msft_policy_config_accounts_...") <- settingDefinitionId
+            # col5 = BaseUri        ("./Device/Vendor/MSFT/Policy")
+            # col6 = OffsetUri      ("/Config/Accounts/AllowAddingNonMicrosoftAccountsManually")
+            # col7 = ControlType    ("Choice", "Integer")
+            # col8 = Type/dtype     ("Integer", "String", "Boolean")
+            #
+            # Use header names if present, otherwise fall back to positional defaults
             _NOTFOUND = object()
             def _c(*keys, default=None):
                 for k in keys:
@@ -628,29 +635,36 @@ def fetch_intune_pm_files():
                     if v is not _NOTFOUND:
                         return v
                 return default
-            cat_col   = _c("categorypath", "category path", "categoryname", "category", default=0)
-            name_col  = _c("name", "display name", "displayname", "setting name", "settingname", default=1)
-            defid_col = _c("settingdefinitionid", "setting definition id", "id", "definitionid", default=2)
-            oma_col   = _c("omauri", "oma-uri", "oma uri", "offseturi", default=3)
-            plat_col  = _c("platform", "platforms", "applicability", default=4)
-            desc_col  = _c("description", "desc", "tooltip", "helptext",
-                           default=(5 if len(headers) > 5 else None))
+            plat_col     = _c("platform", "platforms", default=0)
+            cat_col      = _c("categoryname", "category name", "category", "categorypath", default=1)
+            oma_col      = _c("name", "offseturi", "offset uri", default=2)
+            name_col     = _c("friendlyname", "friendly name", "displayname", "display name", default=3)
+            defid_col    = _c("itemid", "item id", "settingdefinitionid", "setting definition id", default=4)
+            baseuri_col  = _c("baseuri", "base uri", default=5)
+            offseturi_col= _c("offseturi", "offset uri", default=6)
+            dtype_col    = _c("type", "dtype", "datatype", "data type", default=8)
 
             plat_map = {
                 "windows": "windows", "windows10": "windows",
                 "macos": "macos", "ios": "ios", "android": "android", "linux": "linux"
             }
 
-            for row in rows[1:]:
+            for row in rows[2:]:  # rows[0]=copyright, rows[1]=headers, rows[2+]=data
                 if not row or not any(row):
                     continue
                 try:
-                    cat   = str(row[cat_col]   or "").strip() if cat_col   is not None and cat_col   < len(row) else ""
-                    name  = str(row[name_col]  or "").strip() if name_col  is not None and name_col  < len(row) else ""
-                    defid = str(row[defid_col] or "").strip() if defid_col is not None and defid_col < len(row) else ""
-                    oma_leaf = str(row[oma_col] or "").strip() if oma_col is not None and oma_col < len(row) else ""
-                    plat_raw = str(row[plat_col] or "").lower().strip() if plat_col is not None and plat_col < len(row) else "windows"
-                    desc  = str(row[desc_col] or "").strip() if desc_col is not None and desc_col < len(row) else ""
+                    def gcol(c, default=""):
+                        if c is None or c >= len(row): return default
+                        return str(row[c] or "").strip()
+                    plat_raw  = gcol(plat_col, "windows").lower()
+                    cat       = gcol(cat_col)        # CategoryName: "Accounts", "Above Lock"
+                    oma_leaf  = gcol(oma_col)        # Name/internal key: "AllowAddingNonMicrosoftAccountsManually"
+                    name      = gcol(name_col)       # FriendlyName: "Allow Adding Non Microsoft Accounts Manually"
+                    defid     = gcol(defid_col)      # ItemId: "device_vendor_msft_policy_config_..."
+                    baseuri   = gcol(baseuri_col)    # BaseUri: "./Device/Vendor/MSFT/Policy"
+                    offseturi = gcol(offseturi_col)  # OffsetUri: "/Config/Accounts/AllowAdding..."
+                    dtype     = gcol(dtype_col)      # Type: "Integer", "String", "Choice"
+                    desc      = cat                  # Use category as description
 
                     # Skip header rows, platform-only rows, and empty names
                     # Skip rows with no display name or that are header rows
@@ -665,19 +679,9 @@ def fetch_intune_pm_files():
                         continue
                     seen.add(eid)
 
-                    # Build OMA-URI from settingDefinitionId
-                    # defid format: "device_vendor_msft_policy_config_abovelock_allowcortanaabovelock"
-                    # OMA-URI:      "./Device/Vendor/MSFT/Policy/Config/AboveLock/AllowCortanaAboveLock"
-                    if defid and defid.startswith("device_vendor_msft_"):
-                        # Convert snake_case defId to OMA-URI path
-                        # Strip prefix and rebuild with correct casing from oma_leaf
-                        parts = defid.replace("device_vendor_msft_", "").split("_")
-                        if oma_leaf:
-                            # Use oma_leaf for the last segment (it has correct casing)
-                            # and reconstruct the path from the defId
-                            oma = "./Device/Vendor/MSFT/Policy/Config/" + cat + "/" + oma_leaf
-                        else:
-                            oma = defid_to_oma(defid)
+                    # Build OMA-URI from BaseUri + OffsetUri (Excel cols 5+6)
+                    if baseuri and offseturi:
+                        oma = (baseuri.rstrip("/") + "/" + offseturi.lstrip("/")).rstrip("/")
                     elif defid:
                         oma = defid_to_oma(defid)
                     else:
@@ -1027,6 +1031,173 @@ def build_search_text(e):
     return " ".join(p for p in parts if p).lower()
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
+# ─── SOURCE 6: Windows GP Reference Spreadsheet (Microsoft Official) ──────────
+# Columns in the spreadsheet (Administrative Templates tab):
+# A: Policy Setting Name   B: Policy Path   C: Registry Path  D: Registry Value Name
+# E: Supported On          F: Explain Text  G: ADMX File      H: Scope (Computer/User)
+#
+# Direct download: https://www.microsoft.com/en-us/download/details.aspx?id=108429
+# GitHub: Some community repos mirror this data as CSV
+
+# Microsoft Download Center IDs for the GP Reference Spreadsheet
+# V3.0 (latest) = id=108543, V2.0 = id=108429
+GP_DOWNLOAD_PAGE_IDS = ["108543", "108429"]
+GP_SPREADSHEET_URLS = []  # populated dynamically from download pages
+
+def fetch_gp_reference():
+    """
+    Fetch and parse the Windows 11 25H2 Group Policy Settings Reference spreadsheet.
+    Official Microsoft source: https://www.microsoft.com/en-us/download/details.aspx?id=108543
+    """
+    import re as _re
+    log("Fetching Windows 11 25H2 GP Reference Spreadsheet…")
+
+    # Try to find .xlsx download URL from Microsoft download pages
+    dl_url = None
+    for page_id in ["108543", "108429"]:
+        try:
+            page_url = f"https://www.microsoft.com/en-us/download/confirmation.aspx?id={page_id}"
+            req = urllib.request.Request(page_url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            })
+            with urllib.request.urlopen(req, timeout=30) as r:
+                page = r.read().decode("utf-8", errors="replace")
+            matches = _re.findall("https://download[.]microsoft[.]com/[^ \\s<>\"']+[.]xlsx", page)
+            if matches:
+                dl_url = matches[0]
+                log(f"  Found download URL (id={page_id}): {dl_url[:80]}…")
+                break
+        except Exception as ex:
+            log(f"  Page {page_id}: {ex}")
+
+    if not dl_url:
+        log("  Could not locate GP spreadsheet download URL — skipping")
+        log("  Manual download: https://www.microsoft.com/en-us/download/details.aspx?id=108543")
+        return []
+
+    # Download the xlsx file
+    try:
+        req = urllib.request.Request(dl_url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=120) as r:
+            raw_bytes = r.read()
+        log(f"  Downloaded {len(raw_bytes)//1024} KB")
+    except Exception as ex:
+        log(f"  Download failed: {ex}")
+        return []
+
+    # Parse with openpyxl
+    try:
+        import io, openpyxl
+    except ImportError:
+        log("  Installing openpyxl…")
+        import subprocess
+        subprocess.run(["pip", "install", "openpyxl", "--quiet", "--break-system-packages"],
+                       capture_output=True)
+        import io, openpyxl
+
+    try:
+        wb = openpyxl.load_workbook(io.BytesIO(raw_bytes), read_only=True, data_only=True)
+    except Exception as ex:
+        log(f"  Failed to open workbook: {ex}")
+        return []
+
+    entries = []
+    seen = set()
+
+    # The spreadsheet has sheets: "Administrative Templates", "Security", etc.
+    target_sheets = [s for s in wb.sheetnames
+                     if any(kw in s.lower() for kw in ["administrative", "computer", "user"])]
+    if not target_sheets:
+        target_sheets = wb.sheetnames[:2]
+    log(f"  Processing sheets: {target_sheets}")
+
+    for sheet_name in target_sheets:
+        ws = wb[sheet_name]
+        rows = list(ws.iter_rows(values_only=True))
+        if not rows:
+            continue
+
+        # Map header names to column indices
+        headers = [str(h or "").lower().strip() for h in rows[0]]
+        col = {h: i for i, h in enumerate(headers)}
+
+        def c(*names, default=0):
+            for n in names:
+                if n in col:
+                    return col[n]
+            return default
+
+        name_col    = c("policy setting name", "policy name", "name", default=0)
+        path_col    = c("policy path", "path", "category", default=1)
+        reg_col     = c("registry path", "registry key", default=2)
+        val_col     = c("registry value name", "value name", default=3)
+        support_col = c("supported on", "supported", default=4)
+        explain_col = c("explain text", "description", "help text", default=5)
+        admx_col    = c("admx file name", "admx file", "admx", default=6)
+        scope_col   = c("scope", "configuration", default=7)
+
+        for row in rows[1:]:
+            if not row or not any(row):
+                continue
+            try:
+                def safe(idx):
+                    return str(row[idx] or "").strip() if idx < len(row) else ""
+
+                name    = safe(name_col)
+                path    = safe(path_col)
+                reg_key = safe(reg_col)
+                reg_val = safe(val_col)
+                support = safe(support_col)
+                explain = safe(explain_col)
+                admx_f  = safe(admx_col)
+                scope   = safe(scope_col) or "Computer"
+
+                if not name or name.lower() in ("policy setting name", "policy name", "name"):
+                    continue
+
+                eid = "gp_" + slugify(name + path)
+                if eid in seen:
+                    continue
+                seen.add(eid)
+
+                # Parse registry hive
+                hive, key = "HKLM", reg_key
+                for prefix in ["HKEY_LOCAL_MACHINE\\", "HKLM\\"]:
+                    if reg_key.upper().startswith(prefix.upper()):
+                        hive, key = "HKLM", reg_key[len(prefix):]
+                        break
+                for prefix in ["HKEY_CURRENT_USER\\", "HKCU\\"]:
+                    if reg_key.upper().startswith(prefix.upper()):
+                        hive, key = "HKCU", reg_key[len(prefix):]
+                        break
+
+                e = make_entry(
+                    source_id = "admx_windows",
+                    entry_id  = eid,
+                    name      = name,
+                    desc      = explain[:600] if explain else path,
+                    cats      = [path] if path else ["Group Policy"],
+                    plat      = "windows",
+                    methods   = ["gpo", "admx"] + (["registry"] if reg_key else []),
+                    gpo       = {"path": path, "policy": name, "admx": admx_f,
+                                 "scope": scope, "ns": "", "supported": support},
+                    admx      = {"name": name, "file": admx_f, "cat": path,
+                                 "regKey": reg_key, "val": reg_val, "type": "REG_DWORD"
+                                 } if reg_key else None,
+                    reg       = {"hive": hive, "key": key, "val": reg_val,
+                                 "type": "REG_DWORD", "data": "See GP description",
+                                 "note": f"Supported: {support}"
+                                 } if reg_key else None,
+                    extra     = {"desc_text": explain[:600]} if explain else None,
+                )
+                entries.append(e)
+            except Exception:
+                continue
+
+    log(f"  GP Reference: {len(entries)} policies from {len(target_sheets)} sheet(s)")
+    return entries
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--sources", default="all")
@@ -1114,10 +1285,15 @@ def main():
         all_entries.extend(e)
         source_status["admx_office"] = {"ok": True, "count": len(e)}
 
-    if want("custom"):
-        e = fetch_custom()
-        all_entries.extend(e)
-        source_status["custom"] = {"ok": True, "count": len(e)}
+    if want("gp"):
+        gp_entries = fetch_gp_reference()
+        all_entries.extend(gp_entries)
+        source_status["gp_reference"] = {"ok": True, "count": len(gp_entries)}
+
+        if want("custom"):
+            e = fetch_custom()
+            all_entries.extend(e)
+            source_status["custom"] = {"ok": True, "count": len(e)}
 
     # Deduplicate
     seen, deduped = set(), []
