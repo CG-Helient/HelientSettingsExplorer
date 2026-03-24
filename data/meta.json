@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-03-23T21:38:14.504804+00:00",
-  "total_entries": 10344,
-  "chunk_count": 52,
+  "last_updated": "2026-03-24T12:54:49.597015+00:00",
+  "total_entries": 15059,
+  "chunk_count": 76,
   "chunks": [
     {
       "file": "data/chunks/chunk_000.json",
@@ -261,13 +261,133 @@
     {
       "file": "data/chunks/chunk_051.json",
       "start": 10200,
-      "count": 144
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_052.json",
+      "start": 10400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_053.json",
+      "start": 10600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_054.json",
+      "start": 10800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_055.json",
+      "start": 11000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_056.json",
+      "start": 11200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_057.json",
+      "start": 11400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_058.json",
+      "start": 11600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_059.json",
+      "start": 11800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_060.json",
+      "start": 12000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_061.json",
+      "start": 12200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_062.json",
+      "start": 12400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_063.json",
+      "start": 12600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_064.json",
+      "start": 12800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_065.json",
+      "start": 13000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_066.json",
+      "start": 13200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_067.json",
+      "start": 13400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_068.json",
+      "start": 13600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_069.json",
+      "start": 13800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_070.json",
+      "start": 14000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_071.json",
+      "start": 14200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_072.json",
+      "start": 14400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_073.json",
+      "start": 14600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_074.json",
+      "start": 14800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_075.json",
+      "start": 15000,
+      "count": 59
     }
   ],
   "sources": {
     "graph": {
       "ok": true,
-      "count": 10042
+      "count": 14757
     },
     "chromium": {
       "ok": true,
@@ -285,10 +405,14 @@
       "ok": true,
       "count": 25
     },
+    "gp_reference": {
+      "ok": true,
+      "count": 0
+    },
     "custom": {
       "ok": true,
       "count": 0
     }
   },
-  "index_size_kb": 7906
+  "index_size_kb": 19618
 }
