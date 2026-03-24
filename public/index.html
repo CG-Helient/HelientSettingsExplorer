@@ -502,6 +502,208 @@ loadMsal(MSAL_CDNS, 0);
 
 <!-- SheetJS for Excel/CSV import -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<div id="appShell">
+  <nav id="navPane">
+    <div id="navHeader">
+      <span>Browse</span>
+      <button id="navToggleBtn" onclick="toggleNav()" title="Hide nav">◀</button>
+    </div>
+    <input id="navSearch" type="search" placeholder="Filter categories…" autocomplete="off">
+    <div id="navCats"></div>
+  </nav>
+  <main id="mainView" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+
+  </main>
+</div>
+
+<!-- GRAPH QUERIES VIEW -->
+<div class="alt-view" id="graphView">
+  <h2>Microsoft Graph API Reference</h2>
+  <p class="sub">Ready-to-use queries for Settings Catalog data from your tenant</p>
+  <div class="info-card"><h3>List all Settings Catalog policies</h3>
+    <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</pre>
+    <button class="cbtn" onclick="cp('GET https://graph.microsoft.com/beta/deviceManagement/configurationPolicies',this)">Copy</button>
+  </div>
+  <div class="info-card"><h3>Search Settings Catalog definitions by name</h3>
+    <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationSettings
+  ?$filter=contains(name,'{KEYWORD}')
+  &$select=id,name,description,settingDefinitionId,applicability,defaultValue,categoryId,options
+  &$top=50</pre>
+  </div>
+  <div class="info-card"><h3>Create Settings Catalog policy (POST)</h3>
+    <pre class="json-pre">POST https://graph.microsoft.com/beta/deviceManagement/configurationPolicies
+Content-Type: application/json
+
+{
+  "name": "My Policy",
+  "platforms": "windows10",
+  "technologies": "mdm",
+  "settings": [{
+    "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
+    "settingInstance": {
+      "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+      "settingDefinitionId": "device_vendor_msft_...",
+      "choiceSettingValue": { "value": "..._1", "children": [] }
+    }
+  }]
+}</pre>
+  </div>
+  <div class="info-card"><h3>Required permissions</h3>
+    <table class="info-table">
+      <tr><td>Read policies</td><td><span class="mono">DeviceManagementConfiguration.Read.All</span></td></tr>
+      <tr><td>Write policies</td><td><span class="mono">DeviceManagementConfiguration.ReadWrite.All</span></td></tr>
+      <tr><td>App type for Actions</td><td>App-only (client_credentials) — store secret in GitHub Secrets</td></tr>
+      <tr><td>App type for browser</td><td>SPA / Public client — delegated, MSAL popup</td></tr>
+      <tr><td>Redirect URI</td><td><span class="mono" id="redirectUriDisplay">https://your-github-pages-url</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ABOUT VIEW -->
+<div class="alt-view" id="aboutView">
+  <h2>About Helient Settings Explorer</h2>
+  <p class="sub">Enterprise endpoint policy cross-reference tool by Helient</p>
+  <div class="info-card"><h3>Architecture</h3>
+    <table class="info-table">
+      <tr><td>Hosting</td><td>GitHub Pages — free, HTTPS, custom domain support</td></tr>
+      <tr><td>Data storage</td><td>GitHub repo (data/ folder) — versioned, free, zero DB to maintain</td></tr>
+      <tr><td>Data refresh</td><td>GitHub Actions runs weekly — fetches all sources, commits updated index</td></tr>
+      <tr><td>Search engine</td><td>Client-side full-text index loaded in chunks (~100 KB each)</td></tr>
+      <tr><td>Live Graph</td><td>Optional MSAL auth supplements index with tenant-specific data</td></tr>
+    </table>
+  </div>
+  <div class="info-card"><h3>Data sources</h3>
+    <table class="info-table">
+      <tr><td>Intune Settings Catalog</td><td>Microsoft Graph API (<span class="mono">/deviceManagement/configurationSettings</span>)</td></tr>
+      <tr><td>Windows ADMX / GPO</td><td>Curated from Windows Policy Definitions + Policy CSP reference</td></tr>
+      <tr><td>Microsoft Edge policies</td><td>Chromium policy_templates.json (canonical Edge + Chrome source)</td></tr>
+      <tr><td>Office 365 ADMX</td><td>Microsoft Office ADMX template reference</td></tr>
+      <tr><td>Custom sources</td><td>CSV/Excel/JSON file import + URL sources via custom_sources.json</td></tr>
+    </table>
+  </div>
+  <div class="info-card"><h3>Free hosting setup (5 minutes)</h3>
+    <table class="info-table">
+      <tr><td>1</td><td>Push repo to GitHub</td></tr>
+      <tr><td>2</td><td>Settings → Pages → Deploy from main branch → /public folder</td></tr>
+      <tr><td>3</td><td>Settings → Secrets → Add <span class="mono">AZURE_CLIENT_ID</span>, <span class="mono">AZURE_CLIENT_SECRET</span>, <span class="mono">AZURE_TENANT_ID</span></td></tr>
+      <tr><td>4</td><td>Actions → Build Settings Index → Run workflow</td></tr>
+      <tr><td>5</td><td>Add your GitHub Pages URL as a SPA redirect URI in the Azure App Registration</td></tr>
+    </table>
+  </div>
+  <div class="info-card"><h3>Index status</h3>
+    <div id="aboutIndexStatus" style="font-size:13px;color:var(--h-text3)">Loading…</div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="overlay" id="settingsOverlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <img src="data:image/png;base64,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" alt="Helient">
+      <h3>Settings</h3>
+      <button class="modal-close" onclick="closeSettings()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Auth -->
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Microsoft Graph Authentication
+        </div>
+        <div class="fld">
+          <label>Application (Client) ID <span class="badge-r">Required</span></label>
+          <input id="s_clientId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+          <div class="fld-hint"><a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps" target="_blank">Azure App Registrations ↗</a> · App Registration → Overview → Application (client) ID</div>
+        </div>
+        <div class="fld">
+          <label>Tenant ID <span class="badge-o">Optional</span></label>
+          <input id="s_tenantId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  (leave blank = any Microsoft account)">
+          <div class="fld-hint">Azure AD → Overview → Tenant ID. Scope auth to your specific tenant.</div>
+        </div>
+        <div class="fld">
+          <label>Redirect URI <span class="badge-o">Read-only</span></label>
+          <div style="display:flex;gap:6px">
+            <input id="s_redirectUri" type="text" readonly style="background:var(--h-surface);font-family:monospace;font-size:11.5px;color:var(--h-text2)">
+            <button class="cbtn" style="flex-shrink:0;padding:5px 10px" onclick="cpUri(this)">Copy</button>
+          </div>
+          <div class="fld-hint">Add this as a <strong>Single-page application (SPA)</strong> redirect URI in your App Registration.</div>
+        </div>
+      </div>
+
+      <!-- Custom sources -->
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Custom Data Sources
+        </div>
+        <p style="font-size:12px;color:var(--h-text3);margin-bottom:10px;line-height:1.5">Import settings from Excel/CSV/JSON files or add remote JSON URLs. Data merges into the search index instantly.</p>
+
+        <!-- File upload -->
+        <div class="fld">
+          <label>Upload file (Excel, CSV, or JSON)</label>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.json" onchange="handleFileUpload(this)">
+            <p><strong>Click to browse</strong> or drag & drop an Excel, CSV, or JSON file</p>
+            <p style="font-size:11px;margin-top:4px">Expected columns: name, description, settingDefinitionId, registryKey, registryValue, gpoPath</p>
+          </div>
+          <div id="uploadResult"></div>
+        </div>
+
+        <!-- URL sources -->
+        <div class="fld">
+          <label>Remote JSON URL</label>
+          <div class="add-src-row">
+            <input id="newSrcUrl" type="text" placeholder="https://example.com/my-settings.json">
+            <input id="newSrcName" type="text" placeholder="Label" style="max-width:130px">
+            <button onclick="addCustomSource()">Add</button>
+          </div>
+        </div>
+        <div class="src-list" id="srcList"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="modal-save" id="saveBtn" onclick="saveSettings()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save & Connect
+      </button>
+      <button class="modal-clr" onclick="clearSettings()">Clear Saved</button>
+      <span class="modal-status" id="settingsStatus"></span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <img src="data:image/png;base64,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" alt="">
+  Built by <a href="https://helient.com" target="_blank">Helient</a> &nbsp;·&nbsp;
+  <span id="footerMeta">Settings index loading…</span> &nbsp;·&nbsp;
+  Not affiliated with Microsoft
+</footer>
+
+<!-- MSAL dynamic loader -->
+<script>
+const MSAL_CDNS = [
+  "https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js",
+  "https://unpkg.com/@azure/msal-browser@3.28.1/lib/msal-browser.min.js",
+];
+function loadMsal(urls, idx) {
+  if (idx >= urls.length) { console.warn("All MSAL CDNs failed"); return; }
+  const s = document.createElement("script");
+  s.src = urls[idx];
+  s.onload = () => {
+    const M = window.msal || window.msalBrowser;
+    if (M && M.PublicClientApplication) { window.__MSAL = M; waitForMsalAndInit(20); }
+    else loadMsal(urls, idx + 1);
+  };
+  s.onerror = () => loadMsal(urls, idx + 1);
+  document.head.appendChild(s);
+}
+loadMsal(MSAL_CDNS, 0);
+</script>
+
+<!-- SheetJS for Excel/CSV import -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -616,127 +818,64 @@ async function loadIndex() {
   }
 }
 
+function cp(text, btn) {
+  navigator.clipboard.writeText((typeof txt==='string'?txt.replace(/&#10;/g,'\n').replace(/&quot;/g,'"').replace(/&amp;/g,'&'):txt) || '',text).then(()=>{
+    const o=btn.textContent; btn.textContent="✓ Copied"; btn.classList.add("ok");
+    setTimeout(()=>{btn.textContent=o;btn.classList.remove("ok");},1500);
+  });
+}
+
+function swTab(el, id) {
+  const p=el.closest(".detail");
+  p.querySelectorAll(".dtab").forEach(t=>t.classList.remove("active"));
+  p.querySelectorAll(".tp").forEach(x=>x.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById(id)?.classList.add("active");
+}
+
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+
+function hl(text,terms){
+  let t=esc(text);
+  for(const term of terms){const re=new RegExp("("+term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");t=t.replace(re,"<span class=\'hl\'>$1</span>");}
+  return t;
+}
+
+function humanizeName(n) {
+  if (!n) return '';
+  // Already has spaces — return as-is
+  if (n.includes(' ') || n.includes('/')) return n;
+  // CamelCase → spaced: "AllowStorageSense" → "Allow Storage Sense"
+  return n
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .replace(/([a-z\d])([A-Z])/g, '$1 $2')
+    .replace(/[-_]/g, ' ')
+    .trim();
+}
+
+function srcBadge(s) {
+  const [cls, lbl] = SRC_MAP[s] || ["sb-local", "● Built-in"];
+  return `<span class="src-badge ${cls}">${lbl}</span>`;
+}
+
 function setIndexStatus(msg, ok) {
   const el = document.getElementById("indexStatus");
   el.textContent = msg;
   el.style.color = ok ? "rgba(46,204,113,.8)" : "rgba(255,255,255,.35)";
 }
 
-// ── SOURCE BADGE HELPERS ──────────────────────────────────────────────────────
-const SRC_MAP = {
-  local:       ["sb-local",  "● Built-in"],
-  graph:       ["sb-graph",  "☁ Graph"],
-  chromium:    ["sb-chrome", "🌐 Browser"],
-  admx_windows:["sb-admx",   "📋 Windows ADMX"],
-  admx_office: ["sb-office", "📄 Office"],
-  custom:      ["sb-custom", "⭐ Custom"],
-};
-function srcBadge(s) {
-  const [cls, lbl] = SRC_MAP[s] || ["sb-local", "● Built-in"];
-  return `<span class="src-badge ${cls}">${lbl}</span>`;
+function toggleCard(id) { document.getElementById("card-"+id)?.classList.toggle("expanded"); }
+
+function showView(v, btn) {
+  ["searchView","mainView","graphView","aboutView"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=(id==="searchView"||id==="mainView")?v==="search"?"":"none":id===v+"View"?"block":"none";
+  });
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
 }
 
-// ── FULL-TEXT SEARCH ──────────────────────────────────────────────────────────
-function scoreEntry(e, terms) {
-  const t    = e._text || "";
-  const name = (e.name || "").toLowerCase();
-  let score  = 0;
-  for (const term of terms) {
-    if (!t.includes(term)) return 0;
-    if (name.startsWith(term))  score += 20;
-    else if (name.includes(term)) score += 10;
-    else score += 1;
-  }
-  if (!e._source || e._source === "local") score += 3;
-  return score;
-}
-
-function doSearch(q) {
-  const terms = q.toLowerCase().trim().split(/[\s,]+/).filter(t => t.length >= 2);
-  if (!terms.length) return [];
-
-  // Apply method/source filter
-  let pool = SEARCH_INDEX;
-  if (filter === "intune")   pool = pool.filter(e => (e.methods||[]).includes("intune"));
-  if (filter === "gpo")      pool = pool.filter(e => (e.methods||[]).includes("gpo"));
-  if (filter === "registry") pool = pool.filter(e => (e.methods||[]).includes("registry"));
-  if (filter === "graph")    pool = pool.filter(e => e._source === "graph");
-  if (filter === "chromium") pool = pool.filter(e => e._source === "chromium");
-  if (filter === "office")   pool = pool.filter(e => e._source === "admx_office");
-  if (filter === "custom")   pool = pool.filter(e => e._source === "custom");
-
-  const hits = [];
-  for (const e of pool) {
-    const sc = scoreEntry(e, terms);
-    if (sc > 0) hits.push({ sc, e });
-  }
-  hits.sort((a, b) => b.sc - a.sc);
-  return hits.slice(0, 150).map(h => h.e);
-}
-
-// ── GRAPH LIVE SUPPLEMENT ─────────────────────────────────────────────────────
-async function graphSearch(q) {
-  if (!graphToken) return [];
-  const key = "g:" + q;
-  if (graphCache[key]) return graphCache[key];
-  const h = { Authorization: "Bearer " + graphToken, ConsistencyLevel: "eventual" };
-  const results = [];
-  const seen = new Set(SEARCH_INDEX.map(e => e.name?.toLowerCase()).filter(Boolean));
-
-  try {
-    const r = await fetch(
-      `https://graph.microsoft.com/beta/deviceManagement/configurationSettings` +
-      `?$filter=contains(name,'${encodeURIComponent(q)}')` +
-      `&$select=id,name,description,settingDefinitionId,applicability,defaultValue,categoryId,options,valueDefinition&$top=30`,
-      { headers: h }
-    );
-    if (r.ok) {
-      const d = await r.json();
-      for (const s of (d.value || [])) {
-        const nm = (s.name || "").toLowerCase();
-        if (!seen.has(nm)) {
-          seen.add(nm);
-          results.push(graphEntryToCard(s));
-        }
-      }
-    }
-  } catch(e) { console.warn("Graph search error:", e.message); }
-  graphCache[key] = results;
-  return results;
-}
-
-function graphEntryToCard(s) {
-  const defId = s.settingDefinitionId || s.id || "";
-  const isUser = defId.toLowerCase().startsWith("user_");
-  const pfx = isUser ? "./User" : "./Device";
-  const oma = defId ? pfx + "/Vendor/MSFT/" + defId
-    .replace(/^(device|user)_vendor_msft_/i,"").split("_")
-    .map(p => p[0].toUpperCase() + p.slice(1)).join("/") : "";
-  const vals = (s.options||[]).map(o=>({v:String(o.itemId||o.value||""),l:o.displayName||""}));
-  return {
-    id:"graph_"+defId, name:s.name||defId, desc:s.description||"No description.",
-    icon:"⚙️", cats:[s.categoryId||"Settings Catalog"],
-    plat:(s.applicability?.platform||"windows").toLowerCase().replace("windows10","windows"),
-    methods:["intune"], _source:"graph", _infoUrl:(s.infoUrls||[""])[0],
-    intune:[{cat:"Settings Catalog (Live)",name:s.name||defId,defId,oma,dtype:"Choice",vals,
-      rec:String(s.defaultValue??"")||(vals[0]?.v||""),
-      json:`"settingDefinitionId": "${defId}"`}]
-  };
-}
-
-// ── SEARCH ORCHESTRATOR ───────────────────────────────────────────────────────
-document.getElementById("searchInput").addEventListener("input", function(e) {
-  clearTimeout(searchTimer);
-  const q = e.target.value.trim();
-  if (!q) { showEmpty(); return; }
-  searchTimer = setTimeout(() => runSearch(q), 260);
-});
-document.getElementById("searchInput").addEventListener("keydown", function(e) {
-  if (e.key === "Escape") { e.target.value = ""; showEmpty(); }
-  if (e.key === "Enter")  { clearTimeout(searchTimer); runSearch(e.target.value.trim()); }
-});
-
-async function runSearch(q) {
+async function runSearch(q, filterSrc, filterCat) {
   if (!q || q.length < 2) return;
   showLoader(true, "Searching…");
 
@@ -755,329 +894,161 @@ async function runSearch(q) {
   }
 }
 
-// ── RENDER ────────────────────────────────────────────────────────────────────
-function renderResults(results, q, isPartial) {
-  const terms = q.toLowerCase().split(/[\s,]+/).filter(t => t.length >= 2);
-  const nSrc = {};
-  for (const e of results) { const s = e._source||"local"; nSrc[s] = (nSrc[s]||0)+1; }
-
-  const pills = Object.entries(nSrc).map(([s,n]) => {
-    const [cls,lbl] = SRC_MAP[s]||["sb-local","Local"];
-    return `<span class="src-badge ${cls}" style="cursor:pointer" onclick="setChipById('${s}')">${lbl} ${n}</span>`;
-  }).join(" ");
-
-  const loadNote = isPartial ? ` <span style="font-size:11px;color:var(--h-blue)">· querying Graph…</span>` : "";
-
-  document.getElementById("resultCount").innerHTML = results.length === 0
-    ? `<span style="color:var(--h-red)">No results for <strong>"${esc(q)}"</strong></span>`
-    : `<strong>${results.length.toLocaleString()}</strong> result${results.length!==1?"s":""} for <strong>"${esc(q)}"</strong> ${pills}${loadNote}`;
-
-  if (!results.length && !isPartial) {
+async function loadIndex() {
+  // 1. Fetch meta.json to know how many chunks exist
+  try {
+    const r   = await fetch("data/meta.json", { cache: "no-cache" });
+    if (!r.ok) throw new Error("meta.json not found");
+    indexMeta = await r.json();
+  } catch(e) {
+    console.warn("Could not load data/meta.json:", e.message);
+    // No index built yet — show empty but functional state
+    setIndexStatus("No index built yet. Run the GitHub Action (or python scripts/build_index.py) to generate data.", false);
+    document.getElementById("livePillText").textContent = "No index";
+    document.getElementById("resultCount").textContent = "Index not built — click ⚙ Settings for setup info.";
     document.getElementById("resultsGrid").innerHTML = emptyHTML(
-      "No settings found",
-      `Try the exact UI label from Intune, a registry value name, a <code>settingDefinitionId</code> fragment, or an ADMX policy name.`
+      "Index not yet built",
+      "Run the GitHub Action to build the settings index. See the About tab for setup instructions.",
+      true
     );
+    indexReady = false;
     return;
   }
-  document.getElementById("resultsGrid").innerHTML = results.map(s => cardHTML(s, terms)).join("");
-}
 
-function emptyHTML(h, p, noSearch) {
-  return `<div class="empty">
-    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2;margin-bottom:.75rem"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <h3>${h}</h3><p>${p}</p>
-    ${!noSearch ? "" : '<p style="margin-top:8px;font-size:12px;color:var(--h-blue)">See the <strong>About</strong> tab for setup instructions.</p>'}
-  </div>`;
-}
+  chunksTotal  = indexMeta.chunks?.length || 0;
+  const bar    = document.getElementById("indexBar");
+  const barTxt = document.getElementById("indexBarText");
+  const fill   = document.getElementById("progressFill");
 
-function cardHTML(e, terms) {
-  const mt = (e.methods||[]).map(m=>{
-    if(m==='intune')         return '<span class="tag t-int">Intune</span>';
-    if(m==='gpo'||m==='admx')return '<span class="tag t-gpo">GPO / ADMX</span>';
-    if(m==='registry')       return '<span class="tag t-reg">Registry</span>';
-    if(m==='csp')            return '<span class="tag t-csp">CSP</span>';
-    return '';
-  }).join('');
-
-  // Derive best display name from available data
-  const i0 = e.intune && e.intune[0];
-  let cardName, cardDesc;
-
-  if (e._source === 'graph' && i0 && i0.defId) {
-    // PascalCase key → friendly name: "ConfigureXboxLiveGameSaveServiceStartupMode" → "Configure Xbox Live Game Save Service Startup Mode"
-    cardName = i0.defId
-      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-      .replace(/[_-]/g, ' ')
-      .trim();
-    cardDesc = e.name || ''; // category like "System Services"
-  } else {
-    cardName = humanizeName(e.name || '');
-    cardDesc = e.cats && e.cats.filter(c=>c&&!['Settings Catalog','Intune Settings Catalog','Policy CSP'].includes(c))[0] || e.desc || '';
+  if (chunksTotal > 0) {
+    bar.style.display = "flex";
+    barTxt.textContent = `Loading ${indexMeta.total_entries?.toLocaleString() || ""} settings across ${chunksTotal} chunks…`;
   }
 
-  return `<div class="card" id="card-${e.id}">
-    <div class="card-hdr" onclick="toggleCard('${e.id}')">
-      <div class="card-icon">${e.icon||"⚙️"}</div>
-      <div class="card-info">
-        <div class="card-name">${hl(cardName,terms)}</div>
-        <div class="card-desc">${hl(cardDesc,terms)}</div>
-        <div class="card-meta">${mt}<span class="tag t-plt">${e.plat==="windows"?"Windows":e.plat||"Windows"}</span>${srcBadge(e._source||"local")}</div>
-      </div>
-      <button class="expand-btn">Details<svg class="exp-arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
-    </div>
-    <div class="detail">${detailHTML(e)}</div>
-  </div>`;
-}
-
-
-function detailHTML(e) {
-  let tabs="",panes="",first=true;
-  function addTab(id,pip,label,content){
-    tabs+=`<div class="dtab${first?" active":""}" onclick="swTab(this,'${id}')"><span class="dpip" style="background:${pip}"></span>${label}</div>`;
-    panes+=`<div class="tp${first?" active":""}" id="${id}">${content}</div>`;
-    first=false;
-  }
-  // Call intunePane directly (not via closure) so patches always take effect
-  if ((e.intune||[]).length) addTab(`ti-${e.id}`,"var(--h-tag-int)","Intune Settings Catalog",intunePane(e));
-  if (e.gpo)                 addTab(`tg-${e.id}`,"var(--h-tag-gpo)","GPO / ADMX",gpoPane(e));
-  if (e.reg)                 addTab(`tr-${e.id}`,"var(--h-tag-reg)","Registry",regPane(e));
-  return `<div class="dtabs">${tabs}</div><div class="dcontent">${panes}</div>`;
-}
-
-
-function intunePane(e) {
-  // Current data layout (pre-pipeline-fix):
-  //   e.name   = category path  e.g. "System Services", "Above Lock"
-  //   e.desc   = OMA base path  e.g. "./Device/Vendor/MSFT/Policy"
-  //   e.cats[0]= platform       e.g. "Windows", "iOS"
-  //   i.defId  = PascalCase key e.g. "ConfigureXboxLiveGameSaveServiceStartupMode"
-  //   i.oma    = partial OMA    e.g. "./Device/Vendor/MSFT/ConfigureXbox..."
-  //   i.name   = category path  (same as e.name)
-  //   i.cat    = platform       (same as e.cats[0])
-
-  function mkBtn(val, label, style) {
-    const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;').replace(/\r/g,'');
-    return `<button class="cbtn"${style?' style="'+style+'"':''} data-copy="${safe}" onclick="cp(this.dataset.copy,this)">${label}</button>`;
-  }
-
-  // Derive settingDefinitionId from i.oma and e.name (category)
-  function deriveDefId(oma, category, leafKey) {
-    if (!oma) return '';
-    // e.g. "./Device/Vendor/MSFT/ConfigureXboxLiveGameSaveServiceStartupMode"
-    // → "device_vendor_msft_configurexboxlivegamesaveservicestartupmode"
-    const parts = oma.replace(/^\.?\//,'').split('/').filter(Boolean);
-    return parts.map(p => p.toLowerCase()).join('_');
-  }
-
-  // Convert PascalCase/camelCase key to friendly display name
-  function toFriendly(key) {
-    if (!key) return '';
-    return key
-      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-      .replace(/[_-]/g, ' ')
-      .trim();
-  }
-
-  // Build proper OMA-URI
-  // For Policy CSP: ./Device/Vendor/MSFT/Policy/Config/{Category}/{LeafKey}
-  // For others: use i.oma as-is if it looks complete
-  function buildOma(oma, category, leafKey) {
-    if (!oma) return '';
-    // If oma ends with the leafKey it's likely Policy/Config path style
-    if (oma.toLowerCase().includes('policy') && category && leafKey) {
-      const cat = category.replace(/[\s\/\\]/g, '');
-      return `./Device/Vendor/MSFT/Policy/Config/${cat}/${leafKey}`;
-    }
-    return oma;
-  }
-
-  let h = '';
-  for (const i of (e.intune||[])) {
-    const leafKey    = i.defId || '';
-    const category   = e.name || i.name || '';
-    const omaBase    = e.desc || '';
-    const rawOma     = i.oma  || '';
-
-    // Friendly display name from PascalCase key
-    const displayName = toFriendly(leafKey);
-
-    // settingDefinitionId in device_vendor_msft_... format
-    const defId = deriveDefId(rawOma, category, leafKey);
-
-    // Full OMA-URI
-    const oma = buildOma(rawOma, category, leafKey);
-
-    // Full JSON fragment for Graph API
-    const jsonFrag = defId ? `"settingDefinitionId": "${defId}"` : '';
-    const jsonFull  = defId ? `{
-  "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
-  "settingInstance": {
-    "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
-    "settingDefinitionId": "${defId}",
-    "choiceSettingValue": {
-      "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingValue",
-      "value": "${defId}_0",
-      "children": []
-    }
-  }
-}` : '';
-
-    h += `<div class="cblock">
-      <div class="cblock-title">${esc(displayName)}${mkBtn(defId,'Copy ID')}</div>
-      <table class="ctable">
-        <tr><td>Category</td><td>${esc(category)}</td></tr>
-        <tr><td>Definition ID</td><td><span class="mono">${esc(defId)}</span>${mkBtn(defId,'Copy')}</td></tr>
-        ${oma?`<tr><td>OMA-URI</td><td><span class="mono">${esc(oma)}</span>${mkBtn(oma,'Copy')}</td></tr>`:''}
-        <tr><td>Data type</td><td>${esc(i.dtype||'')}</td></tr>
-        ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v)}</span> <span style="color:var(--h-text3)">${esc(v.l)}</span>`).join('<br>')}</td></tr>`:''}
-        ${i.rec?`<tr><td>Recommended</td><td><span class="mono">${esc(i.rec)}</span></td></tr>`:''}
-      </table>
-      ${i.desc||e.desc_text?`<div style="margin:6px 0 4px;padding:8px 10px;background:var(--bg3,rgba(255,255,255,.04));border-radius:5px;border-left:3px solid var(--h-blue,#2197D4)">
-        <div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Description</div>
-        <div style="font-size:13px;color:var(--h-text2,#ccc);line-height:1.5">${esc(i.desc||e.desc_text||'')}</div>
-      </div>`:''}
-      ${jsonFrag?`<div style="margin-top:9px">
-        <div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">JSON Fragment (Graph API)</div>
-        <pre class="json-pre">${esc(jsonFrag)}</pre>
-        ${mkBtn(jsonFull,'Copy JSON','margin-top:4px')}
-      </div>`:''}
-    </div>`;
-  }
-  // Build the full config JSON for inline display
-  const allCfg = e.intune.map(i => {
-    const leaf   = i.defId || '';
-    const rawOma = i.oma   || '';
-    const cat2   = e.name  || i.name || '';
-    const defId2 = rawOma
-      ? rawOma.replace(/^\.?\//,'').split('/').filter(Boolean).map(p=>p.toLowerCase()).join('_')
-      : '';
-    return defId2 ? `{
-  "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
-  "settingInstance": {
-    "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
-    "settingDefinitionId": "${defId2}",
-    "choiceSettingValue": { "value": "${defId2}_0", "children": [] }
-  }
-}` : '';
-  }).filter(Boolean).join(',\n');
-
-  const safeAllCfg = allCfg.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
-  const blockId = 'cfg-' + e.id.replace(/[^a-z0-9]/gi,'_');
-  h += `<div style="margin-top:8px">
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="cta intune" data-copy="${safeAllCfg}" onclick="cp(this.dataset.copy,this)">Copy All Intune Config</button>
-      <button class="cbtn" onclick="const d=document.getElementById('${blockId}');d.style.display=d.style.display==='none'?'block':'none'">Show/Hide Config JSON</button>
-    </div>
-    <div id="${blockId}" style="display:none;margin-top:8px">
-      <pre class="json-pre" style="max-height:250px;overflow:auto">${esc(allCfg)}</pre>
-    </div>
-  </div>`;
-  return h;
-}
-
-
-function gpoPane(e) {
-  const g=e.gpo||{}, a=e.admx;
-  return `<div class="cblock">
-    <div class="cblock-title"><span class="tag t-gpo">GPO</span> Group Policy Path</div>
-    <table class="ctable">
-      <tr><td>Path</td><td>${esc(g.path||"")}</td></tr>
-      <tr><td>Policy</td><td>${esc(g.policy||"")}</td></tr>
-      <tr><td>ADMX file</td><td><span class="mono">${esc(g.admx||"")}</span></td></tr>
-      ${g.ns?`<tr><td>Namespace</td><td><span class="mono">${esc(g.ns)}</span></td></tr>`:""}
-    </table>
-  </div>
-  ${a?`<div class="cblock">
-    <div class="cblock-title"><span class="tag t-adm">ADMX</span> Administrative Template</div>
-    <table class="ctable">
-      <tr><td>Policy name</td><td><span class="mono">${esc(a.name||"")}</span><button class="cbtn" onclick="cp(${JSON.stringify(a.name||"")},this)">Copy</button></td></tr>
-      <tr><td>ADMX file</td><td><span class="mono">${esc(a.file||"")}</span></td></tr>
-      ${a.cat?`<tr><td>Category</td><td>${esc(a.cat)}</td></tr>`:""}
-      <tr><td>Registry key</td><td><span class="mono">${esc(a.regKey||"")}</span><button class="cbtn" onclick="cp(${JSON.stringify(a.regKey||"")},this)">Copy</button></td></tr>
-      <tr><td>Value name</td><td><span class="mono">${esc(a.val||"")}</span></td></tr>
-      <tr><td>Value type</td><td><span class="mono">${esc(a.type||"")}</span></td></tr>
-    </table>
-  </div>`:""}
-  <div class="copy-row">
-    <button class="cta gpo" onclick="cp(${JSON.stringify(g.path||"")},this)">Copy GPO Path</button>
-    ${a?.regKey?`<button class="cta gpo" onclick="cp(${JSON.stringify(a.regKey)},this)">Copy Registry Key</button>`:""}
-  </div>`;
-}
-
-function regPane(e) {
-  const r=e.reg||{};
-  const full=`${r.hive||"HKLM"}\\${r.key||""}`;
-  const snippet=`Windows Registry Editor Version 5.00\n\n[${r.hive||"HKLM"}\\${r.key||""}]\n"${r.val||""}"=${r.type==="REG_DWORD"?"dword:00000001":r.type==="REG_SZ"?'"value"':"hex:01"}`;
-  return `<div class="cblock">
-    <div class="cblock-title"><span class="tag t-reg">REG</span> Registry Configuration</div>
-    <table class="ctable">
-      <tr><td>Hive</td><td><span class="mono">${esc(r.hive||"")}</span></td></tr>
-      <tr><td>Key path</td><td><span class="mono">${esc(r.key||"")}</span><button class="cbtn" onclick="cp(${JSON.stringify(full)},this)">Copy Full</button></td></tr>
-      <tr><td>Value name</td><td><span class="mono">${esc(r.val||"")}</span></td></tr>
-      <tr><td>Type</td><td><span class="mono">${esc(r.type||"")}</span></td></tr>
-      <tr><td>Data</td><td>${esc(r.data||"")}</td></tr>
-      ${r.note?`<tr><td>Notes</td><td style="color:var(--h-text3);font-size:11px">${esc(r.note)}</td></tr>`:""}
-    </table>
-  </div>
-  <div class="copy-row">
-    <button class="cta reg" onclick="cp(${JSON.stringify(snippet)},this)">.REG snippet</button>
-    <button class="cta reg" onclick="cp(${JSON.stringify(full)},this)">Copy Key Path</button>
-  </div>`;
-}
-
-// ── UI HELPERS ────────────────────────────────────────────────────────────────
-function toggleCard(id) { document.getElementById("card-"+id)?.classList.toggle("expanded"); }
-function swTab(el, id) {
-  const p=el.closest(".detail");
-  p.querySelectorAll(".dtab").forEach(t=>t.classList.remove("active"));
-  p.querySelectorAll(".tp").forEach(x=>x.classList.remove("active"));
-  el.classList.add("active");
-  document.getElementById(id)?.classList.add("active");
-}
-function setChip(f, el) {
-  filter=f;
-  document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));
-  el.classList.add("on");
-  const q=document.getElementById("searchInput").value.trim();
-  if (q) runSearch(q);
-}
-function setChipById(srcId) {
-  const map={graph:"graph",chromium:"chromium",admx_office:"office",custom:"custom",
-             admx_windows:"gpo",local:"intune"};
-  const chipTarget = map[srcId]||"all";
-  document.querySelectorAll(".chip").forEach(c=>{
-    const onclick=c.getAttribute("onclick")||"";
-    if (onclick.includes("'"+chipTarget+"'")) { c.click(); }
-  });
-}
-function showLoader(v, t) {
-  document.getElementById("loader").classList.toggle("show",v);
-  if(t) document.getElementById("loaderText").textContent=t;
-}
-function showEmpty() {
-  document.getElementById("resultCount").textContent=
-    indexReady ? `${SEARCH_INDEX.length.toLocaleString()} settings ready — enter a search term` : "Loading…";
-  document.getElementById("resultsGrid").innerHTML = emptyHTML(
-    "Search across all configuration methods",
-    "Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment."
+  // 2. Load all chunks in parallel (browser will pipeline these)
+  const chunks = indexMeta.chunks || [];
+  const results = await Promise.allSettled(
+    chunks.map((c, i) =>
+      fetch(c.file, { cache: "default" })
+        .then(r => r.ok ? r.json() : [])
+        .then(data => {
+          chunksLoaded++;
+          fill.style.width = Math.round((chunksLoaded / chunksTotal) * 100) + "%";
+          barTxt.textContent = `Loading… ${chunksLoaded}/${chunksTotal} chunks`;
+          return data;
+        })
+        .catch(() => [])
+    )
   );
+
+  for (const r of results) {
+    if (r.status === "fulfilled" && Array.isArray(r.value)) {
+      SEARCH_INDEX.push(...r.value);
+    }
+  }
+
+  // 3. Merge custom entries
+  SEARCH_INDEX.push(...customEntries);
+
+  indexReady = true;
+    initNavPane();
+  bar.style.display = "none";
+
+  const total    = SEARCH_INDEX.length;
+  const updated  = indexMeta.last_updated
+    ? new Date(indexMeta.last_updated).toLocaleDateString("en-US", {month:"short", day:"numeric", year:"numeric"})
+    : "unknown";
+
+  setIndexStatus(`✓ ${total.toLocaleString()} settings · updated ${updated}`, true);
+  document.getElementById("livePillText").textContent = `${total.toLocaleString()} settings`;
+  document.getElementById("liveDot").style.background = "#2ECC71";
+  document.getElementById("footerMeta").textContent = `${total.toLocaleString()} settings · last updated ${updated}`;
+  document.getElementById("redirectUriDisplay").textContent = window.location.origin + window.location.pathname;
+
+  // Update about page
+  const src = indexMeta.sources || {};
+  document.getElementById("aboutIndexStatus").innerHTML =
+    `<table style="font-size:12.5px;border-collapse:collapse;width:100%">` +
+    Object.entries(src).map(([k,v]) =>
+      `<tr><td style="padding:4px 10px;font-weight:600;color:var(--h-text2);width:160px">${k}</td>` +
+      `<td style="padding:4px 10px;color:${v.ok?"var(--h-success)":"var(--h-red)"}">${v.ok?"✓":"✗"} ${v.count} entries</td></tr>`
+    ).join("") + `</table>`;
+
+  // If there was a pending search, run it
+  const q = document.getElementById("searchInput").value.trim();
+  if (q.length >= 2) {
+    runSearch(q);
+  } else {
+    document.getElementById("resultCount").textContent = `${total.toLocaleString()} settings ready — enter a search term`;
+    document.getElementById("resultsGrid").innerHTML = emptyHTML(
+      "Search across all configuration methods",
+      "Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment."
+    );
+  }
 }
-function showView(v, btn) {
-  ["searchView","mainView","graphView","aboutView"].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.style.display=(id==="searchView"||id==="mainView")?v==="search"?"":"none":id===v+"View"?"block":"none";
-  });
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-  if(btn) btn.classList.add("active");
+
+function waitForMsalAndInit(n){
+  const M=window.__MSAL||window.msal||window.msalBrowser;
+  if(M?.PublicClientApplication){window.__MSAL=M;initMsal();}
+  else if(n>0) setTimeout(()=>waitForMsalAndInit(n-1),300);
 }
-function cp(text, btn) {
-  navigator.clipboard.writeText((typeof txt==='string'?txt.replace(/&#10;/g,'\n').replace(/&quot;/g,'"').replace(/&amp;/g,'&'):txt) || '',text).then(()=>{
-    const o=btn.textContent; btn.textContent="✓ Copied"; btn.classList.add("ok");
-    setTimeout(()=>{btn.textContent=o;btn.classList.remove("ok");},1500);
-  });
+
+async function initMsal(){
+  const MSAL=window.__MSAL;if(!MSAL) return;
+  const s=loadSaved();
+  const cid=s.clientId||localStorage.getItem("helient_clientId")||"";
+  if(!cid) return;
+  const cfg={auth:{clientId:cid,authority:"https://login.microsoftonline.com/"+(s.tenantId||"common"),redirectUri:window.location.origin+window.location.pathname},cache:{cacheLocation:"sessionStorage",storeAuthStateInCookie:true}};
+  try{
+    msalApp=new MSAL.PublicClientApplication(cfg);await msalApp.initialize();
+    const rr=await msalApp.handleRedirectPromise();
+    if(rr){await completeAuth(rr);return;}
+    const accs=msalApp.getAllAccounts();
+    if(accs.length){
+      try{const t=await msalApp.acquireTokenSilent({scopes:SCOPES,account:accs[0]});
+        graphToken=t.accessToken;graphUser=accs[0].username;updateAuthUI(true);}catch(e){}
+    }
+  }catch(e){console.warn("MSAL init:",e.message);clearMsalState();}
 }
+
+function removeCustomSource(idx) {
+  customSources.splice(idx, 1);
+  saveCustomSources();
+  renderCustomSourceList();
+}
+
+function addCustomSource() {
+  const url  = document.getElementById("newSrcUrl").value.trim();
+  const name = document.getElementById("newSrcName").value.trim() || url;
+  if (!url) return;
+  customSources.push({ url, name, added: new Date().toISOString() });
+  document.getElementById("newSrcUrl").value  = "";
+  document.getElementById("newSrcName").value = "";
+  saveCustomSources();
+  renderCustomSourceList();
+
+  // Fetch and merge immediately
+  fetch(url).then(r=>r.ok?r.json():null).then(data=>{
+    if(!data) return;
+    const items = Array.isArray(data)?data:(data.settings||data.entries||[]);
+    for(const item of items){
+      item._source = item._source || "custom";
+      item._text   = [item.name||"",item.desc||"",...(item.cats||[])].join(" ").toLowerCase();
+      if (!item.id) item.id = "custom_url_" + Math.random().toString(36).slice(2,10);
+    }
+    customEntries.push(...items);
+    SEARCH_INDEX.push(...items);
+    saveCustomEntries();
+  }).catch(e=>console.warn("Custom source fetch failed:", url, e.message));
+}
+
+function refreshGearBtn(){
+  const s=loadSaved(),g=document.getElementById("gearBtn");
+  if(!g) return;
+  if(s.clientId){g.classList.add("configured");g.title="Settings — "+s.clientId.slice(0,8)+"…";}
+  else{g.classList.remove("configured");g.title="Configure authentication settings";}
+}
+
 function cpAllIntune(id, btn) {
   const e = SEARCH_INDEX.find(x => x.id === id);
   if (!e?.intune?.length) { cp("", btn); return; }
@@ -1110,313 +1081,330 @@ function cpAllIntune(id, btn) {
   }).join('\n\n');
   cp(out, btn);
 }
-function cpUri(btn){cp(window.location.origin+window.location.pathname,btn);}
-function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 
-function humanizeName(n) {
-  if (!n) return '';
-  // Already has spaces — return as-is
-  if (n.includes(' ') || n.includes('/')) return n;
-  // CamelCase → spaced: "AllowStorageSense" → "Allow Storage Sense"
-  return n
+
+// ── FIELD HELPERS ────────────────────────────────────────────────────────────
+function toFriendly(key) {
+  if (!key) return '';
+  return key
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
     .replace(/([a-z\d])([A-Z])/g, '$1 $2')
-    .replace(/[-_]/g, ' ')
+    .replace(/[_.-]+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
     .trim();
 }
-function hl(text,terms){
-  let t=esc(text);
-  for(const term of terms){const re=new RegExp("("+term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");t=t.replace(re,"<span class=\'hl\'>$1</span>");}
-  return t;
+
+function deriveDefId(oma, leafKey) {
+  // From OMA-URI derive the snake_case settingDefinitionId
+  if (!oma) return leafKey ? leafKey.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/,'') : '';
+  return oma.replace(/^\.?\//, '').split('/').filter(Boolean).map(p => p.toLowerCase()).join('_');
 }
 
-// ── FILE IMPORT (Excel/CSV/JSON) ──────────────────────────────────────────────
-function handleFileUpload(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    let entries = [];
-    try {
-      if (file.name.endsWith(".json")) {
-        const data = JSON.parse(e.target.result);
-        entries = Array.isArray(data) ? data : (data.settings || data.entries || []);
-      } else {
-        // Excel or CSV via SheetJS
-        const wb = XLSX.read(e.target.result, { type: "binary" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
-        entries = rows.map((row, i) => ({
-          id:      "custom_upload_" + i,
-          name:    row.name || row.Name || row.PolicyName || row["Setting Name"] || `Custom Setting ${i+1}`,
-          desc:    row.description || row.Description || row.Desc || row.helpText || "",
-          cats:    ["Custom Import"],
-          plat:    (row.platform || row.Platform || "windows").toLowerCase(),
-          methods: ["registry","gpo","intune"].filter(m => row[m] || row[m.toUpperCase()]),
-          _source: "custom",
-          intune:  row.settingDefinitionId ? [{
-            cat:"Custom",name:row.name||"",
-            defId:row.settingDefinitionId||row.DefinitionId||"",
-            oma:row.omaUri||row.OMA_URI||"",
-            dtype:row.dataType||"String",vals:[],rec:"",
-            json:`"settingDefinitionId": "${row.settingDefinitionId||""}"`
-          }] : [],
-          gpo: row.gpoPath ? {path:row.gpoPath,policy:row.policyName||row.name||"",admx:row.admxFile||"",ns:""} : null,
-          reg: row.registryKey ? {
-            hive: (row.registryKey||"").startsWith("HKCU")?"HKCU":"HKLM",
-            key:  (row.registryKey||"").replace(/^HK[A-Z_]+\\/,""),
-            val:  row.registryValue||row.ValueName||"",
-            type: row.valueType||"REG_DWORD",
-            data: row.data||row.ValueData||"",note:""
-          } : null,
-        }));
-      }
+function buildOma(oma, catName, leafKey) {
+  if (!oma) return '';
+  // If it already looks like a full Policy/Config path, keep it
+  if (oma.toLowerCase().includes('policy/config')) return oma;
+  // If it's a bare MSFT path with the leaf, reconstruct properly
+  if (oma.toLowerCase().includes('policy') && catName && leafKey) {
+    return './Device/Vendor/MSFT/Policy/Config/' + catName.replace(/[\s\/\\]/g,'') + '/' + leafKey;
+  }
+  return oma;
+}
 
-      // Build search text and merge into index
-      for (const entry of entries) {
-        entry._text = [entry.name,entry.desc,...(entry.cats||[]),
-          entry.reg?.key||"",entry.reg?.val||"",
-          entry.gpo?.path||"",entry.gpo?.policy||"",
-          ...(entry.intune||[]).map(i=>i.defId+" "+i.name+" "+i.oma)
-        ].join(" ").toLowerCase();
-      }
+// ── NAV PANE ──────────────────────────────────────────────────────────────────
+let navFilter = '';
+let activeNavCat = null;
+let activeNavSrc = null;
 
-      customEntries.push(...entries);
-      SEARCH_INDEX.push(...entries);
-      saveCustomEntries();
+function buildNavPane() {
+  const pane = document.getElementById('navCats');
+  if (!pane || !SEARCH_INDEX) return;
 
-      document.getElementById("uploadResult").innerHTML =
-        `<div style="color:var(--h-success);font-size:12px;margin-top:6px">✓ Imported ${entries.length} settings from ${file.name}</div>`;
-      renderCustomSourceList();
+  // Group by source -> category
+  const tree = {};
+  SEARCH_INDEX.forEach(e => {
+    const src = e._source || 'local';
+    const cat = (e.name || '').split(/[>\\]/)[0].trim() || 'Other';
+    if (!tree[src]) tree[src] = {};
+    if (!tree[src][cat]) tree[src][cat] = 0;
+    tree[src][cat]++;
+  });
 
-    } catch(err) {
-      document.getElementById("uploadResult").innerHTML =
-        `<div style="color:var(--h-red);font-size:12px;margin-top:6px">✗ Error: ${err.message}</div>`;
-    }
+  const srcLabels = {
+    graph:       '☁ Intune Catalog',
+    admx_windows:'🪟 Windows GPO',
+    admx_office: '📄 Office ADMX',
+    chromium:    '🌐 Browser Policies',
+    local:       '● Built-in',
+    custom:      '⭐ Custom',
   };
 
-  if (file.name.endsWith(".json")) {
-    reader.readAsText(file);
-  } else {
-    reader.readAsBinaryString(file);
-  }
-}
-
-// ── CUSTOM URL SOURCES ────────────────────────────────────────────────────────
-function addCustomSource() {
-  const url  = document.getElementById("newSrcUrl").value.trim();
-  const name = document.getElementById("newSrcName").value.trim() || url;
-  if (!url) return;
-  customSources.push({ url, name, added: new Date().toISOString() });
-  document.getElementById("newSrcUrl").value  = "";
-  document.getElementById("newSrcName").value = "";
-  saveCustomSources();
-  renderCustomSourceList();
-
-  // Fetch and merge immediately
-  fetch(url).then(r=>r.ok?r.json():null).then(data=>{
-    if(!data) return;
-    const items = Array.isArray(data)?data:(data.settings||data.entries||[]);
-    for(const item of items){
-      item._source = item._source || "custom";
-      item._text   = [item.name||"",item.desc||"",...(item.cats||[])].join(" ").toLowerCase();
-      if (!item.id) item.id = "custom_url_" + Math.random().toString(36).slice(2,10);
-    }
-    customEntries.push(...items);
-    SEARCH_INDEX.push(...items);
-    saveCustomEntries();
-  }).catch(e=>console.warn("Custom source fetch failed:", url, e.message));
-}
-
-function removeCustomSource(idx) {
-  customSources.splice(idx, 1);
-  saveCustomSources();
-  renderCustomSourceList();
-}
-
-function renderCustomSourceList() {
-  const list = document.getElementById("srcList");
-  if (!customSources.length) { list.innerHTML=""; return; }
-  list.innerHTML = customSources.map((s,i) =>
-    `<div class="src-item">
-      <div class="src-item-info">
-        <div class="src-item-name">${esc(s.name)}</div>
-        <div class="src-item-url">${esc(s.url)}</div>
+  const filter = navFilter.toLowerCase();
+  let html = '';
+  for (const [src, cats] of Object.entries(tree)) {
+    const label = srcLabels[src] || src;
+    const catEntries = Object.entries(cats)
+      .filter(([c]) => !filter || c.toLowerCase().includes(filter))
+      .sort((a,b) => b[1]-a[1]);
+    if (!catEntries.length) continue;
+    const isOpen = !activeNavSrc || activeNavSrc === src;
+    html += `<div class="nav-source">
+      <div class="nav-src-hdr ${isOpen?'open':''}" onclick="toggleNavSrc(this)">
+        ${label}<span class="arr">></span>
       </div>
-      <button class="src-remove" onclick="removeCustomSource(${i})" title="Remove">✕</button>
-    </div>`
-  ).join("");
-}
-
-function saveCustomSources() { localStorage.setItem("helient_custom_sources",JSON.stringify(customSources)); }
-function saveCustomEntries()  { try { localStorage.setItem("helient_custom_entries",JSON.stringify(customEntries)); } catch(e){} }
-
-// ── SETTINGS MODAL ────────────────────────────────────────────────────────────
-const SK = "helient_settings_v1";
-function loadSaved(){try{return JSON.parse(localStorage.getItem(SK)||"{}");}catch{return{};}}
-function saveSaved(o){localStorage.setItem(SK,JSON.stringify(o));}
-
-function getMsalConfig(){
-  const s=loadSaved();
-  const cid=s.clientId||localStorage.getItem("helient_clientId")||"";
-  if(!cid) return null;
-  return {auth:{clientId:cid,authority:"https://login.microsoftonline.com/"+(s.tenantId||"common"),redirectUri:window.location.origin+window.location.pathname},cache:{cacheLocation:"sessionStorage",storeAuthStateInCookie:true}};
-}
-
-function openSettings(){
-  const s=loadSaved();
-  document.getElementById("s_clientId").value=s.clientId||"";
-  document.getElementById("s_tenantId").value=s.tenantId||"";
-  document.getElementById("s_redirectUri").value=window.location.origin+window.location.pathname;
-  document.getElementById("settingsStatus").textContent="";
-  document.getElementById("settingsStatus").className="modal-status";
-  renderCustomSourceList();
-  document.getElementById("settingsOverlay").classList.add("open");
-}
-function closeSettings(){document.getElementById("settingsOverlay").classList.remove("open");}
-function overlayClick(e){if(e.target===document.getElementById("settingsOverlay"))closeSettings();}
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSettings();});
-
-async function saveSettings(){
-  const cid=document.getElementById("s_clientId").value.trim();
-  const tid=document.getElementById("s_tenantId").value.trim();
-  const btn=document.getElementById("saveBtn");
-  const status=document.getElementById("settingsStatus");
-  if(cid){
-    const g=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if(!g.test(cid)){status.textContent="⚠ Client ID must be a valid GUID";status.className="modal-status err";return;}
-    if(tid&&!g.test(tid)){status.textContent="⚠ Tenant ID must be a valid GUID";status.className="modal-status err";return;}
+      <div class="nav-cats">`;
+    catEntries.forEach(([cat, cnt]) => {
+      const active = activeNavCat===cat && activeNavSrc===src;
+      html += `<div class="nav-cat ${active?'active':''}" 
+        onclick="navFilter_(${JSON.stringify(src)},${JSON.stringify(cat)})" 
+        title="${esc(cat)}">
+        <span>${esc(cat)}</span><span class="nav-cnt">${cnt}</span>
+      </div>`;
+    });
+    html += `</div></div>`;
   }
-  saveSaved({clientId:cid,tenantId:tid,savedAt:new Date().toISOString()});
-  if(cid) localStorage.setItem("helient_clientId",cid);
-  btn.textContent="✓ Saved";btn.classList.add("saved");
-  status.textContent="Saved to this browser";status.className="modal-status ok";
-  setTimeout(async()=>{
-    closeSettings();btn.classList.remove("saved");
-    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save & Connect';
-    refreshGearBtn();
-    if(cid) await handleAuth();
-  },700);
+  pane.innerHTML = html;
 }
 
-function clearSettings(){
-  if(!confirm("Clear all saved settings? This removes your auth credentials and custom entries.")) return;
-  [SK,"helient_clientId","helient_custom_sources","helient_custom_entries"].forEach(k=>localStorage.removeItem(k));
-  customSources=[]; customEntries=[];
-  SEARCH_INDEX=SEARCH_INDEX.filter(e=>e._source!=="custom");
-  document.getElementById("s_clientId").value="";document.getElementById("s_tenantId").value="";
-  const s=document.getElementById("settingsStatus");s.textContent="✓ Cleared";s.className="modal-status ok";
-  refreshGearBtn();
-  if(graphToken){graphToken=null;graphUser=null;msalApp=null;clearMsalState();updateAuthUI(false);}
-  renderCustomSourceList();
+function toggleNavSrc(el) {
+  el.classList.toggle('open');
 }
 
-function refreshGearBtn(){
-  const s=loadSaved(),g=document.getElementById("gearBtn");
-  if(!g) return;
-  if(s.clientId){g.classList.add("configured");g.title="Settings — "+s.clientId.slice(0,8)+"…";}
-  else{g.classList.remove("configured");g.title="Configure authentication settings";}
-}
-
-// ── MSAL AUTH ─────────────────────────────────────────────────────────────────
-const SCOPES=["DeviceManagementConfiguration.Read.All"];
-async function initMsal(){
-  const MSAL=window.__MSAL;if(!MSAL) return;
-  const s=loadSaved();
-  const cid=s.clientId||localStorage.getItem("helient_clientId")||"";
-  if(!cid) return;
-  const cfg={auth:{clientId:cid,authority:"https://login.microsoftonline.com/"+(s.tenantId||"common"),redirectUri:window.location.origin+window.location.pathname},cache:{cacheLocation:"sessionStorage",storeAuthStateInCookie:true}};
-  try{
-    msalApp=new MSAL.PublicClientApplication(cfg);await msalApp.initialize();
-    const rr=await msalApp.handleRedirectPromise();
-    if(rr){await completeAuth(rr);return;}
-    const accs=msalApp.getAllAccounts();
-    if(accs.length){
-      try{const t=await msalApp.acquireTokenSilent({scopes:SCOPES,account:accs[0]});
-        graphToken=t.accessToken;graphUser=accs[0].username;updateAuthUI(true);}catch(e){}
-    }
-  }catch(e){console.warn("MSAL init:",e.message);clearMsalState();}
-}
-async function completeAuth(resp){
-  if(!resp?.account) return;
-  try{const t=await msalApp.acquireTokenSilent({scopes:SCOPES,account:resp.account});
-    graphToken=t.accessToken;graphUser=resp.account.username;updateAuthUI(true);}catch(e){}
-}
-function clearMsalState(){const k=[];for(let i=0;i<sessionStorage.length;i++){const key=sessionStorage.key(i);if(key&&(key.includes("msal.")||key.includes("msal|")))k.push(key);}k.forEach(k=>sessionStorage.removeItem(k));}
-async function handleAuth(){
-  if(graphToken){
-    graphToken=null;graphUser=null;
-    try{if(msalApp)await msalApp.clearCache();}catch(e){}
-    msalApp=null;clearMsalState();updateAuthUI(false);return;
+function navFilter_(src, cat) {
+  activeNavCat = cat;
+  activeNavSrc = src;
+  buildNavPane();
+  // Filter search results to this category
+  const query = cat;
+  const inp = document.getElementById('searchInput');
+  if (inp) {
+    inp.value = query;
+    runSearch(query, src, cat);
   }
-  const cfg=getMsalConfig();
-  if(!cfg){alert("Please enter your Azure App Client ID in ⚙️ Settings.");return;}
-  const MSAL=window.__MSAL;
-  if(!MSAL?.PublicClientApplication){alert("MSAL library has not loaded yet. Disable ad blockers, reload, then try again.");return;}
-  try{
-    setAuthLoading(true);
-    if(!msalApp){msalApp=new MSAL.PublicClientApplication(cfg);await msalApp.initialize();}
-    await msalApp.handleRedirectPromise().catch(()=>{});
-    for(let i=sessionStorage.length-1;i>=0;i--){const k=sessionStorage.key(i);if(k?.includes("interaction.status"))sessionStorage.removeItem(k);}
-    let resp;
-    try{resp=await msalApp.loginPopup({scopes:SCOPES});}
-    catch(pe){
-      if(["popup_window_error","empty_window_error"].includes(pe.errorCode)){
-        sessionStorage.setItem("helient_clientId",cfg.auth.clientId);
-        await msalApp.loginRedirect({scopes:SCOPES});return;
-      }
-      throw pe;
+}
+
+function toggleNav() {
+  const pane = document.getElementById('navPane');
+  pane?.classList.toggle('collapsed');
+}
+
+// ── UNIFIED CARD RENDERING ────────────────────────────────────────────────────
+function cardHTML(e, terms) {
+  const i0 = e.intune && e.intune[0];
+
+  // Card title: toFriendly from PascalCase defId key
+  let cardName, cardDesc;
+  if (e._source === 'graph' && i0?.defId) {
+    cardName = toFriendly(i0.defId);
+    cardDesc = e.name || '';        // category path as subtitle
+  } else {
+    cardName = humanizeName(e.name || '');
+    cardDesc = (e.cats||[]).filter(c => c && !['Settings Catalog','Intune Settings Catalog','Policy CSP'].includes(c))[0] || e.desc || '';
+  }
+
+  const mt = (e.methods||[]).map(m => ({
+    intune:'<span class="tag t-int">Intune</span>',
+    gpo:'<span class="tag t-gpo">GPO</span>',
+    admx:'<span class="tag t-gpo">ADMX</span>',
+    registry:'<span class="tag t-reg">Registry</span>',
+    csp:'<span class="tag t-csp">CSP</span>',
+  }[m]||'')).join('');
+
+  const plat = e.plat==='windows'?'Windows':e.plat==='ios'?'iOS':e.plat==='macos'?'macOS':e.plat==='android'?'Android':(e.plat||'Windows');
+
+  return `<div class="card" id="card-${e.id}">
+    <div class="card-hdr" onclick="toggleCard('${e.id}')">
+      <div class="card-icon">${e.icon||'⚙️'}</div>
+      <div class="card-info">
+        <div class="card-name">${hl(cardName, terms)}</div>
+        <div class="card-desc">${hl(cardDesc, terms)}</div>
+        <div class="card-meta">${mt}<span class="tag t-plt">${esc(plat)}</span>${srcBadge(e._source||'local')}</div>
+      </div>
+      <button class="expand-btn">Details<svg class="exp-arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+    <div class="detail">${unifiedDetail(e)}</div>
+  </div>`;
+}
+
+function unifiedDetail(e) {
+  const i0   = e.intune && e.intune[0];
+  const hasIntune   = !!(e.intune && e.intune.length);
+  const hasGpo      = !!(e.gpo || e.admx);
+  const hasRegistry = !!e.reg;
+
+  // Build tabs
+  const tabs = [];
+  if (hasIntune)   tabs.push({id:'t-intune',   label:'<span class="dpip" style="background:var(--h-tag-int)"></span>Intune',    fn: intunePanel});
+  if (hasGpo)      tabs.push({id:'t-gpo',      label:'<span class="dpip" style="background:var(--h-tag-gpo)"></span>GPO / ADMX', fn: gpoPanel});
+  if (hasRegistry) tabs.push({id:'t-registry', label:'<span class="dpip" style="background:var(--h-tag-reg)"></span>Registry',   fn: registryPanel});
+  if (!tabs.length) return '<div style="padding:12px;color:var(--h-text3);font-size:13px">No detail data available.</div>';
+
+  let tabsHtml  = '<div class="method-tabs">';
+  let panelsHtml = '';
+  tabs.forEach((tab, idx) => {
+    const active = idx===0;
+    tabsHtml  += `<button class="method-tab ${active?'active':''}" onclick="swTab(this,'${tab.id}-${e.id}')">${tab.label}</button>`;
+    panelsHtml += `<div class="method-panel ${active?'active':''}" id="${tab.id}-${e.id}">${tab.fn(e)}</div>`;
+  });
+  tabsHtml += '</div>';
+  return `<div class="dtabs-wrap">${tabsHtml}${panelsHtml}</div>`;
+}
+
+// ── INTUNE PANEL ──────────────────────────────────────────────────────────────
+function intunePanel(e) {
+  function mkBtn(val, label, style) {
+    const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;').replace(/\r/g,'');
+    return `<button class="cbtn"${style?' style="'+style+'"':''} data-copy="${safe}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">${label}</button>`;
+  }
+
+  let h = '';
+  for (const i of (e.intune || [])) {
+    const leafKey    = i.defId || '';
+    const category   = e.name || i.name || '';
+    const rawOma     = i.oma  || '';
+
+    const displayName = toFriendly(leafKey);
+    const defId       = deriveDefId(rawOma, leafKey);
+    const oma         = buildOma(rawOma, category, leafKey);
+    const desc        = i.desc || e.desc_text || '';
+
+    const jsonFrag = defId ? `"settingDefinitionId": "${defId}"` : '';
+    const jsonFull = defId ? `{
+  "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
+  "settingInstance": {
+    "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+    "settingDefinitionId": "${defId}",
+    "choiceSettingValue": {
+      "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingValue",
+      "value": "${defId}_0",
+      "children": []
     }
-    await completeAuth(resp);
-  }catch(e){
-    let msg=e.message||String(e);
-    if(msg.includes("interaction_in_progress")){msg="Reloading to clear stale auth state…";clearMsalState();setTimeout(()=>location.reload(),1500);}
-    else if(msg.includes("AADSTS50011")||msg.includes("redirect_uri_mismatch")){msg="Redirect URI mismatch.\nAdd this URI as SPA type in your App Registration:\n\n"+window.location.origin+window.location.pathname;}
-    alert("Authentication failed: "+msg);
-    updateAuthUI(false);msalApp=null;clearMsalState();
-  }finally{setAuthLoading(false);}
+  }
+}` : '';
+
+    const configBlockId = 'cfg_' + e.id.replace(/[^a-z0-9]/gi,'_');
+
+    h += `<div class="cblock">
+      <div class="cblock-title">${esc(displayName)}${mkBtn(defId,'Copy ID')}</div>
+      ${desc?`<div class="desc-block"><div class="desc-label">Description</div>${esc(desc)}</div>`:''}
+      <table class="ctable">
+        <tr><td>Category</td><td>${esc(category)}</td></tr>
+        <tr><td>Definition ID</td><td><span class="mono">${esc(defId)}</span>${mkBtn(defId,'Copy')}</td></tr>
+        ${oma?`<tr><td>OMA-URI</td><td><span class="mono">${esc(oma)}</span>${mkBtn(oma,'Copy')}</td></tr>`:''}
+        <tr><td>Data type</td><td>${esc(i.dtype||'')}</td></tr>
+        ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v||v)}</span>${v.l?' — '+esc(v.l):''}`).join('<br>')}</td></tr>`:''}
+        ${i.rec?`<tr><td>Recommended</td><td><span class="mono">${esc(i.rec)}</span></td></tr>`:''}
+      </table>
+      ${jsonFrag?`<div style="margin-top:10px">
+        <div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">JSON Fragment (Graph API)</div>
+        <pre class="json-pre">${esc(jsonFrag)}</pre>
+        ${mkBtn(jsonFull,'Copy JSON','margin-top:4px')}
+        <button class="config-toggle" onclick="const d=document.getElementById('${configBlockId}');d.style.display=d.style.display==='block'?'none':'block'">show full config JSON</button>
+        <div class="config-block" id="${configBlockId}">${esc(jsonFull)}</div>
+      </div>`:''}
+    </div>`;
+  }
+
+  // Copy All button
+  const allJson = (e.intune||[]).map(i => {
+    const defId = deriveDefId(i.oma||'', i.defId||'');
+    return defId ? `{
+  "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
+  "settingInstance": {
+    "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+    "settingDefinitionId": "${defId}",
+    "choiceSettingValue": { "value": "${defId}_0", "children": [] }
+  }
+}` : '';
+  }).filter(Boolean).join(',\n');
+
+  const safeAll = (allJson||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
+  h += `<div class="copy-row">
+    <button class="cta intune" data-copy="${safeAll}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">Copy All Intune Config</button>
+  </div>`;
+  return h;
 }
-function setAuthLoading(v){
-  document.getElementById("authDot").className="auth-dot"+(v?" loading":"");
-  document.getElementById("authBtn").textContent=v?"Connecting…":(graphToken?"Disconnect":"Connect to Graph");
-  document.getElementById("authBtn").disabled=v;
+
+// ── GPO PANEL ─────────────────────────────────────────────────────────────────
+function gpoPanel(e) {
+  const g = e.gpo || {};
+  const a = e.admx;
+  function mkBtn(val, label) {
+    const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    return `<button class="cbtn" data-copy="${safe}" onclick="cp(this.dataset.copy,this)">${label}</button>`;
+  }
+  let h = '';
+  if (g.path || g.policy) {
+    h += `<div class="cblock">
+      <div class="cblock-title"><span class="tag t-gpo">GPO</span> Group Policy</div>
+      ${g.supported||g.scope?`<div class="desc-block"><div class="desc-label">Applies to</div>${esc(g.supported||g.scope||'')}</div>`:''}
+      <table class="ctable">
+        ${g.path?`<tr><td>Path</td><td>${esc(g.path)}${mkBtn(g.path,'Copy')}</td></tr>`:''}
+        ${g.policy?`<tr><td>Policy</td><td>${esc(g.policy)}</td></tr>`:''}
+        ${g.admx?`<tr><td>ADMX file</td><td><span class="mono">${esc(g.admx)}</span></td></tr>`:''}
+        ${g.scope?`<tr><td>Scope</td><td>${esc(g.scope)}</td></tr>`:''}
+      </table>
+    </div>`;
+  }
+  if (a) {
+    h += `<div class="cblock">
+      <div class="cblock-title"><span class="tag t-adm">ADMX</span> Administrative Template</div>
+      <table class="ctable">
+        <tr><td>Policy name</td><td><span class="mono">${esc(a.name||'')}</span>${mkBtn(a.name||'','Copy')}</td></tr>
+        ${a.file?`<tr><td>ADMX file</td><td><span class="mono">${esc(a.file)}</span></td></tr>`:''}
+        ${a.cat?`<tr><td>Category</td><td>${esc(a.cat)}</td></tr>`:''}
+        ${a.regKey?`<tr><td>Registry key</td><td><span class="mono">${esc(a.regKey)}</span>${mkBtn(a.regKey,'Copy')}</td></tr>`:''}
+        ${a.val?`<tr><td>Value name</td><td><span class="mono">${esc(a.val)}</span></td></tr>`:''}
+        ${a.type?`<tr><td>Value type</td><td><span class="mono">${esc(a.type)}</span></td></tr>`:''}
+      </table>
+    </div>`;
+  }
+  if (g.path || a?.regKey) {
+    h += `<div class="copy-row">
+      ${g.path?`<button class="cta gpo" data-copy="${esc(g.path||'')}" onclick="cp(this.dataset.copy,this)">Copy GPO Path</button>`:''}
+      ${a?.regKey?`<button class="cta gpo" data-copy="${esc(a.regKey)}" onclick="cp(this.dataset.copy,this)">Copy Reg Key</button>`:''}
+    </div>`;
+  }
+  return h || '<div style="padding:12px;color:var(--h-text3)">No GPO data available.</div>';
 }
-function updateAuthUI(connected){
-  document.getElementById("authDot").className="auth-dot"+(connected?" ok":"");
-  document.getElementById("authLabel").innerHTML=connected
-    ?`<span class="auth-label">Connected as</span> <span class="auth-user">${esc(graphUser)}</span>`
-    :`<span class="auth-label">Not connected to Microsoft Graph</span>`;
-  document.getElementById("authBtn").textContent=connected?"Disconnect":"Connect to Graph";
-  document.getElementById("authBtn").className="auth-btn"+(connected?" danger":"");
-  refreshGearBtn();
+
+// ── REGISTRY PANEL ────────────────────────────────────────────────────────────
+function registryPanel(e) {
+  const r = e.reg || {};
+  const fullKey = `${r.hive||'HKLM'}\\${r.key||''}`;
+  const regSnippet = `Windows Registry Editor Version 5.00\n\n[${fullKey}]\n"${r.val||''}"=${r.type==='REG_DWORD'?'dword:00000001':r.type==='REG_SZ'?'"value"':'hex:01'}`;
+  function mkBtn(val, label) {
+    const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
+    return `<button class="cbtn" data-copy="${safe}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">${label}</button>`;
+  }
+  return `<div class="cblock">
+    <div class="cblock-title"><span class="tag t-reg">REG</span> Registry Configuration</div>
+    ${r.note?`<div class="desc-block"><div class="desc-label">Notes</div>${esc(r.note)}</div>`:''}
+    <table class="ctable">
+      <tr><td>Hive</td><td><span class="mono">${esc(r.hive||'HKLM')}</span></td></tr>
+      <tr><td>Key path</td><td><span class="mono">${esc(r.key||'')}</span>${mkBtn(fullKey,'Copy Full')}</td></tr>
+      ${r.val?`<tr><td>Value name</td><td><span class="mono">${esc(r.val)}</span></td></tr>`:''}
+      ${r.type?`<tr><td>Type</td><td><span class="mono">${esc(r.type)}</span></td></tr>`:''}
+      ${r.data?`<tr><td>Data</td><td>${esc(r.data)}</td></tr>`:''}
+    </table>
+    <div class="copy-row">
+      ${mkBtn(regSnippet,'.REG snippet')}
+      ${mkBtn(fullKey,'Copy Key Path')}
+    </div>
+  </div>`;
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
-(document.getElementById("lastUpdated")||{}).textContent="";
-document.getElementById("redirectUriDisplay").textContent=window.location.origin+window.location.pathname;
-refreshGearBtn();
-
-// Restore custom entries from localStorage
-try{
-  const ce=localStorage.getItem("helient_custom_entries");
-  if(ce) customEntries=JSON.parse(ce);
-  const cs=localStorage.getItem("helient_custom_sources");
-  if(cs) customSources=JSON.parse(cs);
-}catch(e){}
-
-// Handle URL clientId param
-const urlCid=new URLSearchParams(window.location.search).get("clientId");
-if(urlCid){const s=loadSaved();s.clientId=urlCid;saveSaved(s);localStorage.setItem("helient_clientId",urlCid);refreshGearBtn();}
-
-// Load index and init MSAL in parallel
-loadIndex();
-
-function waitForMsalAndInit(n){
-  const M=window.__MSAL||window.msal||window.msalBrowser;
-  if(M?.PublicClientApplication){window.__MSAL=M;initMsal();}
-  else if(n>0) setTimeout(()=>waitForMsalAndInit(n-1),300);
+// ── NAV PANE INIT ─────────────────────────────────────────────────────────────
+function initNavPane() {
+  const navSearch = document.getElementById('navSearch');
+  if (navSearch) {
+    navSearch.addEventListener('input', function() {
+      navFilter = this.value;
+      buildNavPane();
+    });
+  }
+  buildNavPane();
 }
-waitForMsalAndInit(20);
+
 </script>
-</body>
 </html>
