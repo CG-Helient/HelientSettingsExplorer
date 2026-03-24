@@ -857,7 +857,7 @@ function intunePane(e) {
   //   i.cat    = platform       (same as e.cats[0])
 
   function mkBtn(val, label, style) {
-    const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;').replace(/\r/g,'');
     return `<button class="cbtn"${style?' style="'+style+'"':''} data-copy="${safe}" onclick="cp(this.dataset.copy,this)">${label}</button>`;
   }
 
@@ -934,14 +934,46 @@ function intunePane(e) {
         ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v)}</span> <span style="color:var(--h-text3)">${esc(v.l)}</span>`).join('<br>')}</td></tr>`:''}
         ${i.rec?`<tr><td>Recommended</td><td><span class="mono">${esc(i.rec)}</span></td></tr>`:''}
       </table>
+      ${i.desc||e.desc_text?`<div style="margin:6px 0 4px;padding:8px 10px;background:var(--bg3,rgba(255,255,255,.04));border-radius:5px;border-left:3px solid var(--h-blue,#2197D4)">
+        <div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Description</div>
+        <div style="font-size:13px;color:var(--h-text2,#ccc);line-height:1.5">${esc(i.desc||e.desc_text||'')}</div>
+      </div>`:''}
       ${jsonFrag?`<div style="margin-top:9px">
         <div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">JSON Fragment (Graph API)</div>
         <pre class="json-pre">${esc(jsonFrag)}</pre>
-        ${mkBtn(jsonFull||jsonFrag,'Copy JSON','margin-top:4px')}
+        ${mkBtn(jsonFull,'Copy JSON','margin-top:4px')}
       </div>`:''}
     </div>`;
   }
-  h += `<div class="copy-row"><button class="cta intune" onclick="cpAllIntune(${JSON.stringify(e.id)},this)">Copy All Intune Config</button></div>`;
+  // Build the full config JSON for inline display
+  const allCfg = e.intune.map(i => {
+    const leaf   = i.defId || '';
+    const rawOma = i.oma   || '';
+    const cat2   = e.name  || i.name || '';
+    const defId2 = rawOma
+      ? rawOma.replace(/^\.?\//,'').split('/').filter(Boolean).map(p=>p.toLowerCase()).join('_')
+      : '';
+    return defId2 ? `{
+  "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
+  "settingInstance": {
+    "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+    "settingDefinitionId": "${defId2}",
+    "choiceSettingValue": { "value": "${defId2}_0", "children": [] }
+  }
+}` : '';
+  }).filter(Boolean).join(',\n');
+
+  const safeAllCfg = allCfg.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
+  const blockId = 'cfg-' + e.id.replace(/[^a-z0-9]/gi,'_');
+  h += `<div style="margin-top:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="cta intune" data-copy="${safeAllCfg}" onclick="cp(this.dataset.copy,this)">Copy All Intune Config</button>
+      <button class="cbtn" onclick="const d=document.getElementById('${blockId}');d.style.display=d.style.display==='none'?'block':'none'">Show/Hide Config JSON</button>
+    </div>
+    <div id="${blockId}" style="display:none;margin-top:8px">
+      <pre class="json-pre" style="max-height:250px;overflow:auto">${esc(allCfg)}</pre>
+    </div>
+  </div>`;
   return h;
 }
 
@@ -1041,16 +1073,42 @@ function showView(v, btn) {
   if(btn) btn.classList.add("active");
 }
 function cp(text, btn) {
-  navigator.clipboard.writeText(text).then(()=>{
+  navigator.clipboard.writeText((typeof txt==='string'?txt.replace(/&#10;/g,'\n').replace(/&quot;/g,'"').replace(/&amp;/g,'&'):txt) || '',text).then(()=>{
     const o=btn.textContent; btn.textContent="✓ Copied"; btn.classList.add("ok");
     setTimeout(()=>{btn.textContent=o;btn.classList.remove("ok");},1500);
   });
 }
 function cpAllIntune(id, btn) {
-  const e=SEARCH_INDEX.find(x=>x.id===id);
-  if(!e?.intune?.length){cp("",btn);return;}
-  const out=e.intune.map(i=>`// ${i.name}\n// Definition ID: ${i.defId}\n// OMA-URI: ${i.oma||""}\n{\n  ${i.json}\n}`).join("\n\n");
-  cp(out,btn);
+  const e = SEARCH_INDEX.find(x => x.id === id);
+  if (!e?.intune?.length) { cp("", btn); return; }
+  const out = e.intune.map(i => {
+    const leaf   = i.defId || '';
+    const rawOma = i.oma   || '';
+    const cat    = e.name  || i.name || '';
+    // Derive real settingDefinitionId
+    const defId = rawOma
+      ? rawOma.replace(/^\.?\//,'').split('/').filter(Boolean).map(p=>p.toLowerCase()).join('_')
+      : leaf.replace(/([A-Z])/g,'_$1').toLowerCase().replace(/^_/,'');
+    // Proper OMA-URI
+    let oma = rawOma;
+    if (rawOma && rawOma.toLowerCase().includes('policy') && cat && leaf) {
+      oma = './Device/Vendor/MSFT/Policy/Config/' + cat.replace(/\s/g,'') + '/' + leaf;
+    }
+    return `// ${toFriendly(leaf)} — ${cat}
+{
+  "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
+  "settingInstance": {
+    "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+    "settingDefinitionId": "${defId}",
+    "choiceSettingValue": {
+      "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingValue",
+      "value": "${defId}_0",
+      "children": []
+    }
+  }
+}`;
+  }).join('\n\n');
+  cp(out, btn);
 }
 function cpUri(btn){cp(window.location.origin+window.location.pathname,btn);}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
