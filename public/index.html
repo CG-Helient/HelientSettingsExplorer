@@ -536,6 +536,26 @@ let indexReady    = false;
 let customSources = [];
 
 // ── CHUNK LOADER ──────────────────────────────────────────────────────────────
+// ── EMPTY / LOADING STATE HELPERS ─────────────────────────────────────────────
+function emptyHTML(title, subtitle, showBuildBtn) {
+  return `<div class="empty">
+    <svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.35;margin-bottom:12px">
+      <circle cx="27" cy="27" r="26" stroke="currentColor" stroke-width="2"/>
+      <path d="M17 27h20M27 17v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:var(--h-text1,#fff)">${esc(title)}</div>
+    <div style="font-size:13px;color:var(--h-text3);max-width:380px;text-align:center;line-height:1.5">${esc(subtitle)}</div>
+    ${showBuildBtn ? '<div style="margin-top:14px"><a href="https://github.com/CG-Helient/HelientSettingsExplorer/actions" target="_blank" style="background:var(--h-blue);color:#fff;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600">Run Build Workflow</a></div>' : ''}
+  </div>`;
+}
+
+function loadingHTML(msg) {
+  return `<div class="empty">
+    <div class="spinner" style="width:32px;height:32px;border-width:3px;margin-bottom:12px"></div>
+    <div style="font-size:13px;color:var(--h-text3)">${esc(msg||'Loading…')}</div>
+  </div>`;
+}
+
 async function loadIndex() {
   // 1. Fetch meta.json to know how many chunks exist
   try {
@@ -704,98 +724,6 @@ async function runSearch(q, filterSrc, filterCat) {
   }
 }
 
-async function loadIndex() {
-  // 1. Fetch meta.json to know how many chunks exist
-  try {
-    const r   = await fetch("data/meta.json", { cache: "no-cache" });
-    if (!r.ok) throw new Error("meta.json not found");
-    indexMeta = await r.json();
-  } catch(e) {
-    console.warn("Could not load data/meta.json:", e.message);
-    // No index built yet — show empty but functional state
-    setIndexStatus("No index built yet. Run the GitHub Action (or python scripts/build_index.py) to generate data.", false);
-    document.getElementById("livePillText").textContent = "No index";
-    document.getElementById("resultCount").textContent = "Index not built — click ⚙ Settings for setup info.";
-    document.getElementById("resultsGrid").innerHTML = emptyHTML(
-      "Index not yet built",
-      "Run the GitHub Action to build the settings index. See the About tab for setup instructions.",
-      true
-    );
-    indexReady = false;
-    return;
-  }
-
-  chunksTotal  = indexMeta.chunks?.length || 0;
-  const bar    = document.getElementById("indexBar");
-  const barTxt = document.getElementById("indexBarText");
-  const fill   = document.getElementById("progressFill");
-
-  if (chunksTotal > 0) {
-    bar.style.display = "flex";
-    barTxt.textContent = `Loading ${indexMeta.total_entries?.toLocaleString() || ""} settings across ${chunksTotal} chunks…`;
-  }
-
-  // 2. Load all chunks in parallel (browser will pipeline these)
-  const chunks = indexMeta.chunks || [];
-  const results = await Promise.allSettled(
-    chunks.map((c, i) =>
-      fetch(c.file, { cache: "default" })
-        .then(r => r.ok ? r.json() : [])
-        .then(data => {
-          chunksLoaded++;
-          fill.style.width = Math.round((chunksLoaded / chunksTotal) * 100) + "%";
-          barTxt.textContent = `Loading… ${chunksLoaded}/${chunksTotal} chunks`;
-          return data;
-        })
-        .catch(() => [])
-    )
-  );
-
-  for (const r of results) {
-    if (r.status === "fulfilled" && Array.isArray(r.value)) {
-      SEARCH_INDEX.push(...r.value);
-    }
-  }
-
-  // 3. Merge custom entries
-  SEARCH_INDEX.push(...customEntries);
-
-  indexReady = true;
-    initNavPane();
-  bar.style.display = "none";
-
-  const total    = SEARCH_INDEX.length;
-  const updated  = indexMeta.last_updated
-    ? new Date(indexMeta.last_updated).toLocaleDateString("en-US", {month:"short", day:"numeric", year:"numeric"})
-    : "unknown";
-
-  setIndexStatus(`✓ ${total.toLocaleString()} settings · updated ${updated}`, true);
-  document.getElementById("livePillText").textContent = `${total.toLocaleString()} settings`;
-  document.getElementById("liveDot").style.background = "#2ECC71";
-  document.getElementById("footerMeta").textContent = `${total.toLocaleString()} settings · last updated ${updated}`;
-  document.getElementById("redirectUriDisplay").textContent = window.location.origin + window.location.pathname;
-
-  // Update about page
-  const src = indexMeta.sources || {};
-  document.getElementById("aboutIndexStatus").innerHTML =
-    `<table style="font-size:12.5px;border-collapse:collapse;width:100%">` +
-    Object.entries(src).map(([k,v]) =>
-      `<tr><td style="padding:4px 10px;font-weight:600;color:var(--h-text2);width:160px">${k}</td>` +
-      `<td style="padding:4px 10px;color:${v.ok?"var(--h-success)":"var(--h-red)"}">${v.ok?"✓":"✗"} ${v.count} entries</td></tr>`
-    ).join("") + `</table>`;
-
-  // If there was a pending search, run it
-  const q = document.getElementById("searchInput").value.trim();
-  if (q.length >= 2) {
-    runSearch(q);
-  } else {
-    document.getElementById("resultCount").textContent = `${total.toLocaleString()} settings ready — enter a search term`;
-    document.getElementById("resultsGrid").innerHTML = emptyHTML(
-      "Search across all configuration methods",
-      "Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment."
-    );
-  }
-}
 
 function waitForMsalAndInit(n){
   const M=window.__MSAL||window.msal||window.msalBrowser;
@@ -1217,6 +1145,15 @@ function initNavPane() {
 }
 
 
+
+function setChipById(id) {
+  document.querySelectorAll('.src-chip').forEach(c => c.classList.remove('active'));
+  const chip = document.querySelector(`.src-chip[data-src="${id}"]`);
+  if (chip) chip.classList.add('active');
+  filter = id;
+  const q = document.getElementById('searchInput')?.value?.trim() || '';
+  if (q.length >= 2) runSearch(q);
+}
 </script>
 </body>
 </html>
