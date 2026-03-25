@@ -545,10 +545,13 @@ function loadingHTML(msg) {
 }
 
 
+
+
+
 const SRC_MAP = {
   local:        ['sb-local',  '● Built-in'],
   graph:        ['sb-graph',  '☁ Graph'],
-  admx_windows: ['sb-adm',    '🧿 Windows GPO'],
+  admx_windows: ['sb-adm',    '[W] Windows GPO'],
   admx_office:  ['sb-adm',    '[O] Office ADMX'],
   chromium:     ['sb-chr',    '[B] Browser'],
   custom:       ['sb-custom', '⭐ Custom'],
@@ -799,22 +802,30 @@ function cpAllIntune(id, btn) {
   cp(out, btn);
 }
 
+function emptyHTML(title, subtitle, showBuildBtn) {
+  return `<div class="empty">
+    <svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.35;margin-bottom:12px">
+      <circle cx="27" cy="27" r="26" stroke="currentColor" stroke-width="2"/>
+      <path d="M17 27h20M27 17v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:var(--h-text1,#fff)">${esc(title)}</div>
+    <div style="font-size:13px;color:var(--h-text3);max-width:380px;text-align:center;line-height:1.5">${esc(subtitle)}</div>
+    ${showBuildBtn ? '<div style="margin-top:14px"><a href="https://github.com/CG-Helient/HelientSettingsExplorer/actions" target="_blank" style="background:var(--h-blue);color:#fff;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600">Run Build Workflow</a></div>' : ''}
+  </div>`;
+}
 
+function loadingHTML(msg) {
+  return `<div class="empty">
+    <div class="spinner" style="width:32px;height:32px;border-width:3px;margin-bottom:12px"></div>
+    <div style="font-size:13px;color:var(--h-text3)">${esc(msg||'Loading...')}</div>
+  </div>`;
+}
 
 function showLoader(show, msg) {
   const loader = document.getElementById('loader');
   const loaderText = document.getElementById('loaderText');
   if (loader) loader.style.display = show ? 'flex' : 'none';
   if (loaderText && msg) loaderText.textContent = msg;
-}
-
-function setChipById(id) {
-  document.querySelectorAll('.src-chip').forEach(c => c.classList.remove('active'));
-  const chip = document.querySelector(`.src-chip[data-src="${id}"]`);
-  if (chip) chip.classList.add('active');
-  filter = id;
-  const q = document.getElementById('searchInput')?.value?.trim() || '';
-  if (q.length >= 2) runSearch(q);
 }
 
 // ── FIELD HELPERS ─────────────────────────────────────────────────────────────
@@ -828,17 +839,19 @@ function toFriendly(key) {
     .trim();
 }
 
+// Correctly derives defId from OMA path
 function deriveDefId(oma) {
   if (!oma) return '';
   return oma.replace(/^\.?\//, '').split('/').filter(Boolean).map(p => p.toLowerCase()).join('_');
 }
 
-function buildOma(oma, catName, leafKey) {
-  if (!oma) return '';
-  if (oma.toLowerCase().includes('policy/config')) return oma;
-  if (oma.toLowerCase().includes('policy') && catName && leafKey)
-    return './Device/Vendor/MSFT/Policy/Config/' + catName.replace(/[\s\/\\]/g,'') + '/' + leafKey;
-  return oma;
+// ── FILTER CHIPS ──────────────────────────────────────────────────────────────
+function setChip(val, el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  if (el) el.classList.add('on');
+  filter = val;
+  const q = document.getElementById('searchInput')?.value?.trim() || '';
+  if (q.length >= 2) runSearch(q);
 }
 
 // ── SEARCH ────────────────────────────────────────────────────────────────────
@@ -864,28 +877,28 @@ function runSearch(q, filterSrc, filterCat) {
     return terms.every(t => txt.includes(t));
   });
 
+  // Chip/source filter
   if (filter && filter !== 'all') {
     const chipMap = {
       intune:   e => (e.methods||[]).includes('intune'),
       gpo:      e => (e.methods||[]).includes('gpo') || (e.methods||[]).includes('admx'),
       registry: e => (e.methods||[]).includes('registry'),
-      live:     e => e._source === 'graph',
+      graph:    e => e._source === 'graph',
       browser:  e => e._source === 'chromium',
       office:   e => e._source === 'admx_office',
       custom:   e => e._source === 'custom',
     };
     if (chipMap[filter]) results = results.filter(chipMap[filter]);
   }
-
   if (filterSrc) results = results.filter(e => e._source === filterSrc);
-  if (filterCat) results = results.filter(e => (e.name||'').split(/[>\/\\]/)[0].trim() === filterCat);
+  if (filterCat) results = results.filter(e => (e.desc||'').split(/[>\/\\]/)[0].trim() === filterCat);
 
   const total = results.length;
   const srcCounts = {};
   results.forEach(e => { srcCounts[e._source] = (srcCounts[e._source]||0)+1; });
   const badges = Object.entries(srcCounts).map(([src,cnt]) => {
     const [cls,lbl] = SRC_MAP[src] || ['sb-local','\u25cf'];
-    return `<span class="src-badge ${cls}" style="cursor:pointer" onclick="setChipById('${src}')">${lbl} ${cnt}</span>`;
+    return `<span class="src-badge ${cls}">${lbl} ${cnt}</span>`;
   }).join(' ');
 
   document.getElementById('resultCount').innerHTML =
@@ -903,16 +916,18 @@ function runSearch(q, filterSrc, filterCat) {
 }
 
 // ── CARD RENDERING ────────────────────────────────────────────────────────────
+// DATA LAYOUT (confirmed from live data inspection):
+//   e.name  = friendly display name  e.g. "Configure Xbox Live Game Save Service Startup Mode"
+//   e.desc  = category path          e.g. "Administrative Templates\Network\DNS Client"
+//   i.defId = settingDefinitionId    e.g. "device_vendor_msft_policy_config_..."
+//   i.oma   = OMA-URI
+//   i.vals  = allowed values array
 function cardHTML(e, terms) {
   const i0 = e.intune && e.intune[0];
-  let cardName, cardDesc;
-  if (e._source === 'graph' && i0 && i0.defId) {
-    cardName = toFriendly(i0.defId);
-    cardDesc = e.name || '';
-  } else {
-    cardName = humanizeName(e.name || '');
-    cardDesc = (e.cats||[]).filter(c=>c&&!['Settings Catalog','Intune Settings Catalog','Policy CSP'].includes(c))[0] || e.desc || '';
-  }
+
+  // Card title = e.name (friendly name), card subtitle = e.desc (category)
+  const cardName = e.name || humanizeName(e.name || '');
+  const cardDesc = e.desc || '';
 
   const mt = (e.methods||[]).map(m => ({
     intune:'<span class="tag t-int">Intune</span>',
@@ -960,16 +975,36 @@ function intunePanel(e) {
     const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
     return `<button class="cbtn"${style?` style="${style}"`:''}  data-copy="${safe}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">${label}</button>`;
   }
+
   let h = '';
   for (const i of (e.intune||[])) {
-    const leafKey    = i.defId || '';
-    const category   = e.name || i.name || '';
+    // i.defId = real settingDefinitionId (device_vendor_msft_...)
+    // e.name  = friendly display name
+    const defId      = i.defId || '';
+    const displayName = e.name || toFriendly(defId);
+    const category   = e.desc || '';  // category path
     const rawOma     = i.oma || '';
-    const displayName = toFriendly(leafKey);
-    const defId = deriveDefId(rawOma) || leafKey.replace(/([A-Z])/g,'_$1').toLowerCase().replace(/^_/,'');
-    const oma = (rawOma && !rawOma.includes(' ')) ? (buildOma(rawOma, category, leafKey) || rawOma) : '';
+    const oma        = (rawOma && !rawOma.includes(' ')) ? rawOma : '';
+    const dtype      = i.dtype || '';
+    const vals       = i.vals || [];
+    const desc       = i.desc || e.desc_text || '';
+
     const jsonFrag = defId ? `"settingDefinitionId": "${defId}"` : '';
-    const cfgId = 'cfg_' + e.id.replace(/[^a-z0-9]/gi,'_');
+    const jsonFull = defId ? `{
+  "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
+  "settingInstance": {
+    "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+    "settingDefinitionId": "${defId}",
+    "choiceSettingValue": {
+      "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingValue",
+      "value": "${defId}_0",
+      "children": []
+    }
+  }
+}` : '';
+
+    const cfgId = 'cfg_' + (e.id||'').replace(/[^a-z0-9]/gi,'_');
+    const safeJsonFull = jsonFull.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
 
     h += `<div class="cblock">
       <div class="cblock-title">${esc(displayName)}${mkBtn(defId,'Copy ID')}</div>
@@ -977,21 +1012,38 @@ function intunePanel(e) {
         <tr><td>Category</td><td>${esc(category)}</td></tr>
         <tr><td>Definition ID</td><td><span class="mono">${esc(defId)}</span>${mkBtn(defId,'Copy')}</td></tr>
         ${oma?`<tr><td>OMA-URI</td><td><span class="mono">${esc(oma)}</span>${mkBtn(oma,'Copy')}</td></tr>`:''}
-        <tr><td>Data type</td><td>${esc(i.dtype||'')}</td></tr>
-        ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v||v)}</span>${v.l?' \u2014 '+esc(v.l):''}`).join('<br>')}</td></tr>`:''}
+        ${dtype?`<tr><td>Data type</td><td>${esc(dtype)}</td></tr>`:''}
+        ${vals.length?`<tr><td>Values</td><td>${vals.map(v=>`<span class="mono">${esc(v.v||v.name||String(v))}</span>${(v.l||v.displayName)?' \u2014 '+esc(v.l||v.displayName):''}`).join('<br>')}</td></tr>`:''}
       </table>
       ${jsonFrag?`<div style="margin-top:9px">
-        <div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">JSON Fragment (Graph API)</div>
+        <div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">JSON Fragment (Graph API)</div>
         <pre class="json-pre">${esc(jsonFrag)}</pre>
-        ${mkBtn(jsonFrag,'Copy JSON','margin-top:4px')}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+          ${mkBtn(jsonFull,'Copy JSON')}
+          <button class="cbtn" onclick="const d=document.getElementById('${cfgId}');d.style.display=d.style.display==='block'?'none':'block';this.textContent=d.style.display==='block'?'Hide Full Config':'Show Full Config'">Show Full Config</button>
+        </div>
+        <div id="${cfgId}" style="display:none;margin-top:8px">
+          <pre class="json-pre" style="max-height:220px;overflow:auto">${esc(jsonFull)}</pre>
+        </div>
       </div>`:''}
     </div>`;
   }
 
-  const allDefs = (e.intune||[]).map(i=>deriveDefId(i.oma||'')).filter(Boolean);
-  const allJson = allDefs.map(d=>`{\n  "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",\n  "settingInstance": {\n    "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",\n    "settingDefinitionId": "${d}",\n    "choiceSettingValue": { "value": "${d}_0", "children": [] }\n  }\n}`).join(',\n');
+  // Copy All Intune Config button
+  const allDefs = (e.intune||[]).map(i=>i.defId||'').filter(Boolean);
+  const allJson = allDefs.map(d=>`{
+  "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
+  "settingInstance": {
+    "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+    "settingDefinitionId": "${d}",
+    "choiceSettingValue": { "value": "${d}_0", "children": [] }
+  }
+}`).join(',\n');
   const safeAll = allJson.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
-  h += `<div class="copy-row"><button class="cta intune" data-copy="${safeAll}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">Copy All Intune Config</button></div>`;
+
+  h += `<div class="copy-row">
+    <button class="cta intune" data-copy="${safeAll}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">Copy All Intune Config</button>
+  </div>`;
   return h;
 }
 
@@ -1005,29 +1057,27 @@ function gpoPanel(e) {
   let h = '';
   if (g.path||g.policy) {
     h += `<div class="cblock"><div class="cblock-title"><span class="tag t-gpo">GPO</span> Group Policy</div>
-    <table class="ctable">
-      ${g.path?`<tr><td>Path</td><td>${esc(g.path)}${mkBtn(g.path,'Copy')}</td></tr>`:''}
-      ${g.policy?`<tr><td>Policy</td><td>${esc(g.policy)}</td></tr>`:''}
-      ${g.admx?`<tr><td>ADMX file</td><td><span class="mono">${esc(g.admx)}</span></td></tr>`:''}
-      ${g.scope?`<tr><td>Scope</td><td>${esc(g.scope)}</td></tr>`:''}
-    </table></div>`;
+      <table class="ctable">
+        ${g.path?`<tr><td>Path</td><td>${esc(g.path)}${mkBtn(g.path,'Copy')}</td></tr>`:''}
+        ${g.policy?`<tr><td>Policy</td><td>${esc(g.policy)}</td></tr>`:''}
+        ${g.admx?`<tr><td>ADMX file</td><td><span class="mono">${esc(g.admx)}</span></td></tr>`:''}
+        ${g.scope?`<tr><td>Scope</td><td>${esc(g.scope)}</td></tr>`:''}
+      </table></div>`;
   }
   if (a) {
     h += `<div class="cblock"><div class="cblock-title"><span class="tag t-adm">ADMX</span> Administrative Template</div>
-    <table class="ctable">
-      <tr><td>Policy name</td><td><span class="mono">${esc(a.name||'')}</span>${mkBtn(a.name||'','Copy')}</td></tr>
-      ${a.file?`<tr><td>ADMX file</td><td><span class="mono">${esc(a.file)}</span></td></tr>`:''}
-      ${a.cat?`<tr><td>Category</td><td>${esc(a.cat)}</td></tr>`:''}
-      ${a.regKey?`<tr><td>Registry key</td><td><span class="mono">${esc(a.regKey)}</span>${mkBtn(a.regKey,'Copy')}</td></tr>`:''}
-      ${a.val?`<tr><td>Value name</td><td><span class="mono">${esc(a.val)}</span></td></tr>`:''}
-    </table></div>`;
+      <table class="ctable">
+        <tr><td>Policy name</td><td><span class="mono">${esc(a.name||'')}</span>${mkBtn(a.name||'','Copy')}</td></tr>
+        ${a.file?`<tr><td>ADMX file</td><td><span class="mono">${esc(a.file)}</span></td></tr>`:''}
+        ${a.cat?`<tr><td>Category</td><td>${esc(a.cat)}</td></tr>`:''}
+        ${a.regKey?`<tr><td>Registry key</td><td><span class="mono">${esc(a.regKey)}</span>${mkBtn(a.regKey,'Copy')}</td></tr>`:''}
+        ${a.val?`<tr><td>Value name</td><td><span class="mono">${esc(a.val)}</span></td></tr>`:''}
+      </table></div>`;
   }
-  if (g.path||a) {
-    h += `<div class="copy-row">
-      ${g.path?`<button class="cta gpo" data-copy="${esc(g.path||'')}" onclick="cp(this.dataset.copy,this)">Copy GPO Path</button>`:''}
-      ${a&&a.regKey?`<button class="cta gpo" data-copy="${esc(a.regKey)}" onclick="cp(this.dataset.copy,this)">Copy Reg Key</button>`:''}
-    </div>`;
-  }
+  h += `<div class="copy-row">
+    ${g.path?`<button class="cta gpo" data-copy="${esc(g.path||'')}" onclick="cp(this.dataset.copy,this)">Copy GPO Path</button>`:''}
+    ${a&&a.regKey?`<button class="cta gpo" data-copy="${esc(a.regKey)}" onclick="cp(this.dataset.copy,this)">Copy Reg Key</button>`:''}
+  </div>`;
   return h || '<div style="padding:12px;color:var(--h-text3)">No GPO data.</div>';
 }
 
@@ -1071,21 +1121,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (e.key === 'Enter') { clearTimeout(searchTimer); runSearch(this.value.trim()); }
     });
   }
-
-  document.querySelectorAll('.src-chip').forEach(chip => {
-    chip.addEventListener('click', function() {
-      document.querySelectorAll('.src-chip').forEach(c=>c.classList.remove('active'));
-      this.classList.add('active');
-      filter = this.dataset.src || 'all';
-      const q = searchInput?.value?.trim()||'';
-      if (q.length >= 2) runSearch(q);
-    });
-  });
-
   loadIndex();
 });
-
-function buildNavPane() {} // nav pane removed
 </script>
 </body>
 </html>
