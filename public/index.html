@@ -516,7 +516,7 @@ loadMsal(MSAL_CDNS, 0);
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
+// -- STATE ---------------------------------------------------------------------
 let SEARCH_INDEX  = [];          // unified flat array of entries (built from chunks)
 let customEntries = [];          // user-uploaded or URL-added entries
 let filter        = "all";
@@ -535,8 +535,8 @@ let indexReady    = false;
 // Custom sources list (in-memory; saved to localStorage)
 let customSources = [];
 
-// ── CHUNK LOADER ──────────────────────────────────────────────────────────────
-// ── EMPTY / LOADING STATE HELPERS ─────────────────────────────────────────────
+// -- CHUNK LOADER --------------------------------------------------------------
+// -- EMPTY / LOADING STATE HELPERS ---------------------------------------------
 function emptyHTML(title, subtitle, showBuildBtn) {
   return `<div class="empty">
     <svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.35;margin-bottom:12px">
@@ -552,7 +552,7 @@ function emptyHTML(title, subtitle, showBuildBtn) {
 function loadingHTML(msg) {
   return `<div class="empty">
     <div class="spinner" style="width:32px;height:32px;border-width:3px;margin-bottom:12px"></div>
-    <div style="font-size:13px;color:var(--h-text3)">${esc(msg||'Loading…')}</div>
+    <div style="font-size:13px;color:var(--h-text3)">${esc(msg||'Loading...')}</div>
   </div>`;
 }
 
@@ -564,10 +564,10 @@ async function loadIndex() {
     indexMeta = await r.json();
   } catch(e) {
     console.warn("Could not load data/meta.json:", e.message);
-    // No index built yet — show empty but functional state
+    // No index built yet -- show empty but functional state
     setIndexStatus("No index built yet. Run the GitHub Action (or python scripts/build_index.py) to generate data.", false);
     document.getElementById("livePillText").textContent = "No index";
-    document.getElementById("resultCount").textContent = "Index not built — click ⚙ Settings for setup info.";
+    document.getElementById("resultCount").textContent = "Index not built -- click GPO Settings for setup info.";
     document.getElementById("resultsGrid").innerHTML = emptyHTML(
       "Index not yet built",
       "Run the GitHub Action to build the settings index. See the About tab for setup instructions.",
@@ -584,7 +584,7 @@ async function loadIndex() {
 
   if (chunksTotal > 0) {
     bar.style.display = "flex";
-    barTxt.textContent = `Loading ${indexMeta.total_entries?.toLocaleString() || ""} settings across ${chunksTotal} chunks…`;
+    barTxt.textContent = `Loading ${indexMeta.total_entries?.toLocaleString() || ""} settings across ${chunksTotal} chunks...`;
   }
 
   // 2. Load all chunks in parallel (browser will pipeline these)
@@ -596,7 +596,7 @@ async function loadIndex() {
         .then(data => {
           chunksLoaded++;
           fill.style.width = Math.round((chunksLoaded / chunksTotal) * 100) + "%";
-          barTxt.textContent = `Loading… ${chunksLoaded}/${chunksTotal} chunks`;
+          barTxt.textContent = `Loading... ${chunksLoaded}/${chunksTotal} chunks`;
           return data;
         })
         .catch(() => [])
@@ -620,10 +620,10 @@ async function loadIndex() {
     ? new Date(indexMeta.last_updated).toLocaleDateString("en-US", {month:"short", day:"numeric", year:"numeric"})
     : "unknown";
 
-  setIndexStatus(`✓ ${total.toLocaleString()} settings · updated ${updated}`, true);
+  setIndexStatus(`OK ${total.toLocaleString()} settings . updated ${updated}`, true);
   document.getElementById("livePillText").textContent = `${total.toLocaleString()} settings`;
   document.getElementById("liveDot").style.background = "#2ECC71";
-  document.getElementById("footerMeta").textContent = `${total.toLocaleString()} settings · last updated ${updated}`;
+  document.getElementById("footerMeta").textContent = `${total.toLocaleString()} settings . last updated ${updated}`;
   document.getElementById("redirectUriDisplay").textContent = window.location.origin + window.location.pathname;
 
   // Update about page
@@ -632,7 +632,7 @@ async function loadIndex() {
     `<table style="font-size:12.5px;border-collapse:collapse;width:100%">` +
     Object.entries(src).map(([k,v]) =>
       `<tr><td style="padding:4px 10px;font-weight:600;color:var(--h-text2);width:160px">${k}</td>` +
-      `<td style="padding:4px 10px;color:${v.ok?"var(--h-success)":"var(--h-red)"}">${v.ok?"✓":"✗"} ${v.count} entries</td></tr>`
+      `<td style="padding:4px 10px;color:${v.ok?"var(--h-success)":"var(--h-red)"}">${v.ok?"OK":"X"} ${v.count} entries</td></tr>`
     ).join("") + `</table>`;
 
   // If there was a pending search, run it
@@ -640,7 +640,7 @@ async function loadIndex() {
   if (q.length >= 2) {
     runSearch(q);
   } else {
-    document.getElementById("resultCount").textContent = `${total.toLocaleString()} settings ready — enter a search term`;
+    document.getElementById("resultCount").textContent = `${total.toLocaleString()} settings ready -- enter a search term`;
     document.getElementById("resultsGrid").innerHTML = emptyHTML(
       "Search across all configuration methods",
       "Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment."
@@ -650,7 +650,7 @@ async function loadIndex() {
 
 function cp(text, btn) {
   navigator.clipboard.writeText((typeof txt==='string'?txt.replace(/&#10;/g,'\n').replace(/&quot;/g,'"').replace(/&amp;/g,'&'):txt) || '',text).then(()=>{
-    const o=btn.textContent; btn.textContent="✓ Copied"; btn.classList.add("ok");
+    const o=btn.textContent; btn.textContent="OK Copied"; btn.classList.add("ok");
     setTimeout(()=>{btn.textContent=o;btn.classList.remove("ok");},1500);
   });
 }
@@ -673,9 +673,9 @@ function hl(text,terms){
 
 function humanizeName(n) {
   if (!n) return '';
-  // Already has spaces — return as-is
+  // Already has spaces -- return as-is
   if (n.includes(' ') || n.includes('/')) return n;
-  // CamelCase → spaced: "AllowStorageSense" → "Allow Storage Sense"
+  // CamelCase -> spaced: "AllowStorageSense" -> "Allow Storage Sense"
   return n
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
     .replace(/([a-z\d])([A-Z])/g, '$1 $2')
@@ -684,7 +684,7 @@ function humanizeName(n) {
 }
 
 function srcBadge(s) {
-  const [cls, lbl] = SRC_MAP[s] || ["sb-local", "● Built-in"];
+  const [cls, lbl] = SRC_MAP[s] || ["sb-local", "* Built-in"];
   return `<span class="src-badge ${cls}">${lbl}</span>`;
 }
 
@@ -749,7 +749,7 @@ function runSearch(q, filterSrc, filterCat) {
   const srcBreakdown = {};
   results.forEach(e => { srcBreakdown[e._source] = (srcBreakdown[e._source]||0)+1; });
   const badges = Object.entries(srcBreakdown).map(([src, cnt]) => {
-    const [cls, lbl] = SRC_MAP[src] || ['sb-local','●'];
+    const [cls, lbl] = SRC_MAP[src] || ['sb-local','*'];
     return `<span class="src-badge ${cls}" style="cursor:pointer" onclick="setChipById('${src}')">${lbl} ${cnt}</span>`;
   }).join(' ');
 
@@ -832,7 +832,7 @@ function addCustomSource() {
 function refreshGearBtn(){
   const s=loadSaved(),g=document.getElementById("gearBtn");
   if(!g) return;
-  if(s.clientId){g.classList.add("configured");g.title="Settings — "+s.clientId.slice(0,8)+"…";}
+  if(s.clientId){g.classList.add("configured");g.title="Settings -- "+s.clientId.slice(0,8)+"...";}
   else{g.classList.remove("configured");g.title="Configure authentication settings";}
 }
 
@@ -852,7 +852,7 @@ function cpAllIntune(id, btn) {
     if (rawOma && rawOma.toLowerCase().includes('policy') && cat && leaf) {
       oma = './Device/Vendor/MSFT/Policy/Config/' + cat.replace(/\s/g,'') + '/' + leaf;
     }
-    return `// ${toFriendly(leaf)} — ${cat}
+    return `// ${toFriendly(leaf)} -- ${cat}
 {
   "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
   "settingInstance": {
@@ -870,7 +870,7 @@ function cpAllIntune(id, btn) {
 }
 
 
-// ── FIELD HELPERS ────────────────────────────────────────────────────────────
+// -- FIELD HELPERS ------------------------------------------------------------
 function toFriendly(key) {
   if (!key) return '';
   return key
@@ -898,7 +898,7 @@ function buildOma(oma, catName, leafKey) {
   return oma;
 }
 
-// ── NAV PANE ──────────────────────────────────────────────────────────────────
+// -- NAV PANE ------------------------------------------------------------------
 let navFilter = '';
 let activeNavCat = null;
 let activeNavSrc = null;
@@ -918,12 +918,12 @@ function buildNavPane() {
   });
 
   const srcLabels = {
-    graph:       '☁ Intune Catalog',
-    admx_windows:'🪟 Windows GPO',
-    admx_office: '📄 Office ADMX',
-    chromium:    '🌐 Browser Policies',
-    local:       '● Built-in',
-    custom:      '⭐ Custom',
+    graph:       'Cloud Intune Catalog',
+    admx_windows:' Windows GPO',
+    admx_office: ' Office ADMX',
+    chromium:    ' Browser Policies',
+    local:       '* Built-in',
+    custom:      '* Custom',
   };
 
   const filter = navFilter.toLowerCase();
@@ -975,7 +975,7 @@ function toggleNav() {
   pane?.classList.toggle('collapsed');
 }
 
-// ── UNIFIED CARD RENDERING ────────────────────────────────────────────────────
+// -- UNIFIED CARD RENDERING ----------------------------------------------------
 function cardHTML(e, terms) {
   const i0 = e.intune && e.intune[0];
 
@@ -1001,7 +1001,7 @@ function cardHTML(e, terms) {
 
   return `<div class="card" id="card-${e.id}">
     <div class="card-hdr" onclick="toggleCard('${e.id}')">
-      <div class="card-icon">${e.icon||'⚙️'}</div>
+      <div class="card-icon">${e.icon||'GPO'}</div>
       <div class="card-info">
         <div class="card-name">${hl(cardName, terms)}</div>
         <div class="card-desc">${hl(cardDesc, terms)}</div>
@@ -1037,7 +1037,7 @@ function unifiedDetail(e) {
   return `<div class="dtabs-wrap">${tabsHtml}${panelsHtml}</div>`;
 }
 
-// ── INTUNE PANEL ──────────────────────────────────────────────────────────────
+// -- INTUNE PANEL --------------------------------------------------------------
 function intunePanel(e) {
   function mkBtn(val, label, style) {
     const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;').replace(/\r/g,'');
@@ -1079,7 +1079,7 @@ function intunePanel(e) {
         <tr><td>Definition ID</td><td><span class="mono">${esc(defId)}</span>${mkBtn(defId,'Copy')}</td></tr>
         ${oma?`<tr><td>OMA-URI</td><td><span class="mono">${esc(oma)}</span>${mkBtn(oma,'Copy')}</td></tr>`:''}
         <tr><td>Data type</td><td>${esc(i.dtype||'')}</td></tr>
-        ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v||v)}</span>${v.l?' — '+esc(v.l):''}`).join('<br>')}</td></tr>`:''}
+        ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v||v)}</span>${v.l?' -- '+esc(v.l):''}`).join('<br>')}</td></tr>`:''}
         ${i.rec?`<tr><td>Recommended</td><td><span class="mono">${esc(i.rec)}</span></td></tr>`:''}
       </table>
       ${jsonFrag?`<div style="margin-top:10px">
@@ -1112,7 +1112,7 @@ function intunePanel(e) {
   return h;
 }
 
-// ── GPO PANEL ─────────────────────────────────────────────────────────────────
+// -- GPO PANEL -----------------------------------------------------------------
 function gpoPanel(e) {
   const g = e.gpo || {};
   const a = e.admx;
@@ -1155,7 +1155,7 @@ function gpoPanel(e) {
   return h || '<div style="padding:12px;color:var(--h-text3)">No GPO data available.</div>';
 }
 
-// ── REGISTRY PANEL ────────────────────────────────────────────────────────────
+// -- REGISTRY PANEL ------------------------------------------------------------
 function registryPanel(e) {
   const r = e.reg || {};
   const fullKey = `${r.hive||'HKLM'}\\${r.key||''}`;
@@ -1181,7 +1181,7 @@ function registryPanel(e) {
   </div>`;
 }
 
-// ── NAV PANE INIT ─────────────────────────────────────────────────────────────
+// -- NAV PANE INIT -------------------------------------------------------------
 function initNavPane() {
   const navSearch = document.getElementById('navSearch');
   if (navSearch) {
@@ -1204,18 +1204,18 @@ function setChipById(id) {
   if (q.length >= 2) runSearch(q);
 }
 
-// ── SOURCE MAP ─────────────────────────────────────────────────────────────────
+// -- SOURCE MAP -----------------------------------------------------------------
 const SRC_MAP = {
-  local:        ['sb-local',  '● Built-in'],
-  graph:        ['sb-graph',  '☁ Graph'],
-  admx_windows: ['sb-adm',    '🪟 Windows GPO'],
-  admx_office:  ['sb-adm',    '📄 Office ADMX'],
-  chromium:     ['sb-chr',    '🌐 Browser'],
-  custom:       ['sb-custom', '⭐ Custom'],
+  local:        ['sb-local',  '* Built-in'],
+  graph:        ['sb-graph',  'Cloud Graph'],
+  admx_windows: ['sb-adm',    ' Windows GPO'],
+  admx_office:  ['sb-adm',    ' Office ADMX'],
+  chromium:     ['sb-chr',    ' Browser'],
+  custom:       ['sb-custom', '* Custom'],
 };
 
 
-// ── STARTUP ───────────────────────────────────────────────────────────────────
+// -- STARTUP -------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', function() {
   // Set redirect URI display
   const rdEl = document.getElementById('redirectUriDisplay');
@@ -1277,7 +1277,7 @@ function renderResults(hits, q, showGraphOption) {
 async function graphSearch(q) {
   if (!graphToken) return [];
   try {
-    const url = \`https://graph.microsoft.com/beta/deviceManagement/configurationPolicies?$filter=contains(name,'${encodeURIComponent(q)}')&$top=20\`;
+    const url = 'https://graph.microsoft.com/beta/deviceManagement/configurationPolicies?$filter=contains(name,%27' + encodeURIComponent(q) + '%27)&$top=20';
     const r = await fetch(url, { headers: { Authorization: 'Bearer ' + graphToken }});
     if (!r.ok) return [];
     const data = await r.json();
