@@ -651,11 +651,26 @@ async function loadIndex() {
 }
 
 function cp(text, btn) {
-  navigator.clipboard.writeText((typeof txt==='string'?txt.replace(/&#10;/g,'\n').replace(/&quot;/g,'"').replace(/&amp;/g,'&'):txt) || '',text).then(()=>{
-    const o=btn.textContent; btn.textContent="OK Copied"; btn.classList.add("ok");
-    setTimeout(()=>{btn.textContent=o;btn.classList.remove("ok");},1500);
+  const val = typeof text === 'string'
+    ? text.replace(/&#10;/g, '\n').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+    : String(text || '');
+  navigator.clipboard.writeText(val).then(() => {
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('ok'); }, 1500);
+  }).catch(e => {
+    // Fallback for non-secure contexts
+    const ta = document.createElement('textarea');
+    ta.value = val; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e2){}
+    document.body.removeChild(ta);
+    if (btn) { const o=btn.textContent; btn.textContent='✓ Copied'; setTimeout(()=>btn.textContent=o,1500); }
   });
 }
+
 
 function swTab(el, id) {
   const p=el.closest(".detail");
@@ -973,7 +988,7 @@ function detailHTML(e) {
 function intunePanel(e) {
   function mkBtn(val, label, style) {
     const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
-    return `<button class="cbtn"${style?` style="${style}"`:''}  data-copy="${safe}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">${label}</button>`;
+    return `<button class="cbtn"${style?` style="${style}"`:''}  data-copy="${safe}" onclick="cp(this.dataset.copy,this)">${label}</button>`;
   }
 
   let h = '';
@@ -1008,6 +1023,7 @@ function intunePanel(e) {
 
     h += `<div class="cblock">
       <div class="cblock-title">${esc(displayName)}${mkBtn(defId,'Copy ID')}</div>
+      ${(e.desc && e.desc.length > 60) ? `<div style="margin-bottom:8px;padding:8px 10px;background:var(--bg2,rgba(255,255,255,.04));border-radius:5px;border-left:3px solid var(--h-blue,#2197D4);font-size:12.5px;color:var(--h-text2,#ccc);line-height:1.5"><strong style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--h-text3)">Description</strong><br>${esc(e.desc)}</div>` : ''}
       <table class="ctable">
         <tr><td>Category</td><td>${esc(category)}</td></tr>
         <tr><td>Definition ID</td><td><span class="mono">${esc(defId)}</span>${mkBtn(defId,'Copy')}</td></tr>
@@ -1042,7 +1058,7 @@ function intunePanel(e) {
   const safeAll = allJson.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
 
   h += `<div class="copy-row">
-    <button class="cta intune" data-copy="${safeAll}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">Copy All Intune Config</button>
+    <button class="cta intune" data-copy="${safeAll}" onclick="cp(this.dataset.copy,this)">Copy All Intune Config</button>
   </div>`;
   return h;
 }
@@ -1057,6 +1073,7 @@ function gpoPanel(e) {
   let h = '';
   if (g.path||g.policy) {
     h += `<div class="cblock"><div class="cblock-title"><span class="tag t-gpo">GPO</span> Group Policy</div>
+      ${(e.desc && e.desc.length > 40) ? `<div style="margin-bottom:8px;padding:8px 10px;background:var(--bg2,rgba(255,255,255,.04));border-radius:5px;border-left:3px solid var(--h-blue,#2197D4);font-size:12.5px;color:var(--h-text2,#ccc);line-height:1.5"><strong style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--h-text3)">Description</strong><br>${esc(e.desc)}</div>` : ''}
       <table class="ctable">
         ${g.path?`<tr><td>Path</td><td>${esc(g.path)}${mkBtn(g.path,'Copy')}</td></tr>`:''}
         ${g.policy?`<tr><td>Policy</td><td>${esc(g.policy)}</td></tr>`:''}
@@ -1088,7 +1105,7 @@ function registryPanel(e) {
   const snippet = `Windows Registry Editor Version 5.00\n\n[${full}]\n"${r.val||''}"=${r.type==='REG_DWORD'?'dword:00000001':r.type==='REG_SZ'?'"value"':'hex:01'}`;
   function mkBtn(val,label) {
     const safe=(val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
-    return `<button class="cbtn" data-copy="${safe}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">${label}</button>`;
+    return `<button class="cbtn" data-copy="${safe}" onclick="cp(this.dataset.copy,this)">${label}</button>`;
   }
   return `<div class="cblock"><div class="cblock-title"><span class="tag t-reg">REG</span> Registry Configuration</div>
     <table class="ctable">
