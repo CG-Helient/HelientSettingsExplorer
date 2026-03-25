@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Helient — Settings Explorer</title>
@@ -236,7 +234,28 @@ footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
 
 @media(max-width:640px){.main,.alt-view{padding:1rem}.hero{padding:1.5rem 1rem 1rem}.hdr{padding:0 1rem}.ctable td:first-child{width:110px}.search-row{flex-wrap:wrap}}
 </style>
-</head>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script><style id="claude-agent-animation-styles">
+      @keyframes claude-pulse {
+        0% {
+          box-shadow: 
+            inset 0 0 10px rgba(217, 119, 87, 0.5),
+            inset 0 0 20px rgba(217, 119, 87, 0.3),
+            inset 0 0 30px rgba(217, 119, 87, 0.1);
+        }
+        50% {
+          box-shadow: 
+            inset 0 0 15px rgba(217, 119, 87, 0.7),
+            inset 0 0 25px rgba(217, 119, 87, 0.5),
+            inset 0 0 35px rgba(217, 119, 87, 0.2);
+        }
+        100% {
+          box-shadow: 
+            inset 0 0 10px rgba(217, 119, 87, 0.5),
+            inset 0 0 20px rgba(217, 119, 87, 0.3),
+            inset 0 0 30px rgba(217, 119, 87, 0.1);
+        }
+      }
+    </style></head>
 <body>
 
 <!-- HEADER -->
@@ -252,7 +271,7 @@ footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
     <button class="nav-btn" onclick="showView('graph',this)">Graph Queries</button>
     <button class="nav-btn" onclick="showView('about',this)">About</button>
     <button class="gear-btn" id="gearBtn" onclick="openSettings()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       Settings
     </button>
   </nav>
@@ -278,11 +297,11 @@ footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
 <!-- HERO -->
 <section class="hero" id="searchView">
   <div class="hero-inner">
-    <h1>Policy & Settings <em>Explorer</em></h1>
+    <h1>Policy &amp; Settings <em>Explorer</em></h1>
     <p>Search 10,000+ settings across Intune Settings Catalog, GPO/ADMX, Registry, CSP/OMA-URI, Edge, Chrome, and Office policies.</p>
     <div class="search-row">
       <div class="search-wrap">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
         <input id="searchInput" type="text" placeholder="Policy name, settingDefinitionId, registry key, OMA-URI…" autocomplete="off" spellcheck="false">
       </div>
       <div class="live-pill" id="livePill"><span class="live-dot" id="liveDot"></span><span id="livePillText">Loading…</span></div>
@@ -299,23 +318,30 @@ footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
     </div>
   </div>
 </section>
-
-<main class="main" id="mainView">
+<div id="appShell">
+  <nav id="navPane">
+    <div id="navHeader">
+      <span>Browse</span>
+      <button id="navToggleBtn" onclick="toggleNav()" title="Hide nav">◀</button>
+    </div>
+    <input id="navSearch" type="search" placeholder="Filter categories…" autocomplete="off">
+    <div id="navCats"></div>
+  </nav>
+  <main class="main" id="mainView">
   <div class="stats-bar">
     <span id="resultCount">Loading settings index…</span>
     <span class="loader" id="loader"><span class="spinner"></span><span id="loaderText">Searching…</span></span>
   </div>
   <div class="results-grid" id="resultsGrid">
     <div class="empty">
-      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2;margin-bottom:.75rem"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v3l2 2"/></svg>
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2;margin-bottom:.75rem"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path><path d="M11 8v3l2 2"></path></svg>
       <h3>Loading settings index…</h3>
       <p>The index is loading in the background. Search will be ready in a moment.</p>
     </div>
   </div>
 </main>
-
-<!-- GRAPH QUERIES VIEW -->
-<div class="alt-view" id="graphView">
+</div>
+id="graphView">
   <h2>Microsoft Graph API Reference</h2>
   <p class="sub">Ready-to-use queries for Settings Catalog data from your tenant</p>
   <div class="info-card"><h3>List all Settings Catalog policies</h3>
@@ -325,8 +351,8 @@ footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
   <div class="info-card"><h3>Search Settings Catalog definitions by name</h3>
     <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationSettings
   ?$filter=contains(name,'{KEYWORD}')
-  &$select=id,name,description,settingDefinitionId,applicability,defaultValue,categoryId,options
-  &$top=50</pre>
+  &amp;$select=id,name,description,settingDefinitionId,applicability,defaultValue,categoryId,options
+  &amp;$top=50</pre>
   </div>
   <div class="info-card"><h3>Create Settings Catalog policy (POST)</h3>
     <pre class="json-pre">POST https://graph.microsoft.com/beta/deviceManagement/configurationPolicies
@@ -348,12 +374,12 @@ Content-Type: application/json
   </div>
   <div class="info-card"><h3>Required permissions</h3>
     <table class="info-table">
-      <tr><td>Read policies</td><td><span class="mono">DeviceManagementConfiguration.Read.All</span></td></tr>
+      <tbody><tr><td>Read policies</td><td><span class="mono">DeviceManagementConfiguration.Read.All</span></td></tr>
       <tr><td>Write policies</td><td><span class="mono">DeviceManagementConfiguration.ReadWrite.All</span></td></tr>
       <tr><td>App type for Actions</td><td>App-only (client_credentials) — store secret in GitHub Secrets</td></tr>
       <tr><td>App type for browser</td><td>SPA / Public client — delegated, MSAL popup</td></tr>
       <tr><td>Redirect URI</td><td><span class="mono" id="redirectUriDisplay">https://your-github-pages-url</span></td></tr>
-    </table>
+    </tbody></table>
   </div>
 </div>
 
@@ -363,30 +389,30 @@ Content-Type: application/json
   <p class="sub">Enterprise endpoint policy cross-reference tool by Helient</p>
   <div class="info-card"><h3>Architecture</h3>
     <table class="info-table">
-      <tr><td>Hosting</td><td>GitHub Pages — free, HTTPS, custom domain support</td></tr>
+      <tbody><tr><td>Hosting</td><td>GitHub Pages — free, HTTPS, custom domain support</td></tr>
       <tr><td>Data storage</td><td>GitHub repo (data/ folder) — versioned, free, zero DB to maintain</td></tr>
       <tr><td>Data refresh</td><td>GitHub Actions runs weekly — fetches all sources, commits updated index</td></tr>
       <tr><td>Search engine</td><td>Client-side full-text index loaded in chunks (~100 KB each)</td></tr>
       <tr><td>Live Graph</td><td>Optional MSAL auth supplements index with tenant-specific data</td></tr>
-    </table>
+    </tbody></table>
   </div>
   <div class="info-card"><h3>Data sources</h3>
     <table class="info-table">
-      <tr><td>Intune Settings Catalog</td><td>Microsoft Graph API (<span class="mono">/deviceManagement/configurationSettings</span>)</td></tr>
+      <tbody><tr><td>Intune Settings Catalog</td><td>Microsoft Graph API (<span class="mono">/deviceManagement/configurationSettings</span>)</td></tr>
       <tr><td>Windows ADMX / GPO</td><td>Curated from Windows Policy Definitions + Policy CSP reference</td></tr>
       <tr><td>Microsoft Edge policies</td><td>Chromium policy_templates.json (canonical Edge + Chrome source)</td></tr>
       <tr><td>Office 365 ADMX</td><td>Microsoft Office ADMX template reference</td></tr>
       <tr><td>Custom sources</td><td>CSV/Excel/JSON file import + URL sources via custom_sources.json</td></tr>
-    </table>
+    </tbody></table>
   </div>
   <div class="info-card"><h3>Free hosting setup (5 minutes)</h3>
     <table class="info-table">
-      <tr><td>1</td><td>Push repo to GitHub</td></tr>
+      <tbody><tr><td>1</td><td>Push repo to GitHub</td></tr>
       <tr><td>2</td><td>Settings → Pages → Deploy from main branch → /public folder</td></tr>
       <tr><td>3</td><td>Settings → Secrets → Add <span class="mono">AZURE_CLIENT_ID</span>, <span class="mono">AZURE_CLIENT_SECRET</span>, <span class="mono">AZURE_TENANT_ID</span></td></tr>
       <tr><td>4</td><td>Actions → Build Settings Index → Run workflow</td></tr>
       <tr><td>5</td><td>Add your GitHub Pages URL as a SPA redirect URI in the Azure App Registration</td></tr>
-    </table>
+    </tbody></table>
   </div>
   <div class="info-card"><h3>Index status</h3>
     <div id="aboutIndexStatus" style="font-size:13px;color:var(--h-text3)">Loading…</div>
@@ -406,7 +432,7 @@ Content-Type: application/json
       <!-- Auth -->
       <div class="modal-section">
         <div class="modal-section-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
           Microsoft Graph Authentication
         </div>
         <div class="fld">
@@ -422,7 +448,7 @@ Content-Type: application/json
         <div class="fld">
           <label>Redirect URI <span class="badge-o">Read-only</span></label>
           <div style="display:flex;gap:6px">
-            <input id="s_redirectUri" type="text" readonly style="background:var(--h-surface);font-family:monospace;font-size:11.5px;color:var(--h-text2)">
+            <input id="s_redirectUri" type="text" readonly="" style="background:var(--h-surface);font-family:monospace;font-size:11.5px;color:var(--h-text2)">
             <button class="cbtn" style="flex-shrink:0;padding:5px 10px" onclick="cpUri(this)">Copy</button>
           </div>
           <div class="fld-hint">Add this as a <strong>Single-page application (SPA)</strong> redirect URI in your App Registration.</div>
@@ -432,7 +458,7 @@ Content-Type: application/json
       <!-- Custom sources -->
       <div class="modal-section">
         <div class="modal-section-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
           Custom Data Sources
         </div>
         <p style="font-size:12px;color:var(--h-text3);margin-bottom:10px;line-height:1.5">Import settings from Excel/CSV/JSON files or add remote JSON URLs. Data merges into the search index instantly.</p>
@@ -442,7 +468,7 @@ Content-Type: application/json
           <label>Upload file (Excel, CSV, or JSON)</label>
           <div class="upload-zone" id="uploadZone">
             <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.json" onchange="handleFileUpload(this)">
-            <p><strong>Click to browse</strong> or drag & drop an Excel, CSV, or JSON file</p>
+            <p><strong>Click to browse</strong> or drag &amp; drop an Excel, CSV, or JSON file</p>
             <p style="font-size:11px;margin-top:4px">Expected columns: name, description, settingDefinitionId, registryKey, registryValue, gpoPath</p>
           </div>
           <div id="uploadResult"></div>
@@ -463,8 +489,8 @@ Content-Type: application/json
     </div>
     <div class="modal-footer">
       <button class="modal-save" id="saveBtn" onclick="saveSettings()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save & Connect
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Save &amp; Connect
       </button>
       <button class="modal-clr" onclick="clearSettings()">Clear Saved</button>
       <span class="modal-status" id="settingsStatus"></span>
@@ -502,184 +528,7 @@ loadMsal(MSAL_CDNS, 0);
 
 <!-- SheetJS for Excel/CSV import -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<div id="appShell">
-  <nav id="navPane">
-    <div id="navHeader">
-      <span>Browse</span>
-      <button id="navToggleBtn" onclick="toggleNav()" title="Hide nav">◀</button>
-    </div>
-    <input id="navSearch" type="search" placeholder="Filter categories…" autocomplete="off">
-    <div id="navCats"></div>
-  </nav>
-  <main id="mainView" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
-
-  </main>
-</div>
-
-<!-- GRAPH QUERIES VIEW -->
-<div class="alt-view" id="graphView">
-  <h2>Microsoft Graph API Reference</h2>
-  <p class="sub">Ready-to-use queries for Settings Catalog data from your tenant</p>
-  <div class="info-card"><h3>List all Settings Catalog policies</h3>
-    <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</pre>
-    <button class="cbtn" onclick="cp('GET https://graph.microsoft.com/beta/deviceManagement/configurationPolicies',this)">Copy</button>
-  </div>
-  <div class="info-card"><h3>Search Settings Catalog definitions by name</h3>
-    <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationSettings
-  ?$filter=contains(name,'{KEYWORD}')
-  &$select=id,name,description,settingDefinitionId,applicability,defaultValue,categoryId,options
-  &$top=50</pre>
-  </div>
-  <div class="info-card"><h3>Create Settings Catalog policy (POST)</h3>
-    <pre class="json-pre">POST https://graph.microsoft.com/beta/deviceManagement/configurationPolicies
-Content-Type: application/json
-
-{
-  "name": "My Policy",
-  "platforms": "windows10",
-  "technologies": "mdm",
-  "settings": [{
-    "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
-    "settingInstance": {
-      "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
-      "settingDefinitionId": "device_vendor_msft_...",
-      "choiceSettingValue": { "value": "..._1", "children": [] }
-    }
-  }]
-}</pre>
-  </div>
-  <div class="info-card"><h3>Required permissions</h3>
-    <table class="info-table">
-      <tr><td>Read policies</td><td><span class="mono">DeviceManagementConfiguration.Read.All</span></td></tr>
-      <tr><td>Write policies</td><td><span class="mono">DeviceManagementConfiguration.ReadWrite.All</span></td></tr>
-      <tr><td>App type for Actions</td><td>App-only (client_credentials) — store secret in GitHub Secrets</td></tr>
-      <tr><td>App type for browser</td><td>SPA / Public client — delegated, MSAL popup</td></tr>
-      <tr><td>Redirect URI</td><td><span class="mono" id="redirectUriDisplay">https://your-github-pages-url</span></td></tr>
-    </table>
-  </div>
-</div>
-
-<!-- ABOUT VIEW -->
-<div class="alt-view" id="aboutView">
-  <h2>About Helient Settings Explorer</h2>
-  <p class="sub">Enterprise endpoint policy cross-reference tool by Helient</p>
-  <div class="info-card"><h3>Architecture</h3>
-    <table class="info-table">
-      <tr><td>Hosting</td><td>GitHub Pages — free, HTTPS, custom domain support</td></tr>
-      <tr><td>Data storage</td><td>GitHub repo (data/ folder) — versioned, free, zero DB to maintain</td></tr>
-      <tr><td>Data refresh</td><td>GitHub Actions runs weekly — fetches all sources, commits updated index</td></tr>
-      <tr><td>Search engine</td><td>Client-side full-text index loaded in chunks (~100 KB each)</td></tr>
-      <tr><td>Live Graph</td><td>Optional MSAL auth supplements index with tenant-specific data</td></tr>
-    </table>
-  </div>
-  <div class="info-card"><h3>Data sources</h3>
-    <table class="info-table">
-      <tr><td>Intune Settings Catalog</td><td>Microsoft Graph API (<span class="mono">/deviceManagement/configurationSettings</span>)</td></tr>
-      <tr><td>Windows ADMX / GPO</td><td>Curated from Windows Policy Definitions + Policy CSP reference</td></tr>
-      <tr><td>Microsoft Edge policies</td><td>Chromium policy_templates.json (canonical Edge + Chrome source)</td></tr>
-      <tr><td>Office 365 ADMX</td><td>Microsoft Office ADMX template reference</td></tr>
-      <tr><td>Custom sources</td><td>CSV/Excel/JSON file import + URL sources via custom_sources.json</td></tr>
-    </table>
-  </div>
-  <div class="info-card"><h3>Free hosting setup (5 minutes)</h3>
-    <table class="info-table">
-      <tr><td>1</td><td>Push repo to GitHub</td></tr>
-      <tr><td>2</td><td>Settings → Pages → Deploy from main branch → /public folder</td></tr>
-      <tr><td>3</td><td>Settings → Secrets → Add <span class="mono">AZURE_CLIENT_ID</span>, <span class="mono">AZURE_CLIENT_SECRET</span>, <span class="mono">AZURE_TENANT_ID</span></td></tr>
-      <tr><td>4</td><td>Actions → Build Settings Index → Run workflow</td></tr>
-      <tr><td>5</td><td>Add your GitHub Pages URL as a SPA redirect URI in the Azure App Registration</td></tr>
-    </table>
-  </div>
-  <div class="info-card"><h3>Index status</h3>
-    <div id="aboutIndexStatus" style="font-size:13px;color:var(--h-text3)">Loading…</div>
-  </div>
-</div>
-
-<!-- SETTINGS MODAL -->
-<div class="overlay" id="settingsOverlay" onclick="overlayClick(event)">
-  <div class="modal">
-    <div class="modal-hdr">
-      <img src="data:image/png;base64,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" alt="Helient">
-      <h3>Settings</h3>
-      <button class="modal-close" onclick="closeSettings()">✕ Close</button>
-    </div>
-    <div class="modal-body">
-
-      <!-- Auth -->
-      <div class="modal-section">
-        <div class="modal-section-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Microsoft Graph Authentication
-        </div>
-        <div class="fld">
-          <label>Application (Client) ID <span class="badge-r">Required</span></label>
-          <input id="s_clientId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false">
-          <div class="fld-hint"><a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps" target="_blank">Azure App Registrations ↗</a> · App Registration → Overview → Application (client) ID</div>
-        </div>
-        <div class="fld">
-          <label>Tenant ID <span class="badge-o">Optional</span></label>
-          <input id="s_tenantId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  (leave blank = any Microsoft account)">
-          <div class="fld-hint">Azure AD → Overview → Tenant ID. Scope auth to your specific tenant.</div>
-        </div>
-        <div class="fld">
-          <label>Redirect URI <span class="badge-o">Read-only</span></label>
-          <div style="display:flex;gap:6px">
-            <input id="s_redirectUri" type="text" readonly style="background:var(--h-surface);font-family:monospace;font-size:11.5px;color:var(--h-text2)">
-            <button class="cbtn" style="flex-shrink:0;padding:5px 10px" onclick="cpUri(this)">Copy</button>
-          </div>
-          <div class="fld-hint">Add this as a <strong>Single-page application (SPA)</strong> redirect URI in your App Registration.</div>
-        </div>
-      </div>
-
-      <!-- Custom sources -->
-      <div class="modal-section">
-        <div class="modal-section-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Custom Data Sources
-        </div>
-        <p style="font-size:12px;color:var(--h-text3);margin-bottom:10px;line-height:1.5">Import settings from Excel/CSV/JSON files or add remote JSON URLs. Data merges into the search index instantly.</p>
-
-        <!-- File upload -->
-        <div class="fld">
-          <label>Upload file (Excel, CSV, or JSON)</label>
-          <div class="upload-zone" id="uploadZone">
-            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.json" onchange="handleFileUpload(this)">
-            <p><strong>Click to browse</strong> or drag & drop an Excel, CSV, or JSON file</p>
-            <p style="font-size:11px;margin-top:4px">Expected columns: name, description, settingDefinitionId, registryKey, registryValue, gpoPath</p>
-          </div>
-          <div id="uploadResult"></div>
-        </div>
-
-        <!-- URL sources -->
-        <div class="fld">
-          <label>Remote JSON URL</label>
-          <div class="add-src-row">
-            <input id="newSrcUrl" type="text" placeholder="https://example.com/my-settings.json">
-            <input id="newSrcName" type="text" placeholder="Label" style="max-width:130px">
-            <button onclick="addCustomSource()">Add</button>
-          </div>
-        </div>
-        <div class="src-list" id="srcList"></div>
-      </div>
-
-    </div>
-    <div class="modal-footer">
-      <button class="modal-save" id="saveBtn" onclick="saveSettings()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save & Connect
-      </button>
-      <button class="modal-clr" onclick="clearSettings()">Clear Saved</button>
-      <span class="modal-status" id="settingsStatus"></span>
-    </div>
-  </div>
-</div>
-
-<footer>
-  <img src="data:image/png;base64,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" alt="">
-  Built by <a href="https://helient.com" target="_blank">Helient</a> &nbsp;·&nbsp;
-  <span id="footerMeta">Settings index loading…</span> &nbsp;·&nbsp;
-  Not affiliated with Microsoft
-</footer>
+<div 
 
 <!-- MSAL dynamic loader -->
 <script>
@@ -1407,4 +1256,5 @@ function initNavPane() {
 }
 
 </script>
-</html>
+
+<div id="claude-agent-glow-border" style="position: fixed; inset: 0px; pointer-events: none; z-index: 2147483646; opacity: 0; transition: opacity 0.3s ease-in-out; animation: 2s ease-in-out 0s infinite normal none running claude-pulse; box-shadow: rgba(217, 119, 87, 0.5) 0px 0px 10px inset, rgba(217, 119, 87, 0.3) 0px 0px 20px inset, rgba(217, 119, 87, 0.1) 0px 0px 30px inset;"></div></body></html>
