@@ -1,4 +1,6 @@
-<html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Helient — Settings Explorer</title>
@@ -234,28 +236,7 @@ footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
 
 @media(max-width:640px){.main,.alt-view{padding:1rem}.hero{padding:1.5rem 1rem 1rem}.hdr{padding:0 1rem}.ctable td:first-child{width:110px}.search-row{flex-wrap:wrap}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script><style id="claude-agent-animation-styles">
-      @keyframes claude-pulse {
-        0% {
-          box-shadow: 
-            inset 0 0 10px rgba(217, 119, 87, 0.5),
-            inset 0 0 20px rgba(217, 119, 87, 0.3),
-            inset 0 0 30px rgba(217, 119, 87, 0.1);
-        }
-        50% {
-          box-shadow: 
-            inset 0 0 15px rgba(217, 119, 87, 0.7),
-            inset 0 0 25px rgba(217, 119, 87, 0.5),
-            inset 0 0 35px rgba(217, 119, 87, 0.2);
-        }
-        100% {
-          box-shadow: 
-            inset 0 0 10px rgba(217, 119, 87, 0.5),
-            inset 0 0 20px rgba(217, 119, 87, 0.3),
-            inset 0 0 30px rgba(217, 119, 87, 0.1);
-        }
-      }
-    </style></head>
+</head>
 <body>
 
 <!-- HEADER -->
@@ -271,7 +252,7 @@ footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
     <button class="nav-btn" onclick="showView('graph',this)">Graph Queries</button>
     <button class="nav-btn" onclick="showView('about',this)">About</button>
     <button class="gear-btn" id="gearBtn" onclick="openSettings()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Settings
     </button>
   </nav>
@@ -297,11 +278,11 @@ footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
 <!-- HERO -->
 <section class="hero" id="searchView">
   <div class="hero-inner">
-    <h1>Policy &amp; Settings <em>Explorer</em></h1>
+    <h1>Policy & Settings <em>Explorer</em></h1>
     <p>Search 10,000+ settings across Intune Settings Catalog, GPO/ADMX, Registry, CSP/OMA-URI, Edge, Chrome, and Office policies.</p>
     <div class="search-row">
       <div class="search-wrap">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input id="searchInput" type="text" placeholder="Policy name, settingDefinitionId, registry key, OMA-URI…" autocomplete="off" spellcheck="false">
       </div>
       <div class="live-pill" id="livePill"><span class="live-dot" id="liveDot"></span><span id="livePillText">Loading…</span></div>
@@ -318,6 +299,8 @@ footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
     </div>
   </div>
 </section>
+
+
 <div id="appShell">
   <nav id="navPane">
     <div id="navHeader">
@@ -334,14 +317,14 @@ footer img{height:14px;vertical-align:middle;opacity:.45;margin-right:4px}
   </div>
   <div class="results-grid" id="resultsGrid">
     <div class="empty">
-      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2;margin-bottom:.75rem"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path><path d="M11 8v3l2 2"></path></svg>
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2;margin-bottom:.75rem"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v3l2 2"/></svg>
       <h3>Loading settings index…</h3>
       <p>The index is loading in the background. Search will be ready in a moment.</p>
     </div>
   </div>
 </main>
 </div>
-id="graphView">
+<div class="alt-view" id="graphView">
   <h2>Microsoft Graph API Reference</h2>
   <p class="sub">Ready-to-use queries for Settings Catalog data from your tenant</p>
   <div class="info-card"><h3>List all Settings Catalog policies</h3>
@@ -351,8 +334,8 @@ id="graphView">
   <div class="info-card"><h3>Search Settings Catalog definitions by name</h3>
     <pre class="json-pre">GET https://graph.microsoft.com/beta/deviceManagement/configurationSettings
   ?$filter=contains(name,'{KEYWORD}')
-  &amp;$select=id,name,description,settingDefinitionId,applicability,defaultValue,categoryId,options
-  &amp;$top=50</pre>
+  &$select=id,name,description,settingDefinitionId,applicability,defaultValue,categoryId,options
+  &$top=50</pre>
   </div>
   <div class="info-card"><h3>Create Settings Catalog policy (POST)</h3>
     <pre class="json-pre">POST https://graph.microsoft.com/beta/deviceManagement/configurationPolicies
@@ -374,12 +357,12 @@ Content-Type: application/json
   </div>
   <div class="info-card"><h3>Required permissions</h3>
     <table class="info-table">
-      <tbody><tr><td>Read policies</td><td><span class="mono">DeviceManagementConfiguration.Read.All</span></td></tr>
+      <tr><td>Read policies</td><td><span class="mono">DeviceManagementConfiguration.Read.All</span></td></tr>
       <tr><td>Write policies</td><td><span class="mono">DeviceManagementConfiguration.ReadWrite.All</span></td></tr>
       <tr><td>App type for Actions</td><td>App-only (client_credentials) — store secret in GitHub Secrets</td></tr>
       <tr><td>App type for browser</td><td>SPA / Public client — delegated, MSAL popup</td></tr>
       <tr><td>Redirect URI</td><td><span class="mono" id="redirectUriDisplay">https://your-github-pages-url</span></td></tr>
-    </tbody></table>
+    </table>
   </div>
 </div>
 
@@ -389,30 +372,30 @@ Content-Type: application/json
   <p class="sub">Enterprise endpoint policy cross-reference tool by Helient</p>
   <div class="info-card"><h3>Architecture</h3>
     <table class="info-table">
-      <tbody><tr><td>Hosting</td><td>GitHub Pages — free, HTTPS, custom domain support</td></tr>
+      <tr><td>Hosting</td><td>GitHub Pages — free, HTTPS, custom domain support</td></tr>
       <tr><td>Data storage</td><td>GitHub repo (data/ folder) — versioned, free, zero DB to maintain</td></tr>
       <tr><td>Data refresh</td><td>GitHub Actions runs weekly — fetches all sources, commits updated index</td></tr>
       <tr><td>Search engine</td><td>Client-side full-text index loaded in chunks (~100 KB each)</td></tr>
       <tr><td>Live Graph</td><td>Optional MSAL auth supplements index with tenant-specific data</td></tr>
-    </tbody></table>
+    </table>
   </div>
   <div class="info-card"><h3>Data sources</h3>
     <table class="info-table">
-      <tbody><tr><td>Intune Settings Catalog</td><td>Microsoft Graph API (<span class="mono">/deviceManagement/configurationSettings</span>)</td></tr>
+      <tr><td>Intune Settings Catalog</td><td>Microsoft Graph API (<span class="mono">/deviceManagement/configurationSettings</span>)</td></tr>
       <tr><td>Windows ADMX / GPO</td><td>Curated from Windows Policy Definitions + Policy CSP reference</td></tr>
       <tr><td>Microsoft Edge policies</td><td>Chromium policy_templates.json (canonical Edge + Chrome source)</td></tr>
       <tr><td>Office 365 ADMX</td><td>Microsoft Office ADMX template reference</td></tr>
       <tr><td>Custom sources</td><td>CSV/Excel/JSON file import + URL sources via custom_sources.json</td></tr>
-    </tbody></table>
+    </table>
   </div>
   <div class="info-card"><h3>Free hosting setup (5 minutes)</h3>
     <table class="info-table">
-      <tbody><tr><td>1</td><td>Push repo to GitHub</td></tr>
+      <tr><td>1</td><td>Push repo to GitHub</td></tr>
       <tr><td>2</td><td>Settings → Pages → Deploy from main branch → /public folder</td></tr>
       <tr><td>3</td><td>Settings → Secrets → Add <span class="mono">AZURE_CLIENT_ID</span>, <span class="mono">AZURE_CLIENT_SECRET</span>, <span class="mono">AZURE_TENANT_ID</span></td></tr>
       <tr><td>4</td><td>Actions → Build Settings Index → Run workflow</td></tr>
       <tr><td>5</td><td>Add your GitHub Pages URL as a SPA redirect URI in the Azure App Registration</td></tr>
-    </tbody></table>
+    </table>
   </div>
   <div class="info-card"><h3>Index status</h3>
     <div id="aboutIndexStatus" style="font-size:13px;color:var(--h-text3)">Loading…</div>
@@ -432,7 +415,7 @@ Content-Type: application/json
       <!-- Auth -->
       <div class="modal-section">
         <div class="modal-section-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           Microsoft Graph Authentication
         </div>
         <div class="fld">
@@ -448,7 +431,7 @@ Content-Type: application/json
         <div class="fld">
           <label>Redirect URI <span class="badge-o">Read-only</span></label>
           <div style="display:flex;gap:6px">
-            <input id="s_redirectUri" type="text" readonly="" style="background:var(--h-surface);font-family:monospace;font-size:11.5px;color:var(--h-text2)">
+            <input id="s_redirectUri" type="text" readonly style="background:var(--h-surface);font-family:monospace;font-size:11.5px;color:var(--h-text2)">
             <button class="cbtn" style="flex-shrink:0;padding:5px 10px" onclick="cpUri(this)">Copy</button>
           </div>
           <div class="fld-hint">Add this as a <strong>Single-page application (SPA)</strong> redirect URI in your App Registration.</div>
@@ -458,7 +441,7 @@ Content-Type: application/json
       <!-- Custom sources -->
       <div class="modal-section">
         <div class="modal-section-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Custom Data Sources
         </div>
         <p style="font-size:12px;color:var(--h-text3);margin-bottom:10px;line-height:1.5">Import settings from Excel/CSV/JSON files or add remote JSON URLs. Data merges into the search index instantly.</p>
@@ -468,7 +451,7 @@ Content-Type: application/json
           <label>Upload file (Excel, CSV, or JSON)</label>
           <div class="upload-zone" id="uploadZone">
             <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.json" onchange="handleFileUpload(this)">
-            <p><strong>Click to browse</strong> or drag &amp; drop an Excel, CSV, or JSON file</p>
+            <p><strong>Click to browse</strong> or drag & drop an Excel, CSV, or JSON file</p>
             <p style="font-size:11px;margin-top:4px">Expected columns: name, description, settingDefinitionId, registryKey, registryValue, gpoPath</p>
           </div>
           <div id="uploadResult"></div>
@@ -489,8 +472,8 @@ Content-Type: application/json
     </div>
     <div class="modal-footer">
       <button class="modal-save" id="saveBtn" onclick="saveSettings()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-        Save &amp; Connect
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save & Connect
       </button>
       <button class="modal-clr" onclick="clearSettings()">Clear Saved</button>
       <span class="modal-status" id="settingsStatus"></span>
@@ -505,30 +488,6 @@ Content-Type: application/json
   Not affiliated with Microsoft
 </footer>
 
-<!-- MSAL dynamic loader -->
-<script>
-const MSAL_CDNS = [
-  "https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js",
-  "https://unpkg.com/@azure/msal-browser@3.28.1/lib/msal-browser.min.js",
-];
-function loadMsal(urls, idx) {
-  if (idx >= urls.length) { console.warn("All MSAL CDNs failed"); return; }
-  const s = document.createElement("script");
-  s.src = urls[idx];
-  s.onload = () => {
-    const M = window.msal || window.msalBrowser;
-    if (M && M.PublicClientApplication) { window.__MSAL = M; waitForMsalAndInit(20); }
-    else loadMsal(urls, idx + 1);
-  };
-  s.onerror = () => loadMsal(urls, idx + 1);
-  document.head.appendChild(s);
-}
-loadMsal(MSAL_CDNS, 0);
-</script>
-
-<!-- SheetJS for Excel/CSV import -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<div 
 
 <!-- MSAL dynamic loader -->
 <script>
@@ -554,7 +513,9 @@ loadMsal(MSAL_CDNS, 0);
 <!-- SheetJS for Excel/CSV import -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let SEARCH_INDEX  = [];          // unified flat array of entries (built from chunks)
 let customEntries = [];          // user-uploaded or URL-added entries
@@ -1255,6 +1216,7 @@ function initNavPane() {
   buildNavPane();
 }
 
-</script>
 
-<div id="claude-agent-glow-border" style="position: fixed; inset: 0px; pointer-events: none; z-index: 2147483646; opacity: 0; transition: opacity 0.3s ease-in-out; animation: 2s ease-in-out 0s infinite normal none running claude-pulse; box-shadow: rgba(217, 119, 87, 0.5) 0px 0px 10px inset, rgba(217, 119, 87, 0.3) 0px 0px 20px inset, rgba(217, 119, 87, 0.1) 0px 0px 30px inset;"></div></body></html>
+</script>
+</body>
+</html>
