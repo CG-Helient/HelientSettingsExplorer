@@ -1154,6 +1154,50 @@ function setChipById(id) {
   const q = document.getElementById('searchInput')?.value?.trim() || '';
   if (q.length >= 2) runSearch(q);
 }
+
+// ── SOURCE MAP ─────────────────────────────────────────────────────────────────
+const SRC_MAP = {
+  local:        ['sb-local',  '● Built-in'],
+  graph:        ['sb-graph',  '☁ Graph'],
+  admx_windows: ['sb-adm',    '🪟 Windows GPO'],
+  admx_office:  ['sb-adm',    '📄 Office ADMX'],
+  chromium:     ['sb-chr',    '🌐 Browser'],
+  custom:       ['sb-custom', '⭐ Custom'],
+};
+
+
+// ── STARTUP ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  // Set redirect URI display
+  const rdEl = document.getElementById('redirectUriDisplay');
+  if (rdEl) rdEl.textContent = window.location.origin + window.location.pathname;
+
+  // Wire up search input
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        const q = this.value.trim();
+        if (q.length >= 2) runSearch(q);
+        else if (q.length === 0) {
+          document.getElementById('resultCount').textContent = '';
+          document.getElementById('resultsGrid').innerHTML = '';
+        }
+      }, 180);
+    });
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        clearTimeout(searchTimer);
+        const q = this.value.trim();
+        if (q.length >= 1) runSearch(q);
+      }
+    });
+  }
+
+  // Load the index
+  loadIndex();
+});
 </script>
 </body>
 </html>
