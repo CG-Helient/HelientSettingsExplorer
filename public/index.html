@@ -705,24 +705,73 @@ function showView(v, btn) {
   if(btn) btn.classList.add("active");
 }
 
-async function runSearch(q, filterSrc, filterCat) {
-  if (!q || q.length < 2) return;
-  showLoader(true, "Searching…");
-
-  const indexHits = doSearch(q);
-  renderResults(indexHits, q, !!graphToken);
-
-  if (graphToken) {
-    showLoader(true, "Querying Microsoft Graph…");
-    const gHits = await graphSearch(q);
-    showLoader(false);
-    const seen = new Set(indexHits.map(e => e.name?.toLowerCase()));
-    const merged = [...indexHits, ...gHits.filter(g => !seen.has(g.name?.toLowerCase()))];
-    renderResults(merged, q, false);
-  } else {
-    showLoader(false);
+function runSearch(q, filterSrc, filterCat) {
+  if (!q || q.length < 2) {
+    document.getElementById('resultCount').textContent = '';
+    document.getElementById('resultsGrid').innerHTML = '';
+    return;
   }
+
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+
+  // Filter SEARCH_INDEX
+  let results = SEARCH_INDEX.filter(e => {
+    const txt = (e._text || (e.name + ' ' + e.desc + ' ' + JSON.stringify(e.intune))).toLowerCase();
+    return terms.every(t => txt.includes(t));
+  });
+
+  // Apply source filter
+  if (filterSrc && filterSrc !== 'all') {
+    results = results.filter(e => e._source === filterSrc);
+  }
+  // Apply chip filter
+  if (filter && filter !== 'all') {
+    const chipMap = {
+      intune:    e => (e.methods||[]).includes('intune'),
+      gpo:       e => (e.methods||[]).includes('gpo') || (e.methods||[]).includes('admx'),
+      registry:  e => (e.methods||[]).includes('registry'),
+      live:      e => e._source === 'graph',
+      browser:   e => e._source === 'chromium',
+      office:    e => e._source === 'admx_office',
+      custom:    e => e._source === 'custom',
+    };
+    if (chipMap[filter]) results = results.filter(chipMap[filter]);
+  }
+  // Apply category filter from nav pane
+  if (filterCat) {
+    results = results.filter(e => (e.name||'').split(/[>\\\/]/)[0].trim() === filterCat);
+  }
+
+  const total = results.length;
+  const limited = results.slice(0, 200);
+
+  // Update count
+  const srcBreakdown = {};
+  results.forEach(e => { srcBreakdown[e._source] = (srcBreakdown[e._source]||0)+1; });
+  const badges = Object.entries(srcBreakdown).map(([src, cnt]) => {
+    const [cls, lbl] = SRC_MAP[src] || ['sb-local','●'];
+    return `<span class="src-badge ${cls}" style="cursor:pointer" onclick="setChipById('${src}')">${lbl} ${cnt}</span>`;
+  }).join(' ');
+
+  document.getElementById('resultCount').innerHTML =
+    `<strong>${total.toLocaleString()}</strong> results for <strong>"${esc(q)}"</strong> ${badges}`;
+
+  // Render cards
+  if (total === 0) {
+    document.getElementById('resultsGrid').innerHTML = emptyHTML(
+      'No results for "' + esc(q) + '"',
+      'Try a different term or check the Browse panel on the left.'
+    );
+    return;
+  }
+
+  document.getElementById('resultsGrid').innerHTML = limited.map(e => cardHTML(e, terms)).join('');
+
+  // Show nav pane category if not already built
+  if (typeof buildNavPane === 'function') buildNavPane();
 }
+
+
 
 
 function waitForMsalAndInit(n){
@@ -1198,6 +1247,48 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load the index
   loadIndex();
 });
+
+function showLoader(show, msg) {
+  const loader = document.getElementById('loader');
+  const loaderText = document.getElementById('loaderText');
+  if (loader) loader.style.display = show ? 'flex' : 'none';
+  if (loaderText && msg) loaderText.textContent = msg;
+}
+
+function doSearch(q) {
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  return SEARCH_INDEX.filter(e => {
+    const txt = (e._text || '').toLowerCase();
+    return terms.every(t => txt.includes(t));
+  });
+}
+
+function renderResults(hits, q, showGraphOption) {
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const limited = hits.slice(0, 200);
+  document.getElementById('resultCount').innerHTML =
+    `<strong>${hits.length.toLocaleString()}</strong> results for <strong>"${esc(q)}"</strong>`;
+  document.getElementById('resultsGrid').innerHTML =
+    hits.length === 0
+      ? emptyHTML('No results', 'Try a different search term.')
+      : limited.map(e => cardHTML(e, terms)).join('');
+}
+
+async function graphSearch(q) {
+  if (!graphToken) return [];
+  try {
+    const url = \`https://graph.microsoft.com/beta/deviceManagement/configurationPolicies?$filter=contains(name,'${encodeURIComponent(q)}')&$top=20\`;
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + graphToken }});
+    if (!r.ok) return [];
+    const data = await r.json();
+    return (data.value||[]).map(p => ({
+      id: 'live_' + p.id, name: p.name, desc: p.description||'',
+      cats: ['Live Graph'], plat: 'windows', methods: ['intune'],
+      _source: 'graph', _text: p.name + ' ' + (p.description||''),
+      intune: [], gpo: null, reg: null,
+    }));
+  } catch(e) { return []; }
+}
 </script>
 </body>
 </html>
