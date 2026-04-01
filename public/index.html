@@ -1120,6 +1120,70 @@ function registryPanel(e) {
 }
 
 // ── STARTUP ───────────────────────────────────────────────────────────────────
+
+// ── SETTINGS MODAL ────────────────────────────────────────────────────────────
+function openSettings() {
+  const overlay = document.getElementById('settingsOverlay');
+  if (overlay) {
+    // Pre-populate fields from localStorage
+    const cfg = JSON.parse(localStorage.getItem('helientCfg') || '{}');
+    const ci = document.getElementById('s_clientId');
+    const ti = document.getElementById('s_tenantId');
+    const ri = document.getElementById('s_redirectUri');
+    if (ci) ci.value = cfg.clientId || '';
+    if (ti) ti.value = cfg.tenantId || '';
+    if (ri) ri.value = cfg.redirectUri || (window.location.origin + window.location.pathname);
+    refreshGearBtn();
+    overlay.style.display = 'flex';
+  }
+}
+
+function closeSettings() {
+  const overlay = document.getElementById('settingsOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function overlayClick(e) {
+  if (e.target.id === 'settingsOverlay') closeSettings();
+}
+
+function saveSettings() {
+  const clientId  = (document.getElementById('s_clientId')?.value  || '').trim();
+  const tenantId  = (document.getElementById('s_tenantId')?.value  || '').trim();
+  const redirectUri = (document.getElementById('s_redirectUri')?.value || '').trim()
+    || (window.location.origin + window.location.pathname);
+
+  if (clientId) {
+    localStorage.setItem('helientCfg', JSON.stringify({clientId, tenantId, redirectUri}));
+    const status = document.getElementById('settingsStatus');
+    if (status) { status.textContent = 'Settings saved.'; setTimeout(()=>status.textContent='',3000); }
+    refreshGearBtn();
+  } else {
+    const status = document.getElementById('settingsStatus');
+    if (status) status.textContent = 'Client ID is required to connect to Graph.';
+  }
+}
+
+function clearSettings() {
+  localStorage.removeItem('helientCfg');
+  ['s_clientId','s_tenantId','s_redirectUri'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const status = document.getElementById('settingsStatus');
+  if (status) { status.textContent = 'Settings cleared.'; setTimeout(()=>status.textContent='',3000); }
+  // Disconnect from Graph
+  graphToken = null; graphUser = null; msalApp = null;
+  const authBar = document.querySelector('.auth-bar');
+  if (authBar) authBar.innerHTML = '<span style="color:var(--h-text3);font-size:12px">Not connected to Microsoft Graph</span>';
+  refreshGearBtn();
+}
+
+function cpUri(btn) {
+  const uri = window.location.origin + window.location.pathname;
+  cp(uri, btn);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const rdEl = document.getElementById('redirectUriDisplay');
   if (rdEl) rdEl.textContent = window.location.origin + window.location.pathname;
