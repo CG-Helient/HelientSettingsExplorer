@@ -1191,6 +1191,81 @@ function cpUri(btn) {
   cp(uri, btn);
 }
 
+
+// ── GRAPH AUTHENTICATION ──────────────────────────────────────────────────────
+async function handleAuth() {
+  const btn = document.getElementById('authBtn');
+  // If already connected, sign out
+  if (graphToken) {
+    graphToken = null;
+    graphUser  = null;
+    if (msalApp) {
+      try {
+        const accounts = msalApp.getAllAccounts();
+        if (accounts.length) await msalApp.logoutPopup({ account: accounts[0] });
+      } catch(e) {}
+    }
+    updateAuthUI(false, null);
+    return;
+  }
+
+  // Need config to connect
+  const cfg = JSON.parse(localStorage.getItem('helientCfg') || '{}');
+  if (!cfg.clientId) {
+    openSettings();
+    const status = document.getElementById('settingsStatus');
+    if (status) status.textContent = 'Enter your Azure App Client ID to connect to Graph.';
+    return;
+  }
+
+  // Init MSAL if not done
+  if (!msalApp) {
+    try {
+      initMsal();
+    } catch(e) {
+      alert('Could not initialize MSAL. Check your Client ID in Settings.');
+      return;
+    }
+  }
+
+  if (!msalApp) {
+    alert('MSAL not loaded yet. Please wait a moment and try again.');
+    return;
+  }
+
+  try {
+    if (btn) { btn.textContent = 'Signing in\u2026'; btn.disabled = true; }
+    const loginReq = {
+      scopes: ['DeviceManagementConfiguration.Read.All','DeviceManagementApps.Read.All',
+               'Directory.Read.All','User.Read'],
+      prompt: 'select_account'
+    };
+    const result = await msalApp.loginPopup(loginReq);
+    if (result?.accessToken) {
+      graphToken = result.accessToken;
+      graphUser  = result.account?.username || result.account?.name || 'Connected';
+      updateAuthUI(true, graphUser);
+    }
+  } catch(e) {
+    console.warn('Auth error:', e);
+    updateAuthUI(false, null);
+  } finally {
+    if (btn) { btn.textContent = graphToken ? 'Disconnect' : 'Connect to Graph'; btn.disabled = false; }
+  }
+}
+
+function updateAuthUI(connected, user) {
+  const dot   = document.getElementById('authDot');
+  const label = document.getElementById('authLabel');
+  const btn   = document.getElementById('authBtn');
+  if (dot)   dot.style.background   = connected ? '#2ECC71' : '';
+  if (label) label.innerHTML        = connected
+    ? '<span class="auth-label" style="color:#2ECC71">\u2713 ' + esc(user||'Connected') + '</span>'
+    : '<span class="auth-label">Not connected to Microsoft Graph</span>';
+  if (btn)   btn.textContent        = connected ? 'Disconnect' : 'Connect to Graph';
+  refreshGearBtn();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const rdEl = document.getElementById('redirectUriDisplay');
   if (rdEl) rdEl.textContent = window.location.origin + window.location.pathname;
