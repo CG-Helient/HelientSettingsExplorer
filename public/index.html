@@ -161,7 +161,7 @@ body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--
 .empty code{font-size:11px;background:var(--h-surface2);padding:1px 5px;border-radius:3px}
 
 /* SETTINGS MODAL */
-.overlay{position:fixed;inset:0;background:rgba(10,20,50,.6);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay{position:fixed;inset:0;background:rgba(10,20,50,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:1.5rem;transition:opacity .2s}.overlay.open{display:flex;opacity:1;pointer-events:auto}
 .overlay.open{opacity:1;pointer-events:all}
 .modal{background:#fff;border-radius:14px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border:1px solid var(--h-border);box-shadow:0 20px 60px rgba(26,45,115,.18);transform:translateY(10px);transition:transform .2s}
 .overlay.open .modal{transform:translateY(0)}
@@ -1124,23 +1124,24 @@ function registryPanel(e) {
 // ── SETTINGS MODAL ────────────────────────────────────────────────────────────
 function openSettings() {
   const overlay = document.getElementById('settingsOverlay');
-  if (overlay) {
-    // Pre-populate fields from localStorage
-    const cfg = JSON.parse(localStorage.getItem('helientCfg') || '{}');
-    const ci = document.getElementById('s_clientId');
-    const ti = document.getElementById('s_tenantId');
-    const ri = document.getElementById('s_redirectUri');
-    if (ci) ci.value = cfg.clientId || '';
-    if (ti) ti.value = cfg.tenantId || '';
-    if (ri) ri.value = cfg.redirectUri || (window.location.origin + window.location.pathname);
-    refreshGearBtn();
-    overlay.style.display = 'flex';
-  }
+  if (!overlay) return;
+  const cfg = JSON.parse(localStorage.getItem('helientCfg') || '{}');
+  const ci = document.getElementById('s_clientId');
+  const ti = document.getElementById('s_tenantId');
+  const ri = document.getElementById('s_redirectUri');
+  if (ci) ci.value = cfg.clientId || '';
+  if (ti) ti.value = cfg.tenantId || '';
+  if (ri) ri.value = cfg.redirectUri || (window.location.origin + window.location.pathname);
+  refreshGearBtn();
+  overlay.classList.add('open');
+  overlay.style.display = 'flex';
 }
 
 function closeSettings() {
   const overlay = document.getElementById('settingsOverlay');
-  if (overlay) overlay.style.display = 'none';
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  overlay.style.display = 'none';
 }
 
 function overlayClick(e) {
