@@ -1124,25 +1124,31 @@ function registryPanel(e) {
 // ── SETTINGS MODAL ────────────────────────────────────────────────────────────
 function openSettings() {
   const overlay = document.getElementById('settingsOverlay');
-  if (!overlay) return;
-  const cfg = JSON.parse(localStorage.getItem('helientCfg') || '{}');
-  const ci = document.getElementById('s_clientId');
-  const ti = document.getElementById('s_tenantId');
-  const ri = document.getElementById('s_redirectUri');
-  if (ci) ci.value = cfg.clientId || '';
-  if (ti) ti.value = cfg.tenantId || '';
-  if (ri) ri.value = cfg.redirectUri || (window.location.origin + window.location.pathname);
+  if (!overlay) { alert('Settings panel not found'); return; }
+  // Pre-populate from localStorage
+  try {
+    const cfg = JSON.parse(localStorage.getItem('helientCfg') || '{}');
+    const ci = document.getElementById('s_clientId');
+    const ti = document.getElementById('s_tenantId');
+    const ri = document.getElementById('s_redirectUri');
+    if (ci) ci.value = cfg.clientId || '';
+    if (ti) ti.value = cfg.tenantId || '';
+    if (ri) ri.value = cfg.redirectUri || (window.location.origin + window.location.pathname);
+  } catch(err) {}
   refreshGearBtn();
+  // Force visible regardless of CSS state
+  overlay.style.cssText = 'display:flex !important; opacity:1 !important; pointer-events:auto !important; position:fixed; inset:0; background:rgba(10,20,50,.75); z-index:9999; align-items:center; justify-content:center; padding:1.5rem;';
   overlay.classList.add('open');
-  overlay.style.display = 'flex';
 }
+
 
 function closeSettings() {
   const overlay = document.getElementById('settingsOverlay');
   if (!overlay) return;
   overlay.classList.remove('open');
-  overlay.style.display = 'none';
+  overlay.style.cssText = 'display:none';
 }
+
 
 function overlayClick(e) {
   if (e.target.id === 'settingsOverlay') closeSettings();
