@@ -777,6 +777,12 @@ function addCustomSource() {
   }).catch(e=>console.warn("Custom source fetch failed:", url, e.message));
 }
 
+
+function loadSaved() {
+  try { return JSON.parse(localStorage.getItem('helientCfg') || '{}'); }
+  catch(e) { return {}; }
+}
+
 function refreshGearBtn(){
   const s=loadSaved(),g=document.getElementById("gearBtn");
   if(!g) return;
