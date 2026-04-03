@@ -371,11 +371,30 @@ Content-Type: application/json
   </div>
   <div class="info-card"><h3>Data sources</h3>
     <table class="info-table">
-      <tr><td>Intune Settings Catalog</td><td>Microsoft Graph API (<span class="mono">/deviceManagement/configurationSettings</span>)</td></tr>
-      <tr><td>Windows ADMX / GPO</td><td>Curated from Windows Policy Definitions + Policy CSP reference</td></tr>
-      <tr><td>Microsoft Edge policies</td><td>Chromium policy_templates.json (canonical Edge + Chrome source)</td></tr>
-      <tr><td>Office 365 ADMX</td><td>Microsoft Office ADMX template reference</td></tr>
-      <tr><td>Custom sources</td><td>CSV/Excel/JSON file import + URL sources via custom_sources.json</td></tr>
+      <tr><td>Intune Settings Catalog</td><td>Microsoft Graph API &mdash; <span class="mono">/deviceManagement/configurationSettings</span> (15,000+ settings)</td></tr>
+      <tr><td>Windows 11 GPO / ADMX</td><td><a href="https://www.microsoft.com/en-us/download/details.aspx?id=108395" target="_blank">Win 11 25H2 GPO Reference Spreadsheet</a> &mdash; authoritative ADMX-backed policy list</td></tr>
+      <tr><td>Policy CSP / OMA-URI</td><td><a href="https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-configuration-service-provider" target="_blank">Policy CSP master reference</a> &mdash; MDM/OMA-URI for all Windows 10/11 policies</td></tr>
+      <tr><td>Microsoft Edge policies</td><td><a href="https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies" target="_blank">Edge Browser Policy Reference</a> &mdash; canonical policy catalog with registry paths</td></tr>
+      <tr><td>Google Chrome policies</td><td><a href="https://chromeenterprise.google/policies/" target="_blank">Chrome Enterprise Policy List</a> &mdash; versioned, always current</td></tr>
+      <tr><td>Office / M365 Apps ADMX</td><td><a href="https://www.microsoft.com/en-us/download/details.aspx?id=49030" target="_blank">Office ADMX/ADML templates</a> &mdash; includes policy settings Excel reference</td></tr>
+      <tr><td>Security Baselines</td><td><a href="https://www.microsoft.com/en-us/download/details.aspx?id=55319" target="_blank">Microsoft Security Compliance Toolkit</a> &mdash; Win 11 25H2, M365 Apps v2512, Edge v139</td></tr>
+      <tr><td>Custom sources</td><td>CSV / Excel / JSON file import + URL sources via Settings panel</td></tr>
+    </table>
+  </div>
+  <div class="info-card"><h3>Key reference links</h3>
+    <table class="info-table">
+      <tr><td>Windows 11 25H2 GPO Spreadsheet</td><td><a href="https://www.microsoft.com/en-us/download/details.aspx?id=108395" target="_blank">download id=108395</a></td></tr>
+      <tr><td>Windows 11 ADMX Templates</td><td><a href="https://www.microsoft.com/en-my/download/details.aspx?id=108428" target="_blank">download id=108428</a></td></tr>
+      <tr><td>Office ADMX / ADML Templates</td><td><a href="https://www.microsoft.com/en-us/download/details.aspx?id=49030" target="_blank">download id=49030</a></td></tr>
+      <tr><td>Security Compliance Toolkit</td><td><a href="https://www.microsoft.com/en-us/download/details.aspx?id=55319" target="_blank">download id=55319</a> &mdash; all baselines</td></tr>
+      <tr><td>Policy CSP Reference</td><td><a href="https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-configuration-service-provider" target="_blank">learn.microsoft.com</a></td></tr>
+      <tr><td>Edge Policy Reference</td><td><a href="https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies" target="_blank">learn.microsoft.com</a></td></tr>
+      <tr><td>Edge Update Policies</td><td><a href="https://learn.microsoft.com/en-us/deployedge/microsoft-edge-update-policies" target="_blank">learn.microsoft.com</a></td></tr>
+      <tr><td>Chrome Enterprise Policies</td><td><a href="https://chromeenterprise.google/policies/" target="_blank">chromeenterprise.google</a></td></tr>
+      <tr><td>Windows Security Baselines</td><td><a href="https://learn.microsoft.com/en-us/windows/security/operating-system-security/device-management/windows-security-configuration-framework/windows-security-baselines" target="_blank">learn.microsoft.com</a></td></tr>
+      <tr><td>Win 11 25H2 Baseline Blog</td><td><a href="https://techcommunity.microsoft.com/blog/microsoft-security-baselines/windows-11-version-25h2-security-baseline/4456231" target="_blank">techcommunity.microsoft.com</a></td></tr>
+      <tr><td>M365 Apps v2512 Baseline Blog</td><td><a href="https://techcommunity.microsoft.com/blog/microsoft-security-baselines/security-baseline-for-m365-apps-for-enterprise-v2512/4487213" target="_blank">techcommunity.microsoft.com</a></td></tr>
+      <tr><td>ADMX Central Store Guide</td><td><a href="https://learn.microsoft.com/en-us/troubleshoot/windows-client/group-policy/create-and-manage-central-store" target="_blank">learn.microsoft.com</a></td></tr>
     </table>
   </div>
   <div class="info-card"><h3>Free hosting setup (5 minutes)</h3>
