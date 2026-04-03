@@ -972,31 +972,26 @@ function toggleNav() {
 
 // ── UNIFIED CARD RENDERING ────────────────────────────────────────────────────
 function cardHTML(e, terms) {
-  const i0 = e.intune && e.intune[0];
-
-  // Card title: toFriendly from PascalCase defId key
-  let cardName, cardDesc;
-  if (e._source === 'graph' && i0?.defId) {
-    cardName = toFriendly(i0.defId);
-    cardDesc = e.name || '';        // category path as subtitle
-  } else {
-    cardName = humanizeName(e.name || '');
-    cardDesc = (e.cats||[]).filter(c => c && !['Settings Catalog','Intune Settings Catalog','Policy CSP'].includes(c))[0] || e.desc || '';
-  }
+  // DATA LAYOUT (confirmed from live inspection):
+  //   e.name  = friendly display name  e.g. "Configure Xbox Live Game Save Service Startup Mode"
+  //   e.desc  = category/description   e.g. "Administrative Templates\Network\DNS Client"
+  //   i.defId = settingDefinitionId    e.g. "device_vendor_msft_policy_config_..."
+  const cardName = e.name || '';
+  const cardDesc = e.desc || '';
 
   const mt = (e.methods||[]).map(m => ({
-    intune:'<span class="tag t-int">Intune</span>',
-    gpo:'<span class="tag t-gpo">GPO</span>',
-    admx:'<span class="tag t-gpo">ADMX</span>',
-    registry:'<span class="tag t-reg">Registry</span>',
-    csp:'<span class="tag t-csp">CSP</span>',
+    intune:   '<span class="tag t-int">Intune</span>',
+    gpo:      '<span class="tag t-gpo">GPO</span>',
+    admx:     '<span class="tag t-gpo">ADMX</span>',
+    registry: '<span class="tag t-reg">Registry</span>',
+    csp:      '<span class="tag t-csp">CSP</span>',
   }[m]||'')).join('');
 
-  const plat = e.plat==='windows'?'Windows':e.plat==='ios'?'iOS':e.plat==='macos'?'macOS':e.plat==='android'?'Android':(e.plat||'Windows');
+  const plat = {windows:'Windows',ios:'iOS',macos:'macOS',android:'Android',linux:'Linux'}[e.plat] || (e.plat||'Windows');
 
   return `<div class="card" id="card-${e.id}">
     <div class="card-hdr" onclick="toggleCard('${e.id}')">
-      <div class="card-icon">${e.icon||'⚙️'}</div>
+      <div class="card-icon">${e.icon||'\u2699\uFE0F'}</div>
       <div class="card-info">
         <div class="card-name">${hl(cardName, terms)}</div>
         <div class="card-desc">${hl(cardDesc, terms)}</div>
@@ -1004,9 +999,10 @@ function cardHTML(e, terms) {
       </div>
       <button class="expand-btn">Details<svg class="exp-arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
-    <div class="detail">${unifiedDetail(e)}</div>
+    <div class="detail">${detailHTML(e)}</div>
   </div>`;
 }
+
 
 function unifiedDetail(e) {
   const i0   = e.intune && e.intune[0];
@@ -1035,20 +1031,28 @@ function unifiedDetail(e) {
 // ── INTUNE PANEL ──────────────────────────────────────────────────────────────
 function intunePanel(e) {
   function mkBtn(val, label, style) {
-    const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;').replace(/\r/g,'');
-    return `<button class="cbtn"${style?' style="'+style+'"':''} data-copy="${safe}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">${label}</button>`;
+    const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
+    return `<button class="cbtn"${style?` style="${style}"`:''}  data-copy="${safe}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\n'),this)">${label}</button>`;
   }
 
   let h = '';
-  for (const i of (e.intune || [])) {
-    const leafKey    = i.defId || '';
-    const category   = e.name || i.name || '';
-    const rawOma     = i.oma  || '';
+  for (const i of (e.intune||[])) {
+    // i.defId = real settingDefinitionId (device_vendor_msft_...)
+    // e.name  = friendly display name
+    // e.desc  = category path
+    const defId       = i.defId || '';
+    const displayName = e.name || defId;
+    const category    = e.desc || '';
+    const oma         = i.oma || '';
+    const dtype       = i.dtype || '';
+    const vals        = i.vals || [];
 
-    const displayName = toFriendly(leafKey);
-    const defId       = deriveDefId(rawOma, leafKey);
-    const oma         = buildOma(rawOma, category, leafKey);
-    const desc        = i.desc || e.desc_text || '';
+    // Description block (shown when desc is long enough to be meaningful)
+    const descBlock = (e.desc && e.desc.length > 60)
+      ? `<div style="margin-bottom:8px;padding:8px 10px;background:var(--bg2,rgba(255,255,255,.04));border-radius:5px;border-left:3px solid var(--h-blue,#2197D4);font-size:12.5px;color:var(--h-text2,#ccc);line-height:1.5">
+          <strong style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--h-text3)">Description</strong><br>${esc(e.desc)}
+        </div>`
+      : '';
 
     const jsonFrag = defId ? `"settingDefinitionId": "${defId}"` : '';
     const jsonFull = defId ? `{
@@ -1064,48 +1068,50 @@ function intunePanel(e) {
   }
 }` : '';
 
-    const configBlockId = 'cfg_' + e.id.replace(/[^a-z0-9]/gi,'_');
+    const cfgId = 'cfg_' + (e.id||'').replace(/[^a-z0-9]/gi,'_');
+    const safeJsonFull = jsonFull.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
 
     h += `<div class="cblock">
       <div class="cblock-title">${esc(displayName)}${mkBtn(defId,'Copy ID')}</div>
-      ${desc?`<div class="desc-block"><div class="desc-label">Description</div>${esc(desc)}</div>`:''}
+      ${descBlock}
       <table class="ctable">
         <tr><td>Category</td><td>${esc(category)}</td></tr>
         <tr><td>Definition ID</td><td><span class="mono">${esc(defId)}</span>${mkBtn(defId,'Copy')}</td></tr>
         ${oma?`<tr><td>OMA-URI</td><td><span class="mono">${esc(oma)}</span>${mkBtn(oma,'Copy')}</td></tr>`:''}
-        <tr><td>Data type</td><td>${esc(i.dtype||'')}</td></tr>
-        ${(i.vals||[]).length?`<tr><td>Values</td><td>${i.vals.map(v=>`<span class="mono">${esc(v.v||v)}</span>${v.l?' — '+esc(v.l):''}`).join('<br>')}</td></tr>`:''}
-        ${i.rec?`<tr><td>Recommended</td><td><span class="mono">${esc(i.rec)}</span></td></tr>`:''}
+        ${dtype?`<tr><td>Data type</td><td>${esc(dtype)}</td></tr>`:''}
+        ${vals.length?`<tr><td>Values</td><td>${vals.map(v=>`<span class="mono">${esc(v.v||v.name||String(v))}</span>${(v.l||v.displayName)?' \u2014 '+esc(v.l||v.displayName):''}`).join('<br>')}</td></tr>`:''}
       </table>
-      ${jsonFrag?`<div style="margin-top:10px">
+      ${jsonFrag?`<div style="margin-top:9px">
         <div style="font-size:10px;color:var(--h-text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">JSON Fragment (Graph API)</div>
         <pre class="json-pre">${esc(jsonFrag)}</pre>
-        ${mkBtn(jsonFull,'Copy JSON','margin-top:4px')}
-        <button class="config-toggle" onclick="const d=document.getElementById('${configBlockId}');d.style.display=d.style.display==='block'?'none':'block'">show full config JSON</button>
-        <div class="config-block" id="${configBlockId}">${esc(jsonFull)}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+          ${mkBtn(jsonFull,'Copy JSON')}
+          <button class="cbtn" onclick="(function(el){const d=document.getElementById('${cfgId}');d.style.display=d.style.display==='block'?'none':'block';el.textContent=d.style.display==='block'?'Hide Full Config':'Show Full Config';})(this)">Show Full Config</button>
+        </div>
+        <div id="${cfgId}" style="display:none;margin-top:8px">
+          <pre class="json-pre" style="max-height:220px;overflow:auto">${esc(jsonFull)}</pre>
+        </div>
       </div>`:''}
     </div>`;
   }
 
   // Copy All button
-  const allJson = (e.intune||[]).map(i => {
-    const defId = deriveDefId(i.oma||'', i.defId||'');
-    return defId ? `{
+  const allDefs = (e.intune||[]).map(i=>i.defId||'').filter(Boolean);
+  const allJson = allDefs.map(d=>`{
   "@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting",
   "settingInstance": {
     "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
-    "settingDefinitionId": "${defId}",
-    "choiceSettingValue": { "value": "${defId}_0", "children": [] }
+    "settingDefinitionId": "${d}",
+    "choiceSettingValue": { "value": "${d}_0", "children": [] }
   }
-}` : '';
-  }).filter(Boolean).join(',\n');
-
-  const safeAll = (allJson||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
+}`).join(',\n');
+  const safeAll = allJson.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
   h += `<div class="copy-row">
-    <button class="cta intune" data-copy="${safeAll}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">Copy All Intune Config</button>
+    <button class="cta intune" data-copy="${safeAll}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\n'),this)">Copy All Intune Config</button>
   </div>`;
   return h;
 }
+
 
 // ── GPO PANEL ─────────────────────────────────────────────────────────────────
 function gpoPanel(e) {
