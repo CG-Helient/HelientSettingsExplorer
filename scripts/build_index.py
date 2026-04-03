@@ -327,8 +327,7 @@ EDGE_POLICY_URLS = [
     "https://raw.githubusercontent.com/MicrosoftDocs/Edge-Enterprise/public/edgeenterprise/docs/policy-list.md",
     "https://edgeupdates.microsoft.com/api/products/policy",
     # Fallback: Microsoft's own policy reference JSON used in their docs builds
-    "https://raw.githubusercontent.com/MicrosoftEdge/edge-selenium-tools/main/py/msedge/selenium_tools/edgedriver.py",
-]
+    "https://raw.githubusercontent.com/MicrosoftEdge/edge-selenium-tools/main/py/msedge/selenium_tools/edgedriver.py"]
 
 # Hardcoded comprehensive browser policy list — 70 key policies
 # Format: (name, desc, edge_reg, chrome_reg, type, example, category)
@@ -415,8 +414,7 @@ BROWSER_POLICIES = [
     ("WebRtcIPHandling","WebRTC IP handling policy","HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge","HKLM\\SOFTWARE\\Policies\\Google\\Chrome","REG_SZ","disable_non_proxied_udp","Default search provider"),
     # Chrome-specific update
     ("AutoUpdateCheckPeriodMinutes","Override minimum auto-update check period","HKLM\\SOFTWARE\\Policies\\Google\\Update","HKLM\\SOFTWARE\\Policies\\Google\\Update","REG_DWORD","43200","Google Update"),
-    ("UpdateDefault","Default update policy (0=Updates disabled, 1=Auto, 3=Manual)","HKLM\\SOFTWARE\\Policies\\Google\\Update","HKLM\\SOFTWARE\\Policies\\Google\\Update","REG_DWORD","1","Google Update"),
-]
+    ("UpdateDefault","Default update policy (0=Updates disabled, 1=Auto, 3=Manual)","HKLM\\SOFTWARE\\Policies\\Google\\Update","HKLM\\SOFTWARE\\Policies\\Google\\Update","REG_DWORD","1","Google Update")]
 
 def fetch_chromium():
     log("Building browser policy entries (Edge + Chrome)…")
@@ -519,8 +517,7 @@ WINDOWS_ADMX = [
     ("PowerShell Transcription","Windows Components > Windows PowerShell","Turn on PowerShell Transcription","PowerShellExecutionPolicy.admx","HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\Transcription","EnableTranscripting","REG_DWORD","1=Enable PowerShell session transcription (full command logging)."),
     ("Audit Process Creation","Windows Settings > Security Settings > Advanced Audit Policy > System Audit Policies > Detailed Tracking","Audit Process Creation","auditpol","N/A — configure via secpol.msc Advanced Audit Policy","","","Logs new process creation events (Event ID 4688). Required for most threat detection."),
     ("Include command line in process creation events","Windows Settings > Security Settings > Local Policies > Security Options","Include command line in process creation events","auditpol.admx","HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\Audit","ProcessCreationIncludeCmdLine_Enabled","REG_DWORD","1=Include full command line in Event ID 4688. Required for effective process auditing."),
-    ("Credential Caching — Limit cached logons","Windows Settings > Security Settings > Local Policies > Security Options","Interactive logon: Number of previous logons to cache","SecGuide.admx","HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon","CachedLogonsCount","REG_SZ","Number of cached domain credentials. CIS recommends 0 for high security, 4 as practical minimum."),
-]
+    ("Credential Caching — Limit cached logons","Windows Settings > Security Settings > Local Policies > Security Options","Interactive logon: Number of previous logons to cache","SecGuide.admx","HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon","CachedLogonsCount","REG_SZ","Number of cached domain credentials. CIS recommends 0 for high security, 4 as practical minimum.")]
 
 def fetch_windows_admx():
     log("Building Windows ADMX entries…")
@@ -557,8 +554,7 @@ def fetch_windows_admx():
 INTUNE_PM_URLS = [
     # Try the most recent known file first, then fall back to older versions
     "https://raw.githubusercontent.com/IntunePMFiles/DeviceConfig/main/Settings%20Definitions%20Export%203-23.xlsx",
-    "https://raw.githubusercontent.com/IntunePMFiles/DeviceConfig/main/Settings+Definitions+Export+3-23.xlsx",
-]
+    "https://raw.githubusercontent.com/IntunePMFiles/DeviceConfig/main/Settings+Definitions+Export+3-23.xlsx"]
 
 def fetch_intune_pm_files():
     """
@@ -900,8 +896,7 @@ POLICY_CSP_DATA = [
     ('WindowsPowerShell', 'TurnOnPowerShellScriptBlockLogging', 'Enable PowerShell script block logging (Event ID 4104)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\PowerShell\\\\ScriptBlockLogging', 'EnableScriptBlockLogging', 'REG_DWORD', 'WindowsPowerShell/TurnOnPowerShellScriptBlockLogging'),
     ('WindowsPowerShell', 'TurnOnPowerShellTranscription', 'Enable PowerShell transcription logging', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\PowerShell\\\\Transcription', 'EnableTranscripting', 'REG_DWORD', 'WindowsPowerShell/TurnOnPowerShellTranscription'),
     ('Wireless', 'AllowSimultaneousConnections', 'Block simultaneous Wi-Fi and cellular/Ethernet (prefer Wi-Fi)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WcmSvc\\\\GroupPolicy', 'fMinimizeConnections', 'REG_DWORD', 'Wireless/AllowSimultaneousConnections'),
-    ('Wireless', 'ConfigureWiFiSense', 'Configure Wi-Fi Sense (0=disable sharing open networks)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WcmSvc\\\\WiFiNetworkManager\\\\Config', 'AutoConnectAllowedOEM', 'REG_DWORD', 'Wireless/ConfigureWiFiSense'),
-]
+    ('Wireless', 'ConfigureWiFiSense', 'Configure Wi-Fi Sense (0=disable sharing open networks)', 'HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\WcmSvc\\\\WiFiNetworkManager\\\\Config', 'AutoConnectAllowedOEM', 'REG_DWORD', 'Wireless/ConfigureWiFiSense')]
 
 def fetch_policy_csp():
     log("Building Policy CSP (Windows MDM) entries…")
@@ -964,45 +959,444 @@ OFFICE_ADMX = [
     ("Office — Disable personal information in documents","Prevents Office from storing personal info in document properties.","office16.admx","HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\Common","qmenable","REG_DWORD"),
     ("SharePoint — Trusted sites","Adds SharePoint to trusted sites zone for seamless NTLM/Kerberos auth.","office16.admx","HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\Common\\Internet\\Server Cache","SharePointSiteList","REG_SZ"),
     ("Excel — Disable external data connections","Prevents Excel from refreshing external data connections (OLE DB, ODBC).","excel16.admx","HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\Excel\\Security","externalconnections_beware","REG_DWORD"),
-    ("PowerPoint — Block old format PPT files","2=Block open of PowerPoint 97–2003 format files.","ppt16.admx","HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\PowerPoint\\Security\\FileBlock","PowerPoint97Files","REG_DWORD"),
-]
+    ("PowerPoint — Block old format PPT files","2=Block open of PowerPoint 97–2003 format files.","ppt16.admx","HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\PowerPoint\\Security\\FileBlock","PowerPoint97Files","REG_DWORD")]
 
-def fetch_office_admx():
-    log("Building Office ADMX entries…")
-    entries = []
-    app_map = {"word16":"Microsoft Word","excel16":"Microsoft Excel",
-               "ppt16":"Microsoft PowerPoint","outlk16":"Microsoft Outlook",
-               "office16":"Microsoft Office","skype16":"Microsoft Teams"}
-    for row in OFFICE_ADMX:
-        name, desc, admx_file, reg_key, val, dtype = row
-        hive = "HKCU" if reg_key.startswith("HKCU") else "HKLM"
-        key  = reg_key.replace("HKLM\\","").replace("HKCU\\","")
-        app  = next((v for k,v in app_map.items() if k in admx_file), "Microsoft Office")
-        oma  = (f"./User/Vendor/MSFT/Policy/Config/ADMX_{admx_file.replace('.admx','')}"
-                f"~Policy~L_{slugify(app)}/{slugify(name)}")
-        e = make_entry(
-            source_id="admx_office",
-            entry_id="admx_office_" + slugify(name),
-            name=name, desc=desc,
-            cats=[app,"Microsoft Office","Security"],
-            plat="windows", methods=["gpo","admx","registry","intune"],
-            gpo={"path": f"User Configuration > Administrative Templates > {app}",
-                 "policy": name, "admx": admx_file, "ns": f"Microsoft.Policies.{slugify(app)}"},
-            admx={"name": name, "file": admx_file, "cat": app,
-                  "regKey": reg_key, "val": val, "type": dtype},
-            reg={"hive": hive, "key": key, "val": val, "type": dtype,
-                 "data": "See description", "note": ""},
-            intune=[{"cat": app, "name": name, "defId": "", "oma": oma,
-                     "dtype": "String (ADMX Ingestion)",
-                     "vals": [{"v":"<enabled/>","l":"Enabled"},{"v":"<disabled/>","l":"Disabled"}],
-                     "rec": "<enabled/>",
-                     "json": '"@odata.type": "#microsoft.graph.deviceManagementConfigurationSetting"'}],
-        )
-        entries.append(e)
-    log(f"  Office ADMX: {len(entries)} entries")
-    return entries
+
 
 # ─── SOURCE 6: Custom sources ─────────────────────────────────────────────────
+
+def fetch_office_admx():
+    """
+    Parse the Office 2016 Group Policy spreadsheet from the uploaded local file.
+    File: office2016grouppolicyandoctsettings.xlsx (extracted from id=49030 installer)
+    ADMX sheet columns: File Name, Policy Setting Name, Scope, Policy Path,
+                        Category, Registry Information, Part, Default Setting,
+                        Possible Settings, Supported On, Help Text
+    """
+    import re as _re, io
+    log("Parsing Office ADMX spreadsheet (local file)…")
+    entries, seen = [], set()
+
+    # ── Try local uploaded file first, then download ──────────────────────────
+    XLSX_PATH = REPO_ROOT / "scripts" / "office2016grouppolicyandoctsettings.xlsx"
+    raw_bytes = None
+
+    if XLSX_PATH.exists():
+        log(f"  Reading local file: {XLSX_PATH.name}")
+        raw_bytes = XLSX_PATH.read_bytes()
+    else:
+        # Fallback: download from Microsoft (id=49030 direct installer extracts this)
+        log("  Local file not found — attempting download from id=49030…")
+        for page_id in ["49030"]:
+            try:
+                conf = f"https://www.microsoft.com/en-us/download/confirmation.aspx?id={page_id}"
+                req = urllib.request.Request(conf, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=30) as r:
+                    page = r.read().decode("utf-8", errors="replace")
+                matches = _re.findall(
+                    r"https://download[.]microsoft[.]com/[^ \s<>\"']+\.exe", page)
+                if matches:
+                    log(f"  Found installer: {matches[0][:80]}")
+                # Cannot auto-extract xlsx from .exe in CI — skip
+            except Exception as ex:
+                log(f"  Download attempt failed: {ex}")
+        if not raw_bytes:
+            log("  Place office2016grouppolicyandoctsettings.xlsx in scripts/ folder")
+            log("  Download from: https://www.microsoft.com/en-us/download/details.aspx?id=49030")
+            return []
+
+    try:
+        import openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(raw_bytes), read_only=True, data_only=True)
+    except ImportError:
+        log("  Installing openpyxl…")
+        import subprocess
+        subprocess.run(["pip", "install", "openpyxl", "--quiet", "--break-system-packages"],
+                       capture_output=True)
+        import openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(raw_bytes), read_only=True, data_only=True)
+
+    # Process ADMX sheet (GPO-enforced) and optionally OPAX (preferences)
+    for sheet_name in ["ADMX", "OPAX"]:
+        if sheet_name not in wb.sheetnames:
+            continue
+        ws = wb[sheet_name]
+        rows = list(ws.iter_rows(values_only=True))
+        if len(rows) < 2:
+            continue
+
+        # Detect header row
+        header_row = None
+        for i, row in enumerate(rows[:5]):
+            vals = [str(v or "").strip() for v in row]
+            if "Policy Setting Name" in vals:
+                header_row = i
+                break
+        if header_row is None:
+            log(f"  Could not find header in {sheet_name}")
+            continue
+
+        headers = [str(v or "").strip() for v in rows[header_row]]
+        col = {h: i for i, h in enumerate(headers)}
+
+        def get(row, key):
+            i = col.get(key, -1)
+            if i < 0 or i >= len(row): return ""
+            return str(row[i] or "").strip()
+
+        is_gpo = (sheet_name == "ADMX")
+        skipped = 0
+        for row in rows[header_row + 1:]:
+            name = get(row, "Policy Setting Name")
+            if not name or name == "Policy Setting Name":
+                skipped += 1
+                continue
+
+            admx_file  = get(row, "File Name")
+            scope      = get(row, "Scope")           # User / Computer / Both
+            policy_path= get(row, "Policy Path")
+            category   = get(row, "Category")
+            reg_info   = get(row, "Registry Information")   # "HKCU\...\key!value"
+            part       = get(row, "Part")
+            default_s  = get(row, "Default Setting")
+            possible   = get(row, "Possible Settings")
+            help_text  = get(row, "Help Text")
+
+            # Parse registry key and value from reg_info  "HKCU\path\to\key!valuename"
+            hive, reg_key, reg_val = "HKCU", "", ""
+            if reg_info:
+                bang = reg_info.rfind("!")
+                if bang >= 0:
+                    reg_val = reg_info[bang + 1:].strip()
+                    key_full = reg_info[:bang].strip()
+                else:
+                    key_full = reg_info.strip()
+                if key_full.upper().startswith("HKCU"):
+                    hive = "HKCU"
+                    reg_key = key_full[5:].lstrip("\\")
+                elif key_full.upper().startswith("HKLM"):
+                    hive = "HKLM"
+                    reg_key = key_full[5:].lstrip("\\")
+                else:
+                    reg_key = key_full
+
+            # Parse possible settings into vals list [{v, l}]
+            vals = []
+            if possible:
+                for match in _re.finditer(r'\[(\S+),\s*([^\]]+)\]', possible):
+                    vals.append({"v": match.group(1).strip(), "l": match.group(2).strip()})
+
+            # Derive OMA-URI for Intune
+            admx_base = admx_file.replace(".admx", "").replace(".opax", "")
+            pol_slug   = slugify(name)
+            oma = f"./Device/Vendor/MSFT/Policy/Config/ADMX_{admx_base}/{pol_slug}"
+            if scope == "User":
+                oma = oma.replace("./Device/", "./User/")
+
+            # App name from ADMX filename
+            app_map = {
+                "access16": "Microsoft Access", "excel16": "Microsoft Excel",
+                "ppt16": "Microsoft PowerPoint", "outlk16": "Microsoft Outlook",
+                "office16": "Microsoft Office", "skype16": "Microsoft Teams",
+                "word16": "Microsoft Word", "visio16": "Microsoft Visio",
+                "proj16": "Microsoft Project", "onenote16": "Microsoft OneNote",
+                "lync16": "Microsoft Lync", "onedrive": "OneDrive",
+            }
+            app = next((v for k, v in app_map.items() if k in admx_base.lower()), "Microsoft Office")
+
+            eid = f"office_{sheet_name.lower()}_{slugify(admx_base)}_{slugify(name)}"
+            if eid in seen:
+                continue
+            seen.add(eid)
+
+            desc = help_text or category or policy_path
+            methods = ["gpo", "admx"] if is_gpo else ["gpo"]
+
+            entries.append(make_entry(
+                source_id="admx_office",
+                entry_id=eid,
+                name=name,
+                desc=desc[:500],
+                cats=[app, category or "Microsoft Office", "Office ADMX"],
+                plat="windows",
+                methods=methods,
+                gpo={"path": policy_path or f"Administrative Templates\\{app}",
+                     "policy": name, "admx": admx_file, "scope": scope},
+                admx={"name": name, "file": admx_file, "cat": category or app,
+                      "regKey": (f"HKLM\\" if hive == "HKLM" else "HKCU\\") + reg_key,
+                      "val": reg_val, "type": "REG_DWORD" if vals else "REG_SZ"},
+                reg={"hive": hive, "key": reg_key, "val": reg_val,
+                     "type": "REG_DWORD" if vals else "REG_SZ",
+                     "data": default_s} if reg_key else None,
+                intune=[{"cat": app, "name": name, "defId": pol_slug,
+                         "oma": oma, "dtype": "Choice" if vals else "String",
+                         "vals": vals, "rec": default_s}],
+                extra={"_text": f"{name} {help_text} {category} {reg_key} {admx_file}",
+                       "icon": "📄"},
+            ))
+
+        log(f"  {sheet_name}: {len(entries)} entries so far (skipped {skipped} blank rows)")
+
+    log(f"  Office ADMX total: {len(entries)} entries")
+    return entries
+
+
+def fetch_edge_policies():
+    """
+    Scrape Microsoft Edge enterprise policies from the Learn documentation page.
+    Source: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies
+    Policies are listed in tables with columns: Policy Name | Caption
+    """
+    import re as _re
+    log("Fetching Microsoft Edge enterprise policies from Learn docs…")
+    entries, seen = [], set()
+
+    url = "https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies"
+    try:
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        })
+        with urllib.request.urlopen(req, timeout=45) as r:
+            html = r.read().decode("utf-8", errors="replace")
+        log(f"  Downloaded {len(html)//1024}KB from learn.microsoft.com")
+    except Exception as ex:
+        log(f"  Edge docs fetch failed: {ex}")
+        return []
+
+    # Parse tables: find H3 headings (categories) then tables with Policy Name | Caption
+    # The page structure: H2 (section) > H3 (category) > TABLE (policy list)
+    current_cat = "Microsoft Edge"
+    table_count = 0
+    policy_count = 0
+
+    # Extract H3 + Table blocks using regex
+    # Remove HTML tags from text helper
+    def strip_tags(s):
+        return _re.sub(r'<[^>]+>', '', s).strip()
+
+    # Split by H2/H3 headings to track categories
+    # Then find tables within each section
+    blocks = _re.split(r'(<h[23][^>]*>)', html, flags=_re.IGNORECASE)
+
+    for i, block in enumerate(blocks):
+        # Update current category from headings
+        m_h = _re.match(r'<h([23])[^>]*>', block, _re.IGNORECASE)
+        if m_h:
+            # Next block is heading text
+            if i + 1 < len(blocks):
+                heading_text = strip_tags(blocks[i + 1])
+                current_cat = heading_text.strip()
+            continue
+
+        # Find all tables in this text block
+        tables = _re.findall(r'<table[^>]*>(.*?)</table>', block, _re.DOTALL | _re.IGNORECASE)
+        for table_html in tables:
+            rows = _re.findall(r'<tr[^>]*>(.*?)</tr>', table_html, _re.DOTALL | _re.IGNORECASE)
+            if not rows:
+                continue
+            # Check header row
+            header_cells = _re.findall(r'<t[hd][^>]*>(.*?)</t[hd]>', rows[0], _re.DOTALL | _re.IGNORECASE)
+            headers = [strip_tags(c) for c in header_cells]
+            if len(headers) < 2 or "Policy Name" not in headers[0]:
+                continue
+            table_count += 1
+            # Parse data rows
+            for row in rows[1:]:
+                cells = _re.findall(r'<t[hd][^>]*>(.*?)</t[hd]>', row, _re.DOTALL | _re.IGNORECASE)
+                if len(cells) < 2:
+                    continue
+                pol_name = strip_tags(cells[0]).strip()
+                caption  = strip_tags(cells[1]).strip()
+                if not pol_name or not pol_name[0].isupper():
+                    continue
+
+                eid = "edge_" + slugify(pol_name)
+                if eid in seen:
+                    continue
+                seen.add(eid)
+
+                # Determine scope from category name
+                scope = "User" if "user" in current_cat.lower() else "Computer"
+                reg_key = f"SOFTWARE\\Policies\\Microsoft\\Edge"
+                oma = f"./Device/Vendor/MSFT/Policy/Config/Edge~Policy~microsoft_edge/{pol_name}"
+                def_id = slugify(pol_name)
+
+                entries.append(make_entry(
+                    source_id="chromium",
+                    entry_id=eid,
+                    name=pol_name,
+                    desc=caption,
+                    cats=[current_cat, "Microsoft Edge", "Browser Policies"],
+                    plat="windows",
+                    methods=["gpo", "admx", "intune", "registry"],
+                    gpo={"path": "Administrative Templates\\Microsoft Edge",
+                         "policy": pol_name, "admx": "msedge.admx", "scope": scope},
+                    admx={"name": pol_name, "file": "msedge.admx",
+                          "cat": current_cat,
+                          "regKey": reg_key,
+                          "val": pol_name},
+                    reg={"hive": "HKLM", "key": reg_key.replace("HKLM\\", ""),
+                         "val": pol_name, "type": "REG_DWORD"},
+                    intune=[{"cat": current_cat, "name": pol_name, "defId": def_id,
+                             "oma": oma, "dtype": "Choice", "vals": []}],
+                    extra={"_text": f"{pol_name} {caption} {current_cat} Microsoft Edge msedge.admx",
+                           "icon": "🔵"},
+                ))
+                policy_count += 1
+
+    log(f"  Edge: {len(entries)} policies from {table_count} tables")
+    return entries
+
+
+def fetch_chrome_policies():
+    """
+    Fetch Chrome enterprise policies from the official JSON endpoint used by
+    the Chrome Enterprise policy page.
+    Source: https://chromeenterprise.google/static/json/policy_templates_en-US.json
+    Falls back to the policy_templates.zip for registry path details.
+    """
+    import re as _re, json as _json
+    log("Fetching Chrome enterprise policies from chromeenterprise.google…")
+    entries, seen = [], set()
+
+    # Primary: JSON endpoint (confirmed live - served directly from Chrome enterprise page)
+    JSON_URL = "https://chromeenterprise.google/static/json/policy_templates_en-US.json"
+    # Fallback: ZIP file
+    ZIP_URL  = "https://dl.google.com/dl/edgedl/chrome/policy/policy_templates.zip"
+
+    data = None
+
+    # Try JSON endpoint first
+    try:
+        req = urllib.request.Request(JSON_URL, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            raw = r.read().decode("utf-8", errors="replace")
+        data = _json.loads(raw)
+        log(f"  Downloaded {len(raw)//1024}KB from chromeenterprise.google")
+    except Exception as ex:
+        log(f"  JSON endpoint failed: {ex}")
+
+    # Fallback: ZIP file
+    if not data:
+        try:
+            import zipfile, io as _io
+            req = urllib.request.Request(ZIP_URL, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=90) as r:
+                raw_zip = r.read()
+            log(f"  Downloaded ZIP {len(raw_zip)//1024}KB")
+            zf = zipfile.ZipFile(_io.BytesIO(raw_zip))
+            json_files = [n for n in zf.namelist()
+                          if "policy_templates" in n.lower() and n.endswith(".json")]
+            if json_files:
+                data = _json.loads(zf.read(json_files[0]).decode("utf-8", errors="replace"))
+                log(f"  Parsed from ZIP: {json_files[0]}")
+        except Exception as ex:
+            log(f"  ZIP fallback failed: {ex}")
+
+    if not data:
+        log("  Chrome policy data unavailable — skipping")
+        return []
+
+    # Structure: { "policy_definitions": [...], "policy_atomic_group_definitions": [...] }
+    policy_defs = data.get("policy_definitions", [])
+    if isinstance(policy_defs, dict):
+        policy_defs = list(policy_defs.values())
+    log(f"  Found {len(policy_defs)} Chrome policy definitions")
+
+    # Platform filter - include Windows-relevant policies
+    def is_windows_relevant(pol):
+        supported = pol.get("supported_on", [])
+        if not supported:
+            return True  # include if unspecified
+        for s in supported:
+            s = s.lower()
+            if any(x in s for x in ["chrome.win", "chrome:win", "chrome.*", "chrome_os:win",
+                                      "edge:", "edge.*", "edge.win"]):
+                return True
+            # Generic chrome: entries (not os-specific) are cross-platform
+            if _re.match(r"chrome:\d", s):
+                return True
+        return False
+
+    # Category map from policy_atomic_group_definitions
+    group_defs = data.get("policy_atomic_group_definitions", {})
+    pol_to_group = {}
+    for gname, gpolicies in group_defs.items() if isinstance(group_defs, dict) else []:
+        if isinstance(gpolicies, list):
+            for pname in gpolicies:
+                pol_to_group[pname] = gname
+
+    for pol in policy_defs:
+        try:
+            name = pol.get("name", "")
+            if not name:
+                continue
+
+            # Caption = short display name, desc = full description
+            caption = str(pol.get("caption", "") or "").strip()
+            desc    = str(pol.get("desc", "") or pol.get("description", "") or "").strip()
+            if not caption and not desc:
+                continue
+
+            display = caption or name.replace("_", " ")
+            full_desc = desc[:500] if desc else f"Chrome enterprise policy: {name}"
+
+            eid = "chrome_" + slugify(name)
+            if eid in seen:
+                continue
+            seen.add(eid)
+
+            # Category from atomic group or policy type
+            cat = pol_to_group.get(name, "")
+            if not cat:
+                cat = pol.get("type", "Chrome Policies")
+
+            # Registry paths for Windows
+            reg_key = f"SOFTWARE\\Policies\\Google\\Chrome"
+            oma     = f"./Device/Vendor/MSFT/Policy/Config/Chrome~Policy~googlechrome/{name}"
+            def_id  = slugify(name)
+
+            # Values from items list [{caption, value}]
+            raw_items = pol.get("items", []) or []
+            if isinstance(raw_items, list):
+                vals = [{"v": str(item.get("value", "")), "l": str(item.get("caption", ""))}
+                        for item in raw_items if isinstance(item, dict)]
+            else:
+                vals = []
+
+            # Data type
+            schema  = pol.get("schema", {}) or {}
+            dtype   = schema.get("type", "integer") if isinstance(schema, dict) else "string"
+            dtype_map = {"boolean": "Boolean", "integer": "Integer",
+                         "string": "String", "array": "List", "object": "Dictionary"}
+            dtype_str = dtype_map.get(dtype, "Integer")
+
+            entries.append(make_entry(
+                source_id="chromium",
+                entry_id=eid,
+                name=display,
+                desc=full_desc,
+                cats=[cat, "Chrome", "Browser Policies"],
+                plat="windows",
+                methods=["gpo", "admx", "registry"],
+                gpo={"path": "Administrative Templates\\Google\\Google Chrome",
+                     "policy": name, "admx": "chrome.admx", "scope": "Computer/User"},
+                admx={"name": name, "file": "chrome.admx",
+                      "cat": cat or "Google Chrome",
+                      "regKey": reg_key, "val": name},
+                reg={"hive": "HKLM", "key": reg_key,
+                     "val": name, "type": f"REG_{dtype_str.upper()}" if dtype_str else "REG_DWORD"},
+                intune=[{"cat": cat or "Chrome", "name": display, "defId": def_id,
+                         "oma": oma, "dtype": dtype_str, "vals": vals}],
+                extra={"_text": f"{name} {display} {full_desc[:100]} {cat} Chrome",
+                       "icon": "🌐"},
+            ))
+        except Exception as ex:
+            log(f"  Skipping Chrome policy {pol.get('name','?')}: {ex}")
+
+    log(f"  Chrome: {len(entries)} entries")
+    return entries
+
 def fetch_custom():
     log("Loading custom sources…")
     entries = []
@@ -1050,19 +1444,17 @@ def build_search_text(e):
 # A: Policy Setting Name   B: Policy Path   C: Registry Path  D: Registry Value Name
 # E: Supported On          F: Explain Text  G: ADMX File      H: Scope (Computer/User)
 #
-# Direct download: https://www.microsoft.com/en-us/download/details.aspx?id=108429
+
 # GitHub: Some community repos mirror this data as CSV
 
 # Microsoft Download Center IDs for the GP Reference Spreadsheet
-# V3.0 (latest) = id=108543, V2.0 = id=108429
-GP_DOWNLOAD_PAGE_IDS = ["108543", "108429"]
 GP_SPREADSHEET_URLS = []  # populated dynamically from download pages
 
 def fetch_gp_reference():
     """
     Fetch and parse the Windows 11 25H2 Group Policy Settings Reference spreadsheet.
     Official Microsoft source: https://www.microsoft.com/en-us/download/details.aspx?id=108395 (25H2)
-    Also: id=108543, id=108429 (fallbacks)
+
     """
     import re as _re
     log("Fetching Windows 11 25H2 GP Reference Spreadsheet…")
@@ -1073,7 +1465,7 @@ def fetch_gp_reference():
     # Confirmed live: https://www.microsoft.com/en-us/download/details.aspx?id=108395
     DIRECT_URL = "https://download.microsoft.com/download/5b63bd47-8c46-4e43-a570-c766f4b08287/Windows11PolicySettings25H2.xlsx"
 
-    for page_id in ["108395", "108543", "108429"]:
+    for page_id in ["108395"]:
         try:
             page_url = f"https://www.microsoft.com/en-us/download/confirmation.aspx?id={page_id}"
             req = urllib.request.Request(page_url, headers={
@@ -1221,227 +1613,11 @@ def fetch_gp_reference():
 
 
 # ─── SOURCE 7: Office 365 ADMX ───────────────────────────────────────────────
-def fetch_office365_admx():
-    """Download Office 365 ADMX policy templates and extract policy data."""
-    import re as _re, zipfile, io
-    log("Fetching Office 365 ADMX templates…")
-    # Microsoft 365 Apps admin templates download page
-    entries = []
-    dl_url = None
-    for page_id in ["49030"]:
-        try:
-            conf = f"https://www.microsoft.com/en-us/download/confirmation.aspx?id={page_id}"
-            req = urllib.request.Request(conf, headers={"User-Agent":"Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=30) as r:
-                page = r.read().decode("utf-8", errors="replace")
-            matches = _re.findall(r'https://download[.]microsoft[.]com/[^ \s<>"\']+(?:\.exe|\.zip|\.msi)', page)
-            if matches:
-                dl_url = matches[0]
-                log(f"  Found: {dl_url[:80]}")
-                break
-        except Exception as ex:
-            log(f"  Office365 page error: {ex}")
-
-    if not dl_url:
-        log("  Could not find Office 365 ADMX download URL — skipping")
-        return []
-
-    try:
-        req = urllib.request.Request(dl_url, headers={"User-Agent":"Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=120) as r:
-            raw = r.read()
-        log(f"  Downloaded {len(raw)//1024}KB")
-    except Exception as ex:
-        log(f"  Download failed: {ex}")
-        return []
-
-    # Try to parse as ZIP; if it's an EXE/MSI, skip for now
-    try:
-        import io, openpyxl
-        zf = zipfile.ZipFile(io.BytesIO(raw))
-        # Look for ADMX files and parse policy names from XML
-        admx_files = [n for n in zf.namelist() if n.lower().endswith('.admx')]
-        log(f"  Found {len(admx_files)} ADMX files")
-        seen = set()
-        for admx_name in admx_files[:30]:  # limit
-            try:
-                admx_xml = zf.read(admx_name).decode("utf-8", errors="replace")
-                # Extract policy definitions
-                policies = _re.findall(r'<policy[^>]+name="([^"]+)"[^>]*displayName="\$\(string\.([^)]+)\)"', admx_xml)
-                cat_match = _re.search(r'<parentCategory[^>]+ref="([^"]+)"', admx_xml)
-                base_cat = cat_match.group(1) if cat_match else admx_name.replace('.admx','')
-                for pol_id, display_key in policies[:50]:
-                    eid = "o365_" + slugify(pol_id)
-                    if eid in seen: continue
-                    seen.add(eid)
-                    name = toTitleCase(pol_id.replace("L_","").replace("_"," "))
-                    entries.append(make_entry(
-                        source_id="admx_office", entry_id=eid,
-                        name=name, desc=f"Office 365 policy: {pol_id}",
-                        cats=[base_cat, "Office 365"],
-                        plat="windows", methods=["gpo","admx"],
-                        gpo={"path":f"Administrative Templates\\Microsoft Office 2016\\{base_cat}",
-                             "policy":name, "admx":admx_name.split("/")[-1], "scope":"Computer"},
-                        admx={"name":pol_id, "file":admx_name.split("/")[-1], "cat":base_cat,
-                              "regKey":"", "val":pol_id, "type":"REG_DWORD"},
-                    ))
-            except Exception:
-                continue
-    except zipfile.BadZipFile:
-        log("  Not a ZIP file (may be MSI/EXE) — skipping ADMX extraction")
-    except Exception as ex:
-        log(f"  Office365 parse error: {ex}")
-
-    log(f"  Office365 ADMX: {len(entries)} entries")
-    return entries
-
 # ─── SOURCE 8: Edge Enterprise Policies ──────────────────────────────────────
-def fetch_edge_policies():
-    """Fetch Edge enterprise policy list from Microsoft Docs JSON endpoint."""
-    import re as _re
-    log("Fetching Microsoft Edge enterprise policies…")
-    entries = []
-    seen = set()
-    # Edge policy JSON (published alongside docs)
-    json_urls = [
-        "https://raw.githubusercontent.com/MicrosoftDocs/Edge-Enterprise/public/edgeenterprise/microsoft-edge-policies.md",
-        "https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies",
-    ]
-    for url in json_urls:
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent":"Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=30) as r:
-                text = r.read().decode("utf-8", errors="replace")
-            # Parse policy names from markdown headers: ## PolicyName
-            policies = _re.findall(r'^## ([A-Za-z][A-Za-z0-9_]+)\s*$', text, _re.MULTILINE)
-            # Also grab descriptions: the paragraph after each header
-            sections = _re.split(r'^## ', text, flags=_re.MULTILINE)
-            for section in sections[1:]:
-                lines = section.strip().split("\n")
-                pol_name = lines[0].strip()
-                if not pol_name or not pol_name[0].isupper(): continue
-                desc_lines = []
-                for l in lines[1:]:
-                    l = l.strip()
-                    if l.startswith('#') or l.startswith('|') or not l: break
-                    desc_lines.append(l)
-                desc = ' '.join(desc_lines)[:500]
-                eid = "edge_" + slugify(pol_name)
-                if eid in seen: continue
-                seen.add(eid)
-                oma = f"./Device/Vendor/MSFT/Policy/Config/Edge/{pol_name}"
-                entries.append(make_entry(
-                    source_id="chromium", entry_id=eid,
-                    name=pol_name,
-                    desc=desc or f"Microsoft Edge enterprise policy: {pol_name}",
-                    cats=["Microsoft Edge", "Browser Policies"],
-                    plat="windows", methods=["gpo","admx","intune"],
-                    gpo={"path":"Administrative Templates\\Microsoft Edge", 
-                         "policy":pol_name, "admx":"msedge.admx", "scope":"Computer/User"},
-                    admx={"name":pol_name, "file":"msedge.admx",
-                          "cat":"Microsoft Edge", "regKey":f"SOFTWARE\\Policies\\Microsoft\\Edge",
-                          "val":pol_name, "type":"REG_DWORD"},
-                    intune=[{"cat":"Microsoft Edge","name":pol_name,"defId":pol_name,
-                             "oma":oma,"dtype":"Choice","vals":[],"rec":"","json":
-                             f'"settingDefinitionId": "{oma.replace("./","").replace("/","_").lower()}"'}],
-                    extra={"desc_text": desc},
-                ))
-            if entries:
-                break
-        except Exception as ex:
-            log(f"  Edge fetch error: {ex}")
-    log(f"  Edge policies: {len(entries)} entries")
-    return entries
+
 
 # ─── SOURCE 9: Chrome Enterprise Policies ────────────────────────────────────
-def fetch_chrome_policies():
-    """Fetch Chrome enterprise policies from policy_templates.json."""
-    import re as _re, zipfile, io, json as _json
-    log("Fetching Chrome enterprise policy templates…")
-    entries = []
-    seen = set()
 
-    # Try to get the policy templates ZIP
-    zip_urls = [
-        "https://dl.google.com/dl/edgedl/chrome/policy/policy_templates.zip",
-        "https://storage.googleapis.com/chrome-policy-list/policy_templates.zip",
-    ]
-    raw = None
-    for url in zip_urls:
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent":"Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=60) as r:
-                raw = r.read()
-            log(f"  Downloaded {len(raw)//1024}KB from {url.split('/')[2]}")
-            break
-        except Exception as ex:
-            log(f"  {url.split('/')[2]}: {ex}")
-
-    if not raw:
-        log("  Chrome policy ZIP unavailable — skipping")
-        return []
-
-    try:
-        zf = zipfile.ZipFile(io.BytesIO(raw))
-        json_files = [n for n in zf.namelist() if 'policy_templates.json' in n.lower()]
-        if not json_files:
-            log("  policy_templates.json not found in ZIP")
-            return []
-
-        data = _json.loads(zf.read(json_files[0]).decode("utf-8", errors="replace"))
-        policies = data.get("policy_definitions", data.get("policies", []))
-        if isinstance(policies, dict):
-            policies = list(policies.values())
-
-        for pol in policies[:2000]:
-            try:
-                name = pol.get("name","")
-                if not name: continue
-                # Get description from caption/desc fields
-                desc = ""
-                for k in ["desc","description","caption"]:
-                    v = pol.get(k,"")
-                    if isinstance(v, dict): v = v.get("en","")
-                    if v: desc = str(v)[:500]; break
-                # Display name
-                display = ""
-                for k in ["caption","display_name","label"]:
-                    v = pol.get(k,"")
-                    if isinstance(v, dict): v = v.get("en","")
-                    if v: display = str(v)[:100]; break
-                display = display or toTitleCase(name.replace("_"," "))
-
-                eid = "chrome_" + slugify(name)
-                if eid in seen: continue
-                seen.add(eid)
-
-                cat = pol.get("type","") or "Chrome Policies"
-                reg_key = f"SOFTWARE\\Policies\\Google\\Chrome"
-                oma = f"./Device/Vendor/MSFT/Policy/Config/Chrome/{name}"
-
-                entries.append(make_entry(
-                    source_id="chromium", entry_id=eid,
-                    name=display, desc=desc or f"Chrome enterprise policy: {name}",
-                    cats=["Chrome", "Browser Policies"],
-                    plat="windows", methods=["gpo","admx","intune"],
-                    gpo={"path":"Administrative Templates\\Google\\Google Chrome",
-                         "policy":display, "admx":"chrome.admx", "scope":"Computer/User"},
-                    admx={"name":name, "file":"chrome.admx",
-                          "cat":"Google Chrome", "regKey":reg_key,
-                          "val":name, "type":"REG_DWORD"},
-                    intune=[{"cat":"Chrome","name":display,"defId":name,
-                             "oma":oma,"dtype":pol.get("type","Choice"),"vals":[],"rec":"",
-                             "json":f'"settingDefinitionId": "{oma.replace("./","").replace("/","_").lower()}"',
-                             "desc":desc}],
-                    extra={"desc_text": desc},
-                ))
-            except Exception:
-                continue
-    except Exception as ex:
-        log(f"  Chrome parse error: {ex}")
-
-    log(f"  Chrome policies: {len(entries)} entries")
-    return entries
 
 def toTitleCase(s):
     return ' '.join(w.capitalize() for w in s.split())
@@ -1535,7 +1711,7 @@ def main():
         source_status["admx_office"] = {"ok": True, "count": len(e)}
 
     if want("office365"):
-        o365 = fetch_office365_admx()
+        o365 = fetch_office_admx()
         all_entries.extend(o365)
         source_status["office365_admx"] = {"ok": len(o365)>0, "count": len(o365)}
 
