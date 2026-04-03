@@ -629,7 +629,7 @@ async function loadIndex() {
     document.getElementById("resultCount").textContent = `${total.toLocaleString()} settings ready — enter a search term`;
     document.getElementById("resultsGrid").innerHTML = emptyHTML(
       "Search across all configuration methods",
-      "Try BitLocker, Windows Update, or any settingDefinitionId fragment."
+      "Try BitLocker, Windows Update, SmartScreen, LAPS, HomepageLocation, or any settingDefinitionId fragment."
     );
   }
 }
@@ -1002,6 +1002,23 @@ function cardHTML(e, terms) {
     <div class="detail">${detailHTML(e)}</div>
   </div>`;
 }
+
+function detailHTML(e) {
+  const tabs = [];
+  if (e.intune && e.intune.length) tabs.push({id:`ti-${e.id}`, pip:'var(--h-tag-int)', label:'Intune Settings Catalog', fn:intunePanel});
+  if (e.gpo || e.admx)            tabs.push({id:`tg-${e.id}`, pip:'var(--h-tag-gpo)', label:'GPO / ADMX', fn:gpoPanel});
+  if (e.reg)                       tabs.push({id:`tr-${e.id}`, pip:'var(--h-tag-reg)', label:'Registry', fn:registryPanel});
+  if (!tabs.length) return '<div style="padding:12px;color:var(--h-text3);font-size:13px">No detail data.</div>';
+
+  let tabsHtml = '<div class="dtabs">', panesHtml = '';
+  tabs.forEach((t, idx) => {
+    const active = idx === 0;
+    tabsHtml += `<div class="dtab${active?' active':''}" onclick="swTab(this,'${t.id}')"><span class="dpip" style="background:${t.pip}"></span>${t.label}</div>`;
+    panesHtml += `<div class="tp${active?' active':''}" id="${t.id}">${t.fn(e)}</div>`;
+  });
+  return tabsHtml + '</div><div class="dcontent">' + panesHtml + '</div>';
+}
+
 
 
 function unifiedDetail(e) {
