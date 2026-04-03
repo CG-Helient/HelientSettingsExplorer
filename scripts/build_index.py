@@ -3,7 +3,6 @@
 Helient Settings Explorer — Data Pipeline v3
 =============================================
 Fixed:
-  - Added Categories
   - URL-encode all Graph API query strings (spaces in $filter broke urllib)
   - Graph 401: use correct scope + try both endpoints with proper encoding
   - Git push conflict: handled in workflow (not script concern)
@@ -60,6 +59,20 @@ def graph_url(path, params=None):
 
 def slugify(s):
     return re.sub(r"[^a-z0-9_]", "_", s.lower())[:80]
+
+
+# ── SECURITY COMPLIANCE TOOLKIT REFERENCES ──────────────────────────────────
+# These URLs are referenced in card descriptions and the About page.
+# The actual toolkit download is at:
+#   https://www.microsoft.com/en-us/download/details.aspx?id=55319
+# Baselines included:
+#   - Windows 11 25H2 Security Baseline
+#   - Microsoft 365 Apps for Enterprise v2512
+#   - Microsoft Edge v139 Security Baseline
+SCT_URL = "https://www.microsoft.com/en-us/download/details.aspx?id=55319"
+WIN_BASELINE_BLOG = "https://techcommunity.microsoft.com/blog/microsoft-security-baselines/windows-11-version-25h2-security-baseline/4456231"
+M365_BASELINE_BLOG = "https://techcommunity.microsoft.com/blog/microsoft-security-baselines/security-baseline-for-m365-apps-for-enterprise-v2512/4487213"
+POLICY_CSP_URL = "https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-configuration-service-provider"
 
 def make_entry(source_id, entry_id, name, desc, cats, plat, methods,
                intune=None, gpo=None, admx=None, reg=None, extra=None):
@@ -1048,14 +1061,19 @@ GP_SPREADSHEET_URLS = []  # populated dynamically from download pages
 def fetch_gp_reference():
     """
     Fetch and parse the Windows 11 25H2 Group Policy Settings Reference spreadsheet.
-    Official Microsoft source: https://www.microsoft.com/en-us/download/details.aspx?id=108543
+    Official Microsoft source: https://www.microsoft.com/en-us/download/details.aspx?id=108395 (25H2)
+    Also: id=108543, id=108429 (fallbacks)
     """
     import re as _re
     log("Fetching Windows 11 25H2 GP Reference Spreadsheet…")
 
     # Try to find .xlsx download URL from Microsoft download pages
     dl_url = None
-    for page_id in ["108543", "108429"]:
+    # Direct download URL for Windows 11 25H2 GPO spreadsheet (id=108395)
+    # Confirmed live: https://www.microsoft.com/en-us/download/details.aspx?id=108395
+    DIRECT_URL = "https://download.microsoft.com/download/5b63bd47-8c46-4e43-a570-c766f4b08287/Windows11PolicySettings25H2.xlsx"
+
+    for page_id in ["108395", "108543", "108429"]:
         try:
             page_url = f"https://www.microsoft.com/en-us/download/confirmation.aspx?id={page_id}"
             req = urllib.request.Request(page_url, headers={
@@ -1072,8 +1090,11 @@ def fetch_gp_reference():
             log(f"  Page {page_id}: {ex}")
 
     if not dl_url:
+        log("  Falling back to direct download URL for Windows 11 25H2 GPO spreadsheet…")
+        dl_url = DIRECT_URL
+
+    if not dl_url:
         log("  Could not locate GP spreadsheet download URL — skipping")
-        log("  Manual download: https://www.microsoft.com/en-us/download/details.aspx?id=108543")
         return []
 
     # Download the xlsx file
