@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-04-03T13:11:48.463947+00:00",
-  "total_entries": 17943,
-  "chunk_count": 90,
+  "last_updated": "2026-04-03T13:37:43.727860+00:00",
+  "total_entries": 24589,
+  "chunk_count": 123,
   "chunks": [
     {
       "file": "data/chunks/chunk_000.json",
@@ -451,7 +451,172 @@
     {
       "file": "data/chunks/chunk_089.json",
       "start": 17800,
-      "count": 143
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_090.json",
+      "start": 18000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_091.json",
+      "start": 18200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_092.json",
+      "start": 18400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_093.json",
+      "start": 18600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_094.json",
+      "start": 18800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_095.json",
+      "start": 19000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_096.json",
+      "start": 19200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_097.json",
+      "start": 19400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_098.json",
+      "start": 19600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_099.json",
+      "start": 19800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_100.json",
+      "start": 20000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_101.json",
+      "start": 20200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_102.json",
+      "start": 20400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_103.json",
+      "start": 20600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_104.json",
+      "start": 20800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_105.json",
+      "start": 21000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_106.json",
+      "start": 21200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_107.json",
+      "start": 21400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_108.json",
+      "start": 21600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_109.json",
+      "start": 21800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_110.json",
+      "start": 22000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_111.json",
+      "start": 22200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_112.json",
+      "start": 22400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_113.json",
+      "start": 22600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_114.json",
+      "start": 22800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_115.json",
+      "start": 23000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_116.json",
+      "start": 23200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_117.json",
+      "start": 23400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_118.json",
+      "start": 23600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_119.json",
+      "start": 23800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_120.json",
+      "start": 24000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_121.json",
+      "start": 24200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_122.json",
+      "start": 24400,
+      "count": 189
     }
   ],
   "sources": {
@@ -473,19 +638,19 @@
     },
     "admx_office": {
       "ok": true,
-      "count": 25
+      "count": 4462
     },
     "office365_admx": {
-      "ok": false,
-      "count": 0
+      "ok": true,
+      "count": 4462
     },
     "edge_policies": {
-      "ok": false,
-      "count": 0
+      "ok": true,
+      "count": 759
     },
     "chrome_policies": {
-      "ok": false,
-      "count": 0
+      "ok": true,
+      "count": 1450
     },
     "gp_reference": {
       "ok": true,
@@ -496,5 +661,5 @@
       "count": 0
     }
   },
-  "index_size_kb": 27888
+  "index_size_kb": 82521
 }
