@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-04-01T20:52:36.258667+00:00",
-  "total_entries": 15059,
-  "chunk_count": 76,
+  "last_updated": "2026-04-03T13:11:48.463947+00:00",
+  "total_entries": 17943,
+  "chunk_count": 90,
   "chunks": [
     {
       "file": "data/chunks/chunk_000.json",
@@ -381,7 +381,77 @@
     {
       "file": "data/chunks/chunk_075.json",
       "start": 15000,
-      "count": 59
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_076.json",
+      "start": 15200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_077.json",
+      "start": 15400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_078.json",
+      "start": 15600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_079.json",
+      "start": 15800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_080.json",
+      "start": 16000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_081.json",
+      "start": 16200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_082.json",
+      "start": 16400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_083.json",
+      "start": 16600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_084.json",
+      "start": 16800,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_085.json",
+      "start": 17000,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_086.json",
+      "start": 17200,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_087.json",
+      "start": 17400,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_088.json",
+      "start": 17600,
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_089.json",
+      "start": 17800,
+      "count": 143
     }
   ],
   "sources": {
@@ -419,12 +489,12 @@
     },
     "gp_reference": {
       "ok": true,
-      "count": 0
+      "count": 2884
     },
     "custom": {
       "ok": true,
       "count": 0
     }
   },
-  "index_size_kb": 19618
+  "index_size_kb": 27888
 }
