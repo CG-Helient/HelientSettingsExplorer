@@ -635,11 +635,25 @@ async function loadIndex() {
 }
 
 function cp(text, btn) {
-  navigator.clipboard.writeText((typeof txt==='string'?txt.replace(/&#10;/g,'\n').replace(/&quot;/g,'"').replace(/&amp;/g,'&'):txt) || '',text).then(()=>{
-    const o=btn.textContent; btn.textContent="✓ Copied"; btn.classList.add("ok");
-    setTimeout(()=>{btn.textContent=o;btn.classList.remove("ok");},1500);
+  const val = typeof text === 'string'
+    ? text.replace(/&#10;/g, '\n').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+    : String(text || '');
+  navigator.clipboard.writeText(val).then(() => {
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = '\u2713 Copied';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('ok'); }, 1500);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = val; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    if (btn) { const o=btn.textContent; btn.textContent='\u2713 Copied'; setTimeout(()=>btn.textContent=o,1500); }
   });
 }
+
 
 function swTab(el, id) {
   const p=el.closest(".detail");
@@ -711,9 +725,24 @@ async function runSearch(q, filterSrc, filterCat) {
 
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
 
+  // Build search text: name + desc weighted first, then full _text
   let results = SEARCH_INDEX.filter(e => {
-    const txt = (e._text || [e.name, e.desc, JSON.stringify(e.intune)].join(' ')).toLowerCase();
-    return terms.every(t => txt.includes(t));
+    const nameTxt = ((e._source === 'chromium' ? e.desc : e.name) || '').toLowerCase();
+    const descTxt = ((e._source === 'chromium' ? e.name : e.desc) || '').toLowerCase();
+    const fullTxt = (e._text || [e.name, e.desc].join(' ')).toLowerCase();
+    return terms.every(t => nameTxt.includes(t) || descTxt.includes(t) || fullTxt.includes(t));
+  });
+
+  // Sort: exact/phrase matches in title first, then partial matches
+  const queryLower = query.toLowerCase();
+  results.sort((a, b) => {
+    const aName = ((a._source === 'chromium' ? a.desc : a.name) || '').toLowerCase();
+    const bName = ((b._source === 'chromium' ? b.desc : b.name) || '').toLowerCase();
+    const aExact = aName.includes(queryLower) ? 0 : 1;
+    const bExact = bName.includes(queryLower) ? 0 : 1;
+    if (aExact !== bExact) return aExact - bExact;
+    // Among same tier, shorter name = more specific match = higher
+    return aName.length - bName.length;
   });
 
   // Source chip filter
@@ -972,12 +1001,17 @@ function toggleNav() {
 
 // ── UNIFIED CARD RENDERING ────────────────────────────────────────────────────
 function cardHTML(e, terms) {
-  // DATA LAYOUT (confirmed from live inspection):
-  //   e.name  = friendly display name  e.g. "Configure Xbox Live Game Save Service Startup Mode"
-  //   e.desc  = category/description   e.g. "Administrative Templates\Network\DNS Client"
-  //   i.defId = settingDefinitionId    e.g. "device_vendor_msft_policy_config_..."
-  const cardName = e.name || '';
-  const cardDesc = e.desc || '';
+  // Source-aware display:
+  //   chromium: e.name = technical key, e.desc = friendly caption -> show desc as title
+  //   all others: e.name = friendly name, e.desc = category path -> show name as title
+  let cardName, cardDesc;
+  if (e._source === 'chromium') {
+    cardName = e.desc || e.name || '';   // e.g. "Run background apps after close"
+    cardDesc = e.name || '';             // e.g. "BackgroundModeEnabled (Microsoft Edge...)"
+  } else {
+    cardName = e.name || '';             // e.g. "Select the encryption method..."
+    cardDesc = e.desc || '';             // e.g. "Administrative Templates\Network\..."
+  }
 
   const mt = (e.methods||[]).map(m => ({
     intune:   '<span class="tag t-int">Intune</span>',
@@ -1002,6 +1036,7 @@ function cardHTML(e, terms) {
     <div class="detail">${detailHTML(e)}</div>
   </div>`;
 }
+
 
 function detailHTML(e) {
   const tabs = [];
@@ -1049,7 +1084,7 @@ function unifiedDetail(e) {
 function intunePanel(e) {
   function mkBtn(val, label, style) {
     const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
-    return `<button class="cbtn"${style?` style="${style}"`:''}  data-copy="${safe}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\n'),this)">${label}</button>`;
+    return `<button class="cbtn"${style?` style="${style}"`:''}  data-copy="${safe}" onclick="cp(this.dataset.copy,this)">${label}</button>`;
   }
 
   let h = '';
@@ -1124,7 +1159,7 @@ function intunePanel(e) {
 }`).join(',\n');
   const safeAll = allJson.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
   h += `<div class="copy-row">
-    <button class="cta intune" data-copy="${safeAll}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\n'),this)">Copy All Intune Config</button>
+    <button class="cta intune" data-copy="${safeAll}" onclick="cp(this.dataset.copy,this)">Copy All Intune Config</button>
   </div>`;
   return h;
 }
@@ -1180,7 +1215,7 @@ function registryPanel(e) {
   const regSnippet = `Windows Registry Editor Version 5.00\n\n[${fullKey}]\n"${r.val||''}"=${r.type==='REG_DWORD'?'dword:00000001':r.type==='REG_SZ'?'"value"':'hex:01'}`;
   function mkBtn(val, label) {
     const safe = (val||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
-    return `<button class="cbtn" data-copy="${safe}" onclick="cp(this.dataset.copy.replace(/&#10;/g,'\\n'),this)">${label}</button>`;
+    return `<button class="cbtn" data-copy="${safe}" onclick="cp(this.dataset.copy,this)">${label}</button>`;
   }
   return `<div class="cblock">
     <div class="cblock-title"><span class="tag t-reg">REG</span> Registry Configuration</div>
