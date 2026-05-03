@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-04-26T04:52:44.424437+00:00",
-  "total_entries": 24596,
+  "last_updated": "2026-05-03T05:23:09.925012+00:00",
+  "total_entries": 24597,
   "chunk_count": 123,
   "chunks": [
     {
@@ -616,7 +616,7 @@
     {
       "file": "data/chunks/chunk_122.json",
       "start": 24400,
-      "count": 196
+      "count": 197
     }
   ],
   "sources": {
@@ -646,7 +646,7 @@
     },
     "edge_policies": {
       "ok": true,
-      "count": 769
+      "count": 770
     },
     "chrome_policies": {
       "ok": true,
@@ -661,5 +661,5 @@
       "count": 0
     }
   },
-  "index_size_kb": 84459
+  "index_size_kb": 84564
 }
