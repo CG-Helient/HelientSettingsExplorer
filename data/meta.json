@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-05-03T05:23:09.925012+00:00",
-  "total_entries": 24597,
-  "chunk_count": 123,
+  "last_updated": "2026-05-10T05:30:22.998372+00:00",
+  "total_entries": 24608,
+  "chunk_count": 124,
   "chunks": [
     {
       "file": "data/chunks/chunk_000.json",
@@ -616,7 +616,12 @@
     {
       "file": "data/chunks/chunk_122.json",
       "start": 24400,
-      "count": 197
+      "count": 200
+    },
+    {
+      "file": "data/chunks/chunk_123.json",
+      "start": 24600,
+      "count": 8
     }
   ],
   "sources": {
@@ -646,11 +651,11 @@
     },
     "edge_policies": {
       "ok": true,
-      "count": 770
+      "count": 774
     },
     "chrome_policies": {
       "ok": true,
-      "count": 1447
+      "count": 1454
     },
     "gp_reference": {
       "ok": true,
@@ -661,5 +666,5 @@
       "count": 0
     }
   },
-  "index_size_kb": 84564
+  "index_size_kb": 84810
 }
